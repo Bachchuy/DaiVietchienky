@@ -41,8 +41,15 @@ func _init(map_width: int = 12, map_height: int = 10, default_terrain: TerrainTy
 
 
 func is_valid_hex(axial: Vector2i) -> bool:
-	var offset: Vector2i = HexMath.axial_to_odd_r(axial)
-	return offset.x >= 0 and offset.x < width and offset.y >= 0 and offset.y < height
+	return _terrains.has(axial)
+
+
+func get_fort_hexes() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for k: Vector2i in _fort_owners.keys():
+		if get_terrain(k) == TerrainType.FORT:
+			out.append(k)
+	return out
 
 
 func get_terrain(axial: Vector2i) -> TerrainType:

@@ -27,3 +27,9 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lựa chọn:** Chọn `DEFAULT_HEX_SIZE = 48.0` pixel (chiều rộng ô `sqrt(3) * 48 ≈ 83.14 px`, bước hàng dọc `1.5 * 48 = 72.0 px` -> bản đồ `12×10` vừa khít `~1040×744 px` ở `Zoom 1.0x`), đồng thời cho phép truyền `hex_size` tùy chỉnh vào các hàm toán học `HexMath`.
 - **Lý do:** Khớp hoàn hảo với viewport `1280×720` Map-First (`>= 80%` diện tích màn hình) và công thức lượng giác chuẩn Red Blob Games cho Pointy-topped Axial.
 - **Cách đổi:** Thay đổi hằng số `DEFAULT_HEX_SIZE` trong `scripts/core/hex_math.gd` hoặc thuộc tính `@export var hex_size: float` trên `BattleMapView`.
+
+## DEC-005 — Quy tắc Đi Xuyên Đồng Minh và Hiển thị Vùng Tầm Bắn Đỏ (`AttackableAreaLayer`)
+- **Vấn đề:** (1) GDD quy định không đi xuyên qua ô địch chiếm đóng nhưng chưa nêu tường minh đơn vị có được đi xuyên qua ô đồng minh hay không; (2) cần chốt công thức tập ô đỏ `AttackableAreaLayer` khi chọn đơn vị ở `CP1`.
+- **Lựa chọn:** (1) Đơn vị được đi **xuyên qua** ô đồng minh nếu còn đủ MP bước tiếp sang ô trống hợp lệ, nhưng **không được dừng kết thúc di chuyển** đè lên ô đang có đồng minh khác (trừ chính ô xuất phát của mình). (2) `HexGridNavigator.get_attackable_hexes(map_state, unit, origin_hex)` trả về mọi ô hợp lệ trong `[min_range, max_range]` thỏa `has_line_of_sight(map_state, origin_hex, target_hex)`; đồng thời cung cấp `get_engageable_enemy_hexes(map_state, unit, reachable)` cho các ô địch có thể công kích sau khi di chuyển.
+- **Lý do:** Đúng chuẩn wargame lục giác (*Panzer Corps 2* / *EW7*), tránh kẹt đội hình ở hẻm hẹp/cầu bến nhưng vẫn đảm bảo 1 ô chỉ chứa tối đa 1 đạo quân (`TroopStack` đã gộp sẵn trong `BattleUnit`).
+- **Cách đổi:** Nếu muốn cấm đi xuyên đồng minh, đổi điều kiện kiểm tra `occupant != null` trong `HexGridNavigator.get_hex_step_cost`.
