@@ -1,0 +1,62 @@
+# 15. Rủi ro, giả định và quản trị quyết định thiết kế
+
+[← Quay lại Mục lục GDD](../README.md)
+
+---
+
+## 15.1. Danh mục rủi ro cốt lõi và giải pháp giảm thiểu (Risk & Mitigation Matrix)
+
+| Nhóm rủi ro | Mô tả rủi ro cụ thể | Giải pháp giảm thiểu (Design & Technical Mitigation) |
+|---|---|---|
+| **1. Bản quyền tài nguyên tham chiếu (IP Risk — Mức độ: Nghiêm trọng)** | Kho tài nguyên hiện tại (`2,464 files` trong thư mục `Assets/` và 85 tệp JSON tham chiếu trong `Data/`, xem [ASSET_CATALOG.md](../../assets/ASSET_CATALOG.md)) được bóc tách từ game thương mại chỉ để phục vụ nghiên cứu cấu trúc và dựng nguyên mẫu nội bộ; nếu lọt vào bản phát hành công khai sẽ vi phạm nghiêm trọng quyền sở hữu trí tuệ. | Khoanh vùng tuyệt đối tài nguyên tham chiếu trong phạm vi R&D/prototype nội bộ; thiết lập cổng kiểm duyệt bắt buộc **Asset IP Gate** trước mốc `P4/P5`, thay thế **100%** hình ảnh, hoạt ảnh, icon UI, âm thanh và shader thương mại bằng mỹ thuật 2D cách điệu tự sản xuất mang bản sắc Đại Việt hoặc tài nguyên có giấy phép thương mại sạch, lưu hồ sơ nguồn gốc đầy đủ. |
+| **2. Hiệu năng WebAssembly & Mobile 60 FPS (Tech Risk — Mức độ: Cao)** | Trình duyệt Web (HTML5/Wasm) bị giới hạn bộ nhớ heap, băng thông tải ban đầu và chi phí draw calls WebGL2; thiết bị Android tầm trung dễ tụt FPS hoặc khựng hình khi hiển thị cùng lúc nhiều đơn vị hoạt ảnh 2D, hiệu ứng sóng nước sông Bạch Đằng và hạt VFX. | Chốt chuyển sang **Thuần GDScript 2.0 trên Godot 4.7** với renderer **`gl_compatibility`** (`D-09`, `D-10`); đóng gói Texture Atlas giảm draw calls; áp dụng Object Pooling cho SFX/Particles; tự động ẩn mô hình chi tiết sang Military Token khi thu phóng xa nhờ **`StrategicZoom` (`Zoom < 0.7x`)**; đo kiểm FPS thực tế trên trình duyệt và máy Android ngay từ `CP4/CP5`. |
+| **3. Quá tải phạm vi lịch sử đa thời kỳ (Scope Creep)** | Phạm vi sản phẩm mở rộng **từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Triều Tây Sơn)** rất đồ sộ; nếu làm nhiều thời kỳ song song sẽ gây đứt gãy nguồn lực mỹ thuật và thẩm định sử liệu. | Áp dụng nghiêm ngặt lộ trình cuốn chiếu (`D-03`): khóa chặt `P2` cho duy nhất 1 màn **Slice-01 Bạch Đằng 1288**, khóa `P5` cho **Gói Chiến dịch Thời Trần (6–8 màn)**, sau đó mới sản xuất từng *Era Pack* độc lập. |
+| **4. Tư liệu lịch sử khuyết thiếu hoặc còn tranh luận học thuật** | Biên chế chi tiết, vị trí chính xác từng bãi cọc hay quân số cụ thể trong các trận cổ – trung đại còn nhiều cách diễn giải khác nhau giữa các nguồn sử liệu. | Không đưa suy diễn chưa duyệt vào Historical Mode như sự thật tuyệt đối; áp dụng bắt buộc hệ thống `sourceRef` (`[S6]–[S7]`, `[S12]–[S16]`), `Evidence grade` (`A–D`) và tách riêng trường `ModelingType` (`historical claim` vs `gameplay abstraction`). |
+| **5. Lối chơi đơn điệu (Spam 1 loại quân hoặc Co cụm chờ hết giờ)** | Người chơi có thể chỉ dồn một loại thuyền mạnh nhất hoặc rút toàn quân co cụm quanh `SignalDock` chờ hết 10 lượt. | Khắc chế bằng ma trận 6 Kiểu công × 5 Loại giáp, địa hình sở trường `FondTerrain`, mốc 2 Sao yêu cầu thắng nhanh `<= 8` lượt (hạ Ô Mã Nhi khi triều rút Vòng 4) và ngưỡng tiêu diệt `>= 75%` quân địch nếu đánh hết 10 lượt. |
+| **6. Người chơi hiểu nhầm `Seeded RNG` hoặc nghi ngờ AI gian lận** | Dao động sát thương nếu không minh bạch dễ tạo cảm giác bị xử ép; AI quá mạnh dễ bị nghi nhìn xuyên bản đồ hoặc cộng ngầm chỉ số. | Loại bỏ hoàn toàn cơ chế đánh trượt (`miss`); công khai dải `[Min, Max]` & `% Crit` trên Combat Preview; AI dùng chung 100% luật tầm nhìn, MP và công thức với người chơi (xem [ai_difficulty.md](../03_content_presentation/ai_difficulty.md)). |
+
+---
+
+## 15.2. Các giả định nền tảng và tác động nếu sai
+
+| Giả định thiết kế & sản xuất | Tác động & Kế hoạch ứng phó nếu giả định sai |
+|---|---|
+| **Single-player là phạm vi cốt lõi xuyên suốt MVP (`P0–P5`); không có PvP thời gian thực.** | Nếu bổ sung đối kháng người – người trong tương lai, cần thiết kế lại luật sương mù chiến tranh đối xứng, đồng hồ giới hạn lượt và cân bằng phe phái; tuy nhiên kiến trúc Command Pattern + `Seeded RNG` hiện tại đã tương thích sẵn cho đồng bộ lượt. |
+| **Giao diện chạm/click 2 bước (`<= 2 chạm/lệnh`) phục vụ tốt đồng thời cả Web PC lẫn màn hình cảm ứng Android.** | Nếu playtest trên điện thoại màn hình nhỏ cho thấy khó chạm chính xác ô Hex hoặc chữ Combat Preview bị nhỏ, cần bổ sung chế độ phóng đại vùng chọn và cấu hình tỷ lệ DPI động cho Mobile trước `P4`. |
+| **Bản đồ `12 × 10` hex và trần 10 lượt đủ truyền tải kịch tính trận Bạch Đằng 1288 trong 8–15 phút.** | Nếu vòng Playtest `[D-17]` cho thấy không gian quá chật khiến thủy đội khó cơ động nhử giặc trước Vòng 4, Level Designer được phép nới biên bản đồ lên `14 × 12` hex bằng dữ liệu JSON mà không cần sửa code core. |
+| **Mọi con số chỉ số và bố cục quân trong Slice-01 hiện tại là `fixture` thử nghiệm.** | Nếu đội ngũ giữ nguyên số liệu `fixture` không qua hiệu chỉnh playtest để đưa thẳng lên MVP `P5`, độ khó chiến dịch Thời Trần sẽ mất cân bằng nghiêm trọng. |
+
+---
+
+## 15.3. Tổng hợp các Quyết định Thiết kế & Kỹ thuật Đã Khóa (`LOCKED Decisions`)
+
+Các quyết định dưới đây đã được phê duyệt chính thức (chi tiết lịch sử tiến hóa xem tại [CHANGELOG_3.3_to_3.4.md](../00_overview/CHANGELOG_3.3_to_3.4.md)) và là quy chuẩn bắt buộc cho toàn bộ các nhóm phát triển:
+
+| Mã ID | Nội dung quyết định đã khóa | Quy chuẩn áp dụng bắt buộc |
+| :---: |---|---|
+| **`D-01`** | **Thể loại cốt lõi** | **Turn-Based Hex Wargame** trên lưới lục giác cạnh nhọn (`Pointy-topped Axial`), không làm RTS. |
+| **`D-02`** | **Phân tách Chế độ chơi** | **Historical Scenario** khóa cứng hồ sơ tướng & biên chế (`Preset Loadout`) để bảo toàn tính lịch sử và thử thách chiến thuật; tách biệt hoàn toàn với tiến trình tự do ở Conquest/Domination. |
+| **`D-03`** | **Chiến lược sản xuất cuốn chiếu** | Hoàn thiện **Vertical Slice Bạch Đằng 1288 (`Slice-01`)** ở `P2` $\to$ **Gói Chiến dịch Thời Trần** ở `P5` $\to$ mở rộng cuốn chiếu các *Era Pack* từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Tây Sơn). |
+| **`D-06`** | **Nền tảng mục tiêu ưu tiên** | Chốt ưu tiên phát hành trên **Web (HTML5/Wasm) + Android** ngay sau bản dựng phát triển/kiểm thử trên **Windows Desktop**, cam kết mục tiêu **60 FPS**. |
+| **`D-09`** | **Engine, Ngôn ngữ & Kiến trúc mã nguồn** | Chuyển hoàn toàn từ định hướng C# .NET cũ sang **Thuần GDScript 2.0 (Typed GDScript) trên Godot 4.7** để xuất bản liền mạch Web + Android; tổ chức mã nguồn phân lớp sạch giữa `scripts/core/` (độc lập `SceneTree`) và `scripts/presentation/`. |
+| **`D-10`** | **Pipeline Kết xuất Đồ họa** | Chốt sử dụng **`gl_compatibility` Renderer** trên Godot 4.7 kết hợp kiến trúc 15 Render Layers và cơ chế `StrategicZoom` (`Zoom < 0.7x`) để bảo đảm tương thích WebGL2 và duy trì 60 FPS trên thiết bị di động. |
+| **`D-11`** | **Combat `Seeded RNG`, Giáp & Phản kích** | Áp dụng **Controlled RNG có Seed tất định** (`80%–100%` + Crit, lưu `seed/state` bảo đảm 100% Deterministic Replay, không có `miss`), công thức giáp `100 / (100 + EffectiveDef)`; **Công giải quyết trước – Thủ phản kích sau** (nếu còn sống, hợp lệ tầm & LOS, không bị `CHAOS`), tối đa **1 lần phản kích / lượt đối phương**. |
+| **`D-12`** | **Luật Vùng kiểm soát (`ZOC`) & Bọc sườn (`Flank`)** | Bước vào ô `ZOC` của địch buộc **dừng di chuyển ngay (`RemainingMP = 0`)** nhưng vẫn giữ quyền thực hiện Action chính; **Flank** kích hoạt khi có ít nhất 1 đồng minh khác áp sát mục tiêu ở ô không liền kề với đơn vị tấn công. |
+| **`D-13`** | **Hệ thống Sĩ khí 4 bậc rời rạc** | Chốt **4 bậc Enum rời rạc**: `HIGH` (Hưng Phấn), `NORMAL` (Ổn Định), `LOW` (Dao Động), `CHAOS` (Hỗn Loạn — khóa toàn bộ di chuyển, tấn công, phản kích và mất `ZOC` tạm thời theo lượt rồi tự hồi về `LOW`, không dùng thang điểm phần trăm liên tục hay xóa đơn vị đột ngột). |
+| **`D-14`** | **Cơ chế Bãi cọc Bạch Đằng (`StakedWater`)** | Thuộc thế trận mai phục của Đại Việt trong `stage_id: 10101`: đầu **Vòng 4 (`MapPhase_TideFall`)**, nước triều rút làm lộ bãi cọc đâm thủng thuyền quân Đại Nguyên đang đứng trên bãi cọc (`-35% MaxHP`, `MarchDisabled` 2 lượt, `CHAOS` 1 lượt) đồng thời kích hoạt phục binh Đại Việt xuất kích. |
+
+---
+
+## 15.4. Bảng theo dõi các Quyết định Còn Mở (`OPEN Decisions`)
+
+Mọi quyết định chưa khóa hoàn toàn đều được gán **Owner**, **Phương án mặc định (Default)** để lập trình/thiết kế không bị nghẽn tiến độ, cùng **Deadline** chốt rõ ràng theo cổng Milestone:
+
+| ID | Nội dung quyết định cần chốt | Owner | Phương án mặc định (Default) | Deadline chốt | Trạng thái |
+| :---: |---|---|---|---|---|
+| **`D-04`** | Kiến trúc bản đồ chiến lược cho chế độ **Conquest** (Tile Hex lớn liên thông hay mạng lưới Node/Tỉnh thành)? | Lead Game Designer | Dùng **Bản đồ Node/Tỉnh thành** ở lớp chiến lược kết hợp vào trận đánh bản đồ Hex chiến thuật (giúp nhẹ RAM trên Web/Android và tập trung chất lượng từng trận). | Trước Gate `P3` (Alpha) | **OPEN** |
+| **`D-05`** | Độ sâu mô phỏng kinh tế vĩ mô và ngoại giao trong chế độ Conquest? | Lead Game Designer | **Mô hình tối giản:** Chỉ gồm Tiền, Lương, Tuyển quân và trạng thái Liên minh / Tuyên chiến rõ ràng; không thêm thuế suất hay nội chính phức tạp. | Trước Gate `P3` (Alpha) | **OPEN** |
+| **`D-07`** | Cấu hình chi tiết gói nội dung thương mại hóa & thông số bảo hiểm Pity giai đoạn mở rộng? *(Nguyên tắc cốt lõi F2P thân thiện không khóa tướng lịch sử sau paywall đã LOCKED)* | Product Owner / Producer | **MVP (`P2–P5`) không có Gacha.** Từ `P4+` khi mở chế độ tự do: cho phép chiêu mộ mọi bậc tướng (kể cả bậc Đỏ) bằng **Ngọc Bích & Lệnh Chiêu Mộ tích lũy F2P** kèm mốc bảo hiểm Pity cố định; doanh thu đến từ gói mở rộng *Era Pack*, trang phục lịch sử và gói tiện ích tiết kiệm thời gian. | Trước Gate `P4` (Beta) | **PARTIALLY LOCKED** *(Khung F2P đã khóa; thông số mở tới P4)* |
+| **`D-08`** | Quy trình hội đồng cố vấn sử học và bộ nguồn chuẩn cho từng *Era Pack*? | Historical Content Lead | Áp dụng bắt buộc khung `Evidence grade` (`A–D`) + `ModelingType` tại [historical_framework.md](../03_content_presentation/historical_framework.md); mọi chi tiết chưa qua cố vấn ký duyệt phải giữ nhãn `fixture / gameplay abstraction`. | Dossier Slice-01 trước Gate `P2`; từng Era trước `P4` | **OPEN** |
+| **`D-15`** | Hệ quả phụ trên chiến trường khi đơn vị Tướng chỉ huy bị loại khỏi vòng chiến (ngoài việc mất `UniqueSkill`)? | Combat Systems Designer | Mất `UniqueSkill` và `CommandAura` của tướng đó trong phần còn lại của trận, **kèm phạt `-1` bậc Sĩ khí cục bộ** cho đồng minh trong bán kính `2 hex` (`3 hex` nếu là Chủ soái) và thưởng `+1` bậc Sĩ khí cho quân tiêu diệt trong bán kính `2 hex`. | Đã thống nhất phương án chuẩn; kiểm chứng số liệu tại Gate `P2` | **LOCKED IN PRINCIPLE** *(Kiểm chứng playtest P2)* |
+| **`D-16`** | Tinh chỉnh bố trí quân khởi đầu và nhịp áp lực của AI lên `SignalDock (2, 8)` để triệt tiêu hoàn toàn chiến thuật co cụm (`Anti-Turtling`)? | Level Designer | Đại Việt nắm giữ `SignalDock (2, 8)` từ đầu trận nhưng buộc phải dâng đội hình nhử quân Nguyên vào vùng cọc trước Vòng 4 để kịp hạ Ô Mã Nhi đạt 2 Sao (`<= 8` lượt) hoặc tiêu diệt `>= 75%` quân địch trước hết lượt 10. | Trước Gate `P2` (sau Playtest Slice-01) | **OPEN** *(Đang cân bằng số liệu)* |
+| **`D-17`** | Nghiệm thu kết quả vòng Playtest độc lập cho Vertical Slice-01 Bạch Đằng 1288? | UX / QA Lead | Tổ chức playtest với **tối thiểu 5 người chơi ngoài đội phát triển**; chỉ đạt Gate `P2` khi **`>= 4/5` người chơi** nêu đúng điều kiện thắng/thua, hiểu vai trò thủy triều Vòng 4 và tự giải thích được nguyên nhân kết quả trận đấu. | Gate `P2` (ngay sau khi hoàn tất `CP4`) | **OPEN** *(Chờ bản dựng CP4)* |

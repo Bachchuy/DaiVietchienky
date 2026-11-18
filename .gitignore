@@ -1,0 +1,26 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Legacy R&D reference folder (strictly excluded from repo & builds per DEC-001)
+/Assets/
+
+# Local CLI wrapper
+/godot.cmd
+
+# Export builds & temporary artifacts
+builds/
+export/
+*.pck
+*.apk
+*.aab
+*.wasm
+*.tmp
+*.log
+
+# Automated test screenshots & OS metadata
+screenshot_*.png
+tests/artifacts/*.png
+.DS_Store
+Thumbs.db
+

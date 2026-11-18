@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "godot-mcp": {
+      "command": "npx",
+      "args": ["-y", "godot-mcp"],
+      "env": {
+        "GODOT_PROJECT_PATH": "d:\\code\\VietNamHistoryStrategy"
+      },
+      "disabled": true,
+      "description": "Godot MCP Server bridge for headless testing, scene inspection, and screenshots. Disabled by default until user approval."
+    }
+  }
+}
