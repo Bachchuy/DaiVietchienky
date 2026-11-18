@@ -154,7 +154,10 @@ func select_hex(axial: Vector2i) -> void:
 		_reachable_hexes = _navigator.get_reachable_hexes(_map_state, _selected_unit)
 		var atk_set: Dictionary[Vector2i, bool] = {}
 		for h: Vector2i in _navigator.get_attackable_hexes(_map_state, _selected_unit, _selected_unit.hex_position):
-			atk_set[h] = true
+			var occ: BattleUnit = _map_state.get_unit_at(h)
+			var is_enemy_here: bool = (occ != null and _map_state.is_hostile(_selected_unit.faction_id, occ.faction_id))
+			if is_enemy_here or not _reachable_hexes.has(h):
+				atk_set[h] = true
 		for eh: Vector2i in _navigator.get_engageable_enemy_hexes(_map_state, _selected_unit, _reachable_hexes):
 			atk_set[eh] = true
 		_attackable_hexes.clear()
@@ -237,13 +240,53 @@ func _queue_layer_redraw(layer_name: String) -> void:
 		_layers[layer_name].queue_redraw()
 
 
-func _hex_poly_at(center: Vector2, inner: bool = false) -> PackedVector2Array:
+func _append_batched_hex(
+	points: PackedVector2Array,
+	colors: PackedColorArray,
+	indices: PackedInt32Array,
+	center: Vector2,
+	col: Color,
+	inner: bool = false
+) -> void:
 	var src: PackedVector2Array = _inner_corner_offsets if inner else _hex_corner_offsets
-	var pts := PackedVector2Array()
-	pts.resize(6)
+	var base_idx: int = points.size()
 	for i: int in range(6):
-		pts[i] = center + src[i]
-	return pts
+		points.append(center + src[i])
+		colors.append(col)
+	# 4 fan triangles per convex hexagon -> 1 single GPU draw call for hundreds of hexes!
+	indices.append_array([
+		base_idx, base_idx + 1, base_idx + 2,
+		base_idx, base_idx + 2, base_idx + 3,
+		base_idx, base_idx + 3, base_idx + 4,
+		base_idx, base_idx + 4, base_idx + 5,
+	])
+
+
+func _append_batched_hex_rim(
+	segments: PackedVector2Array,
+	center: Vector2,
+	inner: bool = false
+) -> void:
+	var src: PackedVector2Array = _inner_corner_offsets if inner else _hex_corner_offsets
+	for i: int in range(6):
+		segments.append(center + src[i])
+		segments.append(center + src[(i + 1) % 6])
+
+
+func _flush_batched_triangles(
+	canvas: Node2D,
+	points: PackedVector2Array,
+	colors: PackedColorArray,
+	indices: PackedInt32Array
+) -> void:
+	if points.is_empty():
+		return
+	RenderingServer.canvas_item_add_triangle_array(
+		canvas.get_canvas_item(),
+		indices,
+		points,
+		colors
+	)
 
 
 func _hex_closed_loop_at(center: Vector2, inner: bool = false) -> PackedVector2Array:
@@ -290,6 +333,12 @@ func _draw_world_layer(canvas: Node2D, layer_id: String) -> void:
 
 
 func _draw_ground_layer(canvas: Node2D) -> void:
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var idxs := PackedInt32Array()
+	var hill_lines := PackedVector2Array()
+	var road_dots := PackedVector2Array()
+
 	for row: int in range(_map_state.height):
 		for col: int in range(_map_state.width):
 			var axial: Vector2i = HexMath.odd_r_to_axial(Vector2i(col, row))
@@ -301,11 +350,44 @@ func _draw_ground_layer(canvas: Node2D) -> void:
 			):
 				continue
 			var center: Vector2 = HexMath.axial_to_world(axial, hex_size)
-			canvas.draw_colored_polygon(_hex_poly_at(center), _terrain_color(terrain))
-			_draw_terrain_ornament(canvas, center, terrain)
+			_append_batched_hex(pts, cols, idxs, center, _terrain_color(terrain), false)
+
+			if terrain == BattleMapState.TerrainType.FOREST:
+				for offset: Vector2 in [Vector2(-10.0, 4.0), Vector2(10.0, 6.0), Vector2(0.0, -8.0)]:
+					var p: Vector2 = center + offset
+					var b: int = pts.size()
+					pts.append(p + Vector2(0.0, -11.0))
+					pts.append(p + Vector2(9.0, 6.0))
+					pts.append(p + Vector2(-9.0, 6.0))
+					var tree_col := Color(0.14, 0.36, 0.18, 0.88)
+					cols.append(tree_col)
+					cols.append(tree_col)
+					cols.append(tree_col)
+					idxs.append_array([b, b + 1, b + 2])
+			elif terrain == BattleMapState.TerrainType.HILLS:
+				var p0: Vector2 = center + Vector2(-18.0, 10.0)
+				var p1: Vector2 = center + Vector2(-2.0, -12.0)
+				var p2: Vector2 = center + Vector2(8.0, -2.0)
+				var p3: Vector2 = center + Vector2(18.0, 10.0)
+				hill_lines.append_array([p0, p1, p1, p2, p2, p3])
+			elif terrain == BattleMapState.TerrainType.ROAD_PORT:
+				road_dots.append(center + Vector2(-8.0, 0.0))
+				road_dots.append(center + Vector2(8.0, 0.0))
+
+	_flush_batched_triangles(canvas, pts, cols, idxs)
+	if not hill_lines.is_empty():
+		canvas.draw_multiline(hill_lines, Color(0.36, 0.28, 0.18, 0.85), 3.0)
+	if not road_dots.is_empty():
+		canvas.draw_multiline(road_dots, Color(0.88, 0.80, 0.62, 0.70), 4.0)
 
 
 func _draw_water_layer(canvas: Node2D) -> void:
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var idxs := PackedInt32Array()
+	var wave_lines := PackedVector2Array()
+	var stake_lines := PackedVector2Array()
+
 	for row: int in range(_map_state.height):
 		for col: int in range(_map_state.width):
 			var axial: Vector2i = HexMath.odd_r_to_axial(Vector2i(col, row))
@@ -317,35 +399,32 @@ func _draw_water_layer(canvas: Node2D) -> void:
 			):
 				continue
 			var center: Vector2 = HexMath.axial_to_world(axial, hex_size)
-			canvas.draw_colored_polygon(_hex_poly_at(center), _terrain_color(terrain))
-			# Subtle wave crests
-			canvas.draw_line(
-				center + Vector2(-16.0, -6.0),
-				center + Vector2(16.0, -6.0),
-				Color(0.75, 0.90, 0.98, 0.35),
-				2.0
-			)
-			canvas.draw_line(
-				center + Vector2(-12.0, 8.0),
-				center + Vector2(14.0, 8.0),
-				Color(0.75, 0.90, 0.98, 0.30),
-				2.0
-			)
+			_append_batched_hex(pts, cols, idxs, center, _terrain_color(terrain), false)
+			wave_lines.append(center + Vector2(-16.0, -6.0))
+			wave_lines.append(center + Vector2(16.0, -6.0))
+			wave_lines.append(center + Vector2(-12.0, 8.0))
+			wave_lines.append(center + Vector2(14.0, 8.0))
 			if terrain == BattleMapState.TerrainType.STAKED_WATER:
 				for sx: float in [-12.0, 0.0, 12.0]:
-					var base_pt: Vector2 = center + Vector2(sx, 10.0)
-					var tip_pt: Vector2 = center + Vector2(sx, -12.0)
-					canvas.draw_line(base_pt, tip_pt, Color(0.36, 0.20, 0.10), 4.0)
-					canvas.draw_circle(tip_pt, 2.5, Color(0.92, 0.78, 0.52))
+					stake_lines.append(center + Vector2(sx, 10.0))
+					stake_lines.append(center + Vector2(sx, -12.0))
+
+	_flush_batched_triangles(canvas, pts, cols, idxs)
+	if not wave_lines.is_empty():
+		canvas.draw_multiline(wave_lines, Color(0.75, 0.90, 0.98, 0.34), 2.0)
+	if not stake_lines.is_empty():
+		canvas.draw_multiline(stake_lines, Color(0.38, 0.21, 0.10), 4.2)
 
 
 func _draw_grid_layer(canvas: Node2D) -> void:
-	var grid_col := Color(0.16, 0.13, 0.09, 0.42)
+	var segments := PackedVector2Array()
 	for row: int in range(_map_state.height):
 		for col: int in range(_map_state.width):
 			var axial: Vector2i = HexMath.odd_r_to_axial(Vector2i(col, row))
 			var center: Vector2 = HexMath.axial_to_world(axial, hex_size)
-			canvas.draw_polyline(_hex_closed_loop_at(center), grid_col, 1.4)
+			_append_batched_hex_rim(segments, center, false)
+	if not segments.is_empty():
+		canvas.draw_multiline(segments, Color(0.16, 0.13, 0.09, 0.42), 1.4)
 
 
 func _draw_faction_border_layer(canvas: Node2D) -> void:
@@ -364,23 +443,39 @@ func _draw_faction_border_layer(canvas: Node2D) -> void:
 
 
 func _draw_reachable_layer(canvas: Node2D) -> void:
-	var fill := Color(0.18, 0.56, 0.95, 0.28)
-	var rim := Color(0.42, 0.82, 1.0, 0.85)
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var idxs := PackedInt32Array()
+	var rims := PackedVector2Array()
+	var fill := Color(0.16, 0.58, 0.98, 0.30)
+
 	for hex: Vector2i in _reachable_hexes.keys():
 		if _selected_unit != null and hex == _selected_unit.hex_position:
 			continue
 		var center: Vector2 = HexMath.axial_to_world(hex, hex_size)
-		canvas.draw_colored_polygon(_hex_poly_at(center, true), fill)
-		canvas.draw_polyline(_hex_closed_loop_at(center, true), rim, 2.0)
+		_append_batched_hex(pts, cols, idxs, center, fill, true)
+		_append_batched_hex_rim(rims, center, true)
+
+	_flush_batched_triangles(canvas, pts, cols, idxs)
+	if not rims.is_empty():
+		canvas.draw_multiline(rims, Color(0.45, 0.85, 1.0, 0.88), 2.0)
 
 
 func _draw_attackable_layer(canvas: Node2D) -> void:
-	var fill := Color(0.92, 0.22, 0.18, 0.30)
-	var rim := Color(1.0, 0.42, 0.32, 0.92)
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var idxs := PackedInt32Array()
+	var rims := PackedVector2Array()
+	var fill := Color(0.94, 0.22, 0.18, 0.34)
+
 	for hex: Vector2i in _attackable_hexes:
 		var center: Vector2 = HexMath.axial_to_world(hex, hex_size)
-		canvas.draw_colored_polygon(_hex_poly_at(center, true), fill)
-		canvas.draw_polyline(_hex_closed_loop_at(center, true), rim, 2.4)
+		_append_batched_hex(pts, cols, idxs, center, fill, true)
+		_append_batched_hex_rim(rims, center, true)
+
+	_flush_batched_triangles(canvas, pts, cols, idxs)
+	if not rims.is_empty():
+		canvas.draw_multiline(rims, Color(1.0, 0.44, 0.34, 0.94), 2.4)
 
 
 func _draw_selection_and_path_layer(canvas: Node2D) -> void:
@@ -399,64 +494,67 @@ func _draw_selection_and_path_layer(canvas: Node2D) -> void:
 
 
 func _draw_building_layer(canvas: Node2D) -> void:
-	for row: int in range(_map_state.height):
-		for col: int in range(_map_state.width):
-			var axial: Vector2i = HexMath.odd_r_to_axial(Vector2i(col, row))
-			var terrain: BattleMapState.TerrainType = _map_state.get_terrain(axial)
-			var center: Vector2 = HexMath.axial_to_world(axial, hex_size)
-			if terrain == BattleMapState.TerrainType.FORT:
-				var rect := Rect2(center - Vector2(16.0, 14.0), Vector2(32.0, 26.0))
-				canvas.draw_rect(rect, Color(0.46, 0.41, 0.35), true)
-				canvas.draw_rect(rect, Color(0.20, 0.16, 0.12), false, 2.0)
-				for bx: float in [-12.0, -2.0, 8.0]:
-					canvas.draw_rect(Rect2(center + Vector2(bx, -20.0), Vector2(6.0, 6.0)), Color(0.55, 0.50, 0.43), true)
-			elif _key_areas.has(axial):
-				# Signal Dock beacon tower
-				canvas.draw_rect(Rect2(center - Vector2(12.0, 12.0), Vector2(24.0, 22.0)), Color(0.68, 0.46, 0.22), true)
-				canvas.draw_circle(center + Vector2(0.0, -16.0), 5.5, Color(1.0, 0.78, 0.22))
+	for fort_hex: Vector2i in _map_state.get_fort_hexes():
+		var center: Vector2 = HexMath.axial_to_world(fort_hex, hex_size)
+		var rect := Rect2(center - Vector2(16.0, 14.0), Vector2(32.0, 26.0))
+		canvas.draw_rect(rect, Color(0.46, 0.41, 0.35), true)
+		canvas.draw_rect(rect, Color(0.20, 0.16, 0.12), false, 2.0)
+
+	for area_hex: Vector2i in _key_areas.keys():
+		if not _map_state.is_valid_hex(area_hex):
+			continue
+		var center: Vector2 = HexMath.axial_to_world(area_hex, hex_size)
+		canvas.draw_rect(Rect2(center - Vector2(12.0, 12.0), Vector2(24.0, 22.0)), Color(0.68, 0.46, 0.22), true)
+		canvas.draw_circle(center + Vector2(0.0, -16.0), 5.5, Color(1.0, 0.78, 0.22))
 
 
 func _draw_unit_aura_layer(canvas: Node2D) -> void:
 	for unit: BattleUnit in _map_state.get_all_units():
 		var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
-		var f_col: Color = _faction_primary_color(unit.faction_id)
-		canvas.draw_circle(center + Vector2(0.0, 4.0), hex_size * 0.44, Color(0.05, 0.05, 0.05, 0.40))
-		canvas.draw_arc(center, hex_size * 0.45, 0.0, TAU, 24, f_col, 2.6)
+		canvas.draw_circle(center + Vector2(0.0, 3.0), hex_size * 0.42, Color(0.05, 0.05, 0.05, 0.36))
 
 
 func _draw_unit_model_layer(canvas: Node2D) -> void:
-	for unit: BattleUnit in _map_state.get_all_units():
+	var units: Array[BattleUnit] = _map_state.get_all_units()
+	# Pass 1: all untextured circles/pips together -> batched into 1 untextured draw call!
+	for unit: BattleUnit in units:
 		var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
 		var f_col: Color = _faction_primary_color(unit.faction_id)
 		var trim_col: Color = _faction_trim_color(unit.faction_id)
-
-		canvas.draw_circle(center, hex_size * 0.38, f_col)
-		canvas.draw_arc(center, hex_size * 0.38, 0.0, TAU, 24, trim_col, 2.2)
-
-		var tex: Texture2D = _branch_icons.get(int(unit.command_branch), null)
-		if tex != null:
-			var icon_size := Vector2(30.0, 30.0)
-			canvas.draw_texture_rect(tex, Rect2(center - icon_size * 0.5, icon_size), false)
-
-		# Formation stack pips below unit center
+		canvas.draw_circle(center, hex_size * 0.40, trim_col)
+		canvas.draw_circle(center, hex_size * 0.35, f_col)
 		var stack_n: int = clampi(unit.troop_stack, 1, 3)
 		for s_idx: int in range(stack_n):
 			var px: float = (float(s_idx) - float(stack_n - 1) * 0.5) * 9.0
-			canvas.draw_circle(center + Vector2(px, hex_size * 0.26), 3.0, trim_col)
+			canvas.draw_circle(center + Vector2(px, hex_size * 0.25), 2.8, trim_col)
+
+	# Pass 2: group textured glyphs by texture -> max 4 draw calls total!
+	for branch_key: int in _branch_icons.keys():
+		var tex: Texture2D = _branch_icons[branch_key]
+		for unit: BattleUnit in units:
+			if int(unit.command_branch) == branch_key:
+				var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
+				var icon_size := Vector2(28.0, 28.0)
+				canvas.draw_texture_rect(tex, Rect2(center - icon_size * 0.5, icon_size), false)
 
 
 func _draw_strategic_token_layer(canvas: Node2D) -> void:
-	for unit: BattleUnit in _map_state.get_all_units():
+	var units: Array[BattleUnit] = _map_state.get_all_units()
+	# Pass 1: untextured token plaques batched together
+	for unit: BattleUnit in units:
 		var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
 		var f_col: Color = _faction_primary_color(unit.faction_id)
 		var trim_col: Color = _faction_trim_color(unit.faction_id)
-		var token_rect := Rect2(center - Vector2(24.0, 20.0), Vector2(48.0, 40.0))
-		canvas.draw_rect(token_rect, f_col, true)
-		canvas.draw_rect(token_rect, trim_col, false, 3.5)
+		canvas.draw_rect(Rect2(center - Vector2(26.0, 22.0), Vector2(52.0, 44.0)), trim_col, true)
+		canvas.draw_rect(Rect2(center - Vector2(23.0, 19.0), Vector2(46.0, 38.0)), f_col, true)
 
-		var tex: Texture2D = _branch_icons.get(int(unit.command_branch), null)
-		if tex != null:
-			canvas.draw_texture_rect(tex, Rect2(center - Vector2(16.0, 16.0), Vector2(32.0, 32.0)), false)
+	# Pass 2: group icons by texture -> max 4 draw calls total!
+	for branch_key: int in _branch_icons.keys():
+		var tex: Texture2D = _branch_icons[branch_key]
+		for unit: BattleUnit in units:
+			if int(unit.command_branch) == branch_key:
+				var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
+				canvas.draw_texture_rect(tex, Rect2(center - Vector2(16.0, 16.0), Vector2(32.0, 32.0)), false)
 
 
 func _draw_unit_hud_layer(canvas: Node2D) -> void:
@@ -472,39 +570,11 @@ func _draw_unit_hud_layer(canvas: Node2D) -> void:
 			0.0,
 			1.0
 		)
-		canvas.draw_rect(Rect2(top_left, Vector2(bar_w, bar_h)), Color(0.08, 0.08, 0.10, 0.88), true)
+		canvas.draw_rect(Rect2(top_left - Vector2(1.0, 1.0), Vector2(bar_w + 2.0, bar_h + 2.0)), Color(0.95, 0.90, 0.78, 0.85), true)
+		canvas.draw_rect(Rect2(top_left, Vector2(bar_w, bar_h)), Color(0.08, 0.08, 0.10, 0.92), true)
 		var hp_col := Color(0.24, 0.86, 0.38) if unit.faction_id == 1 else Color(0.95, 0.34, 0.28)
 		canvas.draw_rect(Rect2(top_left, Vector2(bar_w * ratio, bar_h)), hp_col, true)
-		canvas.draw_rect(Rect2(top_left, Vector2(bar_w, bar_h)), Color(0.95, 0.90, 0.78, 0.8), false, 1.0)
-
-		# Morale 4-tier gem on right side of HP bar
-		var morale_col: Color = _morale_color(unit.state.morale)
-		canvas.draw_circle(top_left + Vector2(bar_w + 6.0, bar_h * 0.5), 3.6, morale_col)
-
-
-func _draw_terrain_ornament(canvas: Node2D, center: Vector2, terrain: BattleMapState.TerrainType) -> void:
-	match terrain:
-		BattleMapState.TerrainType.FOREST:
-			for offset: Vector2 in [Vector2(-10.0, 4.0), Vector2(10.0, 6.0), Vector2(0.0, -8.0)]:
-				var p: Vector2 = center + offset
-				var tri := PackedVector2Array([
-					p + Vector2(0.0, -11.0),
-					p + Vector2(9.0, 6.0),
-					p + Vector2(-9.0, 6.0),
-				])
-				canvas.draw_colored_polygon(tri, Color(0.14, 0.36, 0.18, 0.85))
-		BattleMapState.TerrainType.HILLS:
-			var ridge := PackedVector2Array([
-				center + Vector2(-18.0, 10.0),
-				center + Vector2(-2.0, -12.0),
-				center + Vector2(8.0, -2.0),
-				center + Vector2(18.0, 10.0),
-			])
-			canvas.draw_polyline(ridge, Color(0.36, 0.28, 0.18, 0.85), 3.0)
-		BattleMapState.TerrainType.ROAD_PORT:
-			canvas.draw_circle(center, 6.0, Color(0.86, 0.78, 0.60, 0.55))
-		_:
-			pass
+		canvas.draw_circle(top_left + Vector2(bar_w + 6.0, bar_h * 0.5), 3.6, _morale_color(unit.state.morale))
 
 
 func _terrain_color(terrain: BattleMapState.TerrainType) -> Color:
@@ -534,19 +604,19 @@ func _terrain_color(terrain: BattleMapState.TerrainType) -> Color:
 func _faction_primary_color(faction_id: int) -> Color:
 	match faction_id:
 		1:
-			return Color(0.76, 0.16, 0.16) # Dai Viet Crimson
+			return Color(0.76, 0.16, 0.16)
 		2:
-			return Color(0.20, 0.58, 0.32) # Ally Jade
+			return Color(0.20, 0.58, 0.32)
 		3:
-			return Color(0.18, 0.32, 0.58) # Dai Nguyen Slate Indigo
+			return Color(0.18, 0.32, 0.58)
 		_:
 			return Color(0.45, 0.45, 0.45)
 
 
 func _faction_trim_color(faction_id: int) -> Color:
 	if faction_id == 1:
-		return Color(0.96, 0.80, 0.32) # Dong Son Gold
-	return Color(0.82, 0.88, 0.95) # Steel Silver
+		return Color(0.96, 0.80, 0.32)
+	return Color(0.82, 0.88, 0.95)
 
 
 func _morale_color(morale: UnitCombatState.MoraleLevel) -> Color:
