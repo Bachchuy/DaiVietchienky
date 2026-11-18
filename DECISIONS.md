@@ -33,3 +33,15 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lựa chọn:** (1) Đơn vị được đi **xuyên qua** ô đồng minh nếu còn đủ MP bước tiếp sang ô trống hợp lệ, nhưng **không được dừng kết thúc di chuyển** đè lên ô đang có đồng minh khác (trừ chính ô xuất phát của mình). (2) `HexGridNavigator.get_attackable_hexes(map_state, unit, origin_hex)` trả về mọi ô hợp lệ trong `[min_range, max_range]` thỏa `has_line_of_sight(map_state, origin_hex, target_hex)`; đồng thời cung cấp `get_engageable_enemy_hexes(map_state, unit, reachable)` cho các ô địch có thể công kích sau khi di chuyển.
 - **Lý do:** Đúng chuẩn wargame lục giác (*Panzer Corps 2* / *EW7*), tránh kẹt đội hình ở hẻm hẹp/cầu bến nhưng vẫn đảm bảo 1 ô chỉ chứa tối đa 1 đạo quân (`TroopStack` đã gộp sẵn trong `BattleUnit`).
 - **Cách đổi:** Nếu muốn cấm đi xuyên đồng minh, đổi điều kiện kiểm tra `occupant != null` trong `HexGridNavigator.get_hex_step_cost`.
+
+## DEC-006 — Đồng bộ Schema Chỉ số Chiến đấu trong `troop_settings.json` với `CombatResolver`
+- **Vấn đề:** `data_and_save_system.md` dùng các khóa `"min_attack"`, `"max_attack"`, `"defence"` và chuỗi `"attack_mode"` / `"defense_mode"`, trong khi `combat_formulas.md` định nghĩa công thức trên `base_atk`, `damage_roll_min..max` (`80..100`), `base_def` và mã số ma trận `AttackMode (1..6) × DefenseMode (1..5)`.
+- **Lựa chọn:** `BattleUnit.from_troop_dict` nạp tương thích cả hai: ưu tiên `base_atk` (fallback sang `max_attack`), mặc định `damage_roll_min = 80`, `damage_roll_max = 100` (trừ khi JSON khai báo tường minh), `base_def` (fallback sang `defence`), và ánh xạ cả tên chuỗi lẫn số nguyên sang `AttackMode (1..6)` và `DefenseMode (1..5)` theo `units_commanders.md` §7.2.
+- **Lý do:** Giữ tương thích 100% với tệp `troop_settings.json` của Cổng 1 và khớp chính xác công thức `combat_formulas.md`.
+- **Cách đổi:** Ghi trực tiếp các trường số `base_atk`, `damage_roll_min`, `damage_roll_max`, `attack_mode`, `defense_mode` trong `data/settings/troop_settings.json`.
+
+## DEC-007 — Quy ước Đánh số `current_round` trong Vòng lặp Chiến trường 7 Pha
+- **Vấn đề:** Biểu đồ `data_and_save_system.md` tăng `current_round (+1)` ở Pha 1 `OnBeginRound`, còn bảng `core_loop.md` ghi tăng ở Pha 7 `OnEndRound`.
+- **Lựa chọn:** Khởi tạo `current_round = 0` trước trận; mỗi lần bước vào Pha 1 `OnBeginRound`, tăng `current_round += 1` (Vòng đầu tiên là `1`, đầu Vòng 4 là `4`), và kiểm tra giới hạn `current_round >= max_rounds` tại Pha 7 `OnEndRound`.
+- **Lý do:** Đảm bảo suốt Vòng 1 hiển thị `VÒNG 1/10` và sự kiện đầu Vòng 4 (`MapPhase_TideFall`) nhận đúng `current_round == 4`.
+- **Cách đổi:** Điều chỉnh hàm `_begin_next_round()` trong `scripts/core/battle_game_controller.gd`.

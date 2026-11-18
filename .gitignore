@@ -20,7 +20,7 @@ export/
 
 # Automated test screenshots & OS metadata
 screenshot_*.png
-tests/artifacts/*.png
+tests/artifacts/
 .DS_Store
 Thumbs.db
 
