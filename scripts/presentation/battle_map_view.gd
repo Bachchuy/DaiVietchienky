@@ -521,9 +521,12 @@ func _draw_unit_model_layer(canvas: Node2D) -> void:
 		var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
 		var f_col: Color = _faction_primary_color(unit.faction_id)
 		var trim_col: Color = _faction_trim_color(unit.faction_id)
+		if unit.state.has_acted:
+			f_col = f_col.darkened(0.42)
+			trim_col = trim_col.darkened(0.32)
 		canvas.draw_circle(center, hex_size * 0.40, trim_col)
 		canvas.draw_circle(center, hex_size * 0.35, f_col)
-		var stack_n: int = clampi(unit.troop_stack, 1, 3)
+		var stack_n: int = unit.get_active_banners()
 		for s_idx: int in range(stack_n):
 			var px: float = (float(s_idx) - float(stack_n - 1) * 0.5) * 9.0
 			canvas.draw_circle(center + Vector2(px, hex_size * 0.25), 2.8, trim_col)
