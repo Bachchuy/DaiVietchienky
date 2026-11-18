@@ -20,7 +20,7 @@ Lộ trình nhiệm vụ bám sát đặc tả **GDD v3.4.1** (`docs/gdd/04_prod
 
 - [x] **C2-T1:** Triển khai `SeededRng` & `CombatResolver` (`80%–100%` + Crit, giáp `100/(100+EffectiveDef)`, `RoundHalfUp`, `TroopStack` 1x–3x, `Flank`, phản kích tối đa 1 lần/lượt, dự báo `[Min, Max]` cho Combat Preview).
 - [x] **C2-T2:** Triển khai `MoraleEngine` 4 bậc Enum (`HIGH`, `NORMAL`, `LOW`, `CHAOS`), bao vây `TrappedLevel`, lan truyền đồng đội tử trận & tự hồi `CHAOS -> LOW`.
-- [ ] **C2-T3:** Triển khai `BattleCommand` (`March`, `Attack`, `CastSkill`, `Wait`, `EndTurn`), luật Undo 1 lần/lượt cho `MarchCommand` (đủ 5 điều kiện an toàn) và bộ ghi/phát lại Replay tất định 100%.
+- [x] **C2-T3:** Triển khai `BattleCommand` (`March`, `Attack`, `CastSkill`, `Wait`, `EndTurn`), luật Undo 1 lần/lượt cho `MarchCommand` (đủ 5 điều kiện an toàn) và bộ ghi/phát lại Replay tất định 100%.
 - [ ] **C2-T4:** Triển khai `BattleGameController` điều phối Vòng lặp Chiến trường 7 pha & kiểm thử phát lại 50 lượt không lệch 1 điểm HP.
 
 ---
