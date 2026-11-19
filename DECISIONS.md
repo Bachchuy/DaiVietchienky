@@ -45,3 +45,21 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lựa chọn:** Khởi tạo `current_round = 0` trước trận; mỗi lần bước vào Pha 1 `OnBeginRound`, tăng `current_round += 1` (Vòng đầu tiên là `1`, đầu Vòng 4 là `4`), và kiểm tra giới hạn `current_round >= max_rounds` tại Pha 7 `OnEndRound`.
 - **Lý do:** Đảm bảo suốt Vòng 1 hiển thị `VÒNG 1/10` và sự kiện đầu Vòng 4 (`MapPhase_TideFall`) nhận đúng `current_round == 4`.
 - **Cách đổi:** Điều chỉnh hàm `_begin_next_round()` trong `scripts/core/battle_game_controller.gd`.
+
+## DEC-008 — Hệ Tọa Độ Trong JSON Kịch Bản (`coordinate_space: "odd_r"`)
+- **Vấn đề:** Snippet `scenario_scripting_and_events.md` dùng khóa `"q", "r"` nhưng giá trị `{2, 8}`, `{5, 4}`, `{9, 2}` trên bản đồ `12×10` tương ứng tọa độ lưới chữ nhật Offset `odd-r (col, row)` (nếu hiểu là axial thô thì `(9, 8)` vượt biên cột `13 >= 12` và lệch với `SignalDock (2, 8)` trong `test_battle_map_state.gd` / `test_cp1_integration_and_perf.gd`).
+- **Lựa chọn:** Khai báo `"coordinate_space": "odd_r"` và dùng `{"col": c, "row": r}` trong `data/battles/battle_10101.json`. `ScenarioLoader.parse_hex(dict, coord_space)` hỗ trợ cả hai: nếu có `"col"`/`"row"` hoặc `coord_space == "odd_r"` thì quy đổi qua `HexMath.odd_r_to_axial(Vector2i(col, row))`, còn nếu `coord_space == "axial"` với `"q"`/`"r"` thì dùng trực tiếp `Vector2i(q, r)`.
+- **Lý do:** Giữ nhất quán tuyệt đối `SignalDock (2, 8)` = góc Tây Nam và `area_bai_coc (5..7, 4..5)` = giữa lòng sông với Cổng 1 & Cổng 2.
+- **Cách đổi:** Đổi `"coordinate_space"` sang `"axial"` trong file JSON kịch bản nếu tác giả màn chơi muốn nhập trực tiếp tọa độ Axial.
+
+## DEC-009 — Đồng Bộ Mã Phe (`faction_id`) & Đội (`team_id`) Theo Dữ Liệu Kịch Bản
+- **Vấn đề:** `BattleMapState` mặc định `_faction_teams = {1: 1, 2: 1, 3: 2, 4: 0}` (phe 2 là Đồng minh, phe 3 là Địch), trong khi `battle_10101.json` định nghĩa phe `1 = Đại Việt` và phe `2 = Đại Nguyên (Quân Nguyên)`.
+- **Lựa chọn:** Giữ nguyên mặc định `_faction_teams` của `BattleMapState` để bảo toàn 36 test C1/C2; khi `ScenarioLoader` nạp mục `"factions"` từ JSON, gọi `map_state.set_faction_team(id, team_id)` (`team_id = 1` cho `is_player == true`, `team_id = 2` cho phe địch). Cập nhật `BattleMapView._faction_primary_color` và `_faction_trim_color` dựa trên `is_hostile(player_faction_id, faction_id)` thay vì so sánh cứng `faction_id == 3`.
+- **Lý do:** Hỗ trợ linh hoạt mọi cấu hình phe trong JSON mà không làm vỡ test cũ.
+- **Cách đổi:** Sửa thuộc tính `team_id` trong danh sách `"factions"` của tệp JSON màn chơi.
+
+## DEC-010 — Mở Rộng Roster Binh Chủng Thủy Chiến Sạch Cho Slice-01
+- **Vấn đề:** `data/settings/troop_settings.json` hiện có 6 ID (`40101..40104`, `40201`, `40901`), chưa có Thuyền Hỏa Công và Soái Hạm Lâu Thuyền cho Ô Mã Nhi.
+- **Lựa chọn:** Giữ nguyên toàn bộ 6 ID cũ và bổ sung `40202` (*Thuyền Hỏa Công Đại Việt*, `NavalLight`, `attack_mode: "Fire" (6)`, tầm `1–2`) và `40902` (*Soái Hạm Lâu Thuyền Đại Nguyên*, `NavalHeavy`, `strength: 240`, `base_atk: 46`, `base_def: 18`, tầm `1–2`) vào `data/settings/troop_settings.json`.
+- **Lý do:** Bảo toàn 100% tương thích ngược với test C1/C2 đồng thời tái hiện đúng hỏa công & soái hạm Bạch Đằng 1288.
+- **Cách đổi:** Chỉnh thông số hoặc thêm/bớt phần tử trong `data/settings/troop_settings.json`.

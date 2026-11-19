@@ -74,6 +74,10 @@ func set_faction_team(faction_id: int, team_id: int) -> void:
 	_faction_teams[faction_id] = team_id
 
 
+func get_faction_teams() -> Dictionary[int, int]:
+	return _faction_teams.duplicate()
+
+
 func is_allied(faction_a: int, faction_b: int) -> bool:
 	if faction_a == faction_b:
 		return true
