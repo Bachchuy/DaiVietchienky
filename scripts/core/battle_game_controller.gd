@@ -28,6 +28,10 @@ enum BattleOutcome {
 
 var context: BattleContext = null
 var command_history: CommandHistory = null
+var director: ScenarioDirector = null
+var event_manager: ScenarioEventManager = null
+var victory_evaluator: ScenarioVictoryEvaluator = null
+
 var faction_turn_order: Array[int] = [1, 3]
 var player_faction_id: int = 1
 var max_rounds: int = 10
@@ -62,10 +66,21 @@ func set_custom_victory_evaluator(eval_cb: Callable) -> void:
 	_custom_victory_evaluator = eval_cb
 
 
+func _sync_context_links() -> void:
+	if director != null:
+		context.director = director
+	if victory_evaluator != null:
+		context.victory_evaluator = victory_evaluator
+	context.current_round = current_round
+	context.current_faction_id = current_faction_id
+
+
 func start_battle() -> void:
 	current_round = 0
 	outcome = BattleOutcome.ONGOING
+	context.forced_battle_outcome = 0
 	command_history.clear_turn_undo_stack()
+	_sync_context_links()
 	_begin_next_round()
 
 
@@ -79,7 +94,14 @@ func _begin_next_round() -> void:
 		return
 	_set_phase(BattlePhase.PHASE_1_BEGIN_ROUND)
 	current_round += 1
+	_sync_context_links()
+
+	if event_manager != null:
+		event_manager.check_and_execute("OnRoundStart", context, self, director)
 	round_started.emit(current_round)
+	_check_immediate_victory_or_defeat()
+	if outcome != BattleOutcome.ONGOING:
+		return
 
 	_turn_order_index = 0
 	_start_faction_turn(faction_turn_order[_turn_order_index])
@@ -90,6 +112,7 @@ func _start_faction_turn(faction_id: int) -> void:
 		return
 	_set_phase(BattlePhase.PHASE_2_FACTION_TURN_START)
 	current_faction_id = faction_id
+	_sync_context_links()
 	command_history.clear_turn_undo_stack()
 
 	var units: Array[BattleUnit] = context.map_state.get_all_units()
@@ -99,8 +122,12 @@ func _start_faction_turn(faction_id: int) -> void:
 			u.state.on_faction_turn_start(u.max_mp)
 
 	context.refresh_faction_vision(current_faction_id)
+	if event_manager != null:
+		event_manager.check_and_execute("OnFactionTurnStart", context, self, director)
 	faction_turn_started.emit(current_faction_id, current_round)
-	_set_phase(BattlePhase.PHASE_3_DECISION_AND_PREVIEW)
+	_check_immediate_victory_or_defeat()
+	if outcome == BattleOutcome.ONGOING:
+		_set_phase(BattlePhase.PHASE_3_DECISION_AND_PREVIEW)
 
 
 func submit_command(cmd: BattleCommands.BaseCommand) -> bool:
@@ -122,12 +149,21 @@ func submit_command(cmd: BattleCommands.BaseCommand) -> bool:
 		return true
 
 	_set_phase(BattlePhase.PHASE_4_COMMAND_EXECUTION)
+	context.last_command_payload.clear()
 	if not command_history.execute_command(cmd, context):
 		_set_phase(BattlePhase.PHASE_3_DECISION_AND_PREVIEW)
 		return false
 	command_executed.emit(cmd.get_command_type(), current_faction_id)
 
 	_set_phase(BattlePhase.PHASE_5_IMMEDIATE_RESOLUTION)
+	if event_manager != null:
+		event_manager.check_and_execute(
+			"OnAfterCommand",
+			context,
+			self,
+			director,
+			context.last_command_payload
+		)
 	_check_immediate_victory_or_defeat()
 	if outcome == BattleOutcome.ONGOING:
 		_set_phase(BattlePhase.PHASE_3_DECISION_AND_PREVIEW)
@@ -146,6 +182,8 @@ func _advance_after_faction_turn_end() -> void:
 
 	# Phase 7: OnEndRound
 	_set_phase(BattlePhase.PHASE_7_END_ROUND)
+	if event_manager != null:
+		event_manager.check_and_execute("OnRoundEnd", context, self, director)
 	_check_round_end_victory_or_defeat()
 	round_ended.emit(current_round)
 	if outcome == BattleOutcome.ONGOING:
@@ -158,6 +196,22 @@ func _check_immediate_victory_or_defeat() -> void:
 		if res != int(BattleOutcome.ONGOING):
 			_finish_battle(res as BattleOutcome)
 			return
+
+	if victory_evaluator != null:
+		var eval_res: int = victory_evaluator.evaluate_outcome(
+			context.map_state,
+			director,
+			current_round,
+			context.forced_battle_outcome,
+			false
+		)
+		if eval_res != int(BattleOutcome.ONGOING):
+			_finish_battle(eval_res as BattleOutcome)
+		return
+
+	if context.forced_battle_outcome != 0:
+		_finish_battle(context.forced_battle_outcome as BattleOutcome)
+		return
 
 	var has_player_units: bool = false
 	var has_hostile_units: bool = false
@@ -179,6 +233,18 @@ func _check_round_end_victory_or_defeat() -> void:
 		if res != int(BattleOutcome.ONGOING):
 			_finish_battle(res as BattleOutcome)
 			return
+
+	if victory_evaluator != null:
+		var eval_res: int = victory_evaluator.evaluate_outcome(
+			context.map_state,
+			director,
+			current_round,
+			context.forced_battle_outcome,
+			true
+		)
+		if eval_res != int(BattleOutcome.ONGOING):
+			_finish_battle(eval_res as BattleOutcome)
+		return
 
 	if current_round >= max_rounds and outcome == BattleOutcome.ONGOING:
 		_finish_battle(BattleOutcome.DEFEAT)
@@ -212,6 +278,8 @@ func replay_from_dict(replay_dict: Dictionary) -> bool:
 	var seed_val: int = int(str(replay_dict.get("initial_seed", "1")))
 	context.rng = SeededRng.new(seed_val)
 	command_history = CommandHistory.new(seed_val)
+	if event_manager != null:
+		event_manager.reset_runtime_state()
 	if replay_dict.has("max_rounds"):
 		max_rounds = int(replay_dict.get("max_rounds", max_rounds))
 	if replay_dict.has("faction_turn_order") and replay_dict["faction_turn_order"] is Array:

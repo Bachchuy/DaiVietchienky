@@ -28,7 +28,7 @@ Lộ trình nhiệm vụ bám sát đặc tả **GDD v3.4.1** (`docs/gdd/04_prod
 ## CỔNG 3 (`CP3`): Bộ Não AI 3 Pha & Kịch Bản Sự Kiện Bạch Đằng 1288 (`stage_id: 10101`)
 
 - [x] **C3-T1:** Triển khai hệ thống AI 3 pha (`Generators -> Evaluators -> Utility Scoring`) tuân thủ Fog of War, hoàn tất tính toán `< 1.5s/lượt`.
-- [ ] **C3-T2:** Triển khai `ScenarioEventManager` hướng dữ liệu (`Trigger – Condition – Action`) và điều kiện Thắng/Thua/3 Sao.
+- [x] **C3-T2:** Triển khai `ScenarioEventManager` hướng dữ liệu (`Trigger – Condition – Action`) và điều kiện Thắng/Thua/3 Sao.
 - [ ] **C3-T3:** Biên tập trọn vẹn dữ liệu `data/settings/stage_settings.json` & `data/battles/battle_10101.json` (Bạch Đằng 1288, sự kiện `MapPhase_TideFall` đầu Vòng 4 lộ bãi cọc `StakedWater`, phục binh xuất kích, hạ Ô Mã Nhi khi giữ `SignalDock (2, 8)`), mô phỏng AI-vs-AI 100 trận không treo lượt.
 
 ---
