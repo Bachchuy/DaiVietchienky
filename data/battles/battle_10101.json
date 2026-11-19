@@ -1,0 +1,364 @@
+{
+  "stage_id": 10101,
+  "name": "Đại Chiến Bạch Đằng 1288 (Slice-01)",
+  "coordinate_space": "odd_r",
+  "map_width": 12,
+  "map_height": 10,
+  "max_rounds": 10,
+  "enable_economy": false,
+  "player_faction_id": 1,
+  "staked_water_owner_faction": 1,
+  "default_terrain": "Plains",
+  "turn_order": [1, 2],
+  "factions": [
+    {
+      "faction_id": 1,
+      "name": "Đại Việt",
+      "team_id": 1,
+      "is_player": true,
+      "ai_profile": "normal",
+      "target_generals": [9001],
+      "protected_generals": [1001]
+    },
+    {
+      "faction_id": 2,
+      "name": "Đại Nguyên",
+      "team_id": 2,
+      "is_player": false,
+      "ai_profile": "normal",
+      "target_generals": [1001],
+      "protected_generals": [9001]
+    }
+  ],
+  "terrain_overrides": [
+    {"q": 4, "r": 0, "terrain": "ShallowRiver"}, {"q": 5, "r": 0, "terrain": "DeepWater"}, {"q": 6, "r": 0, "terrain": "DeepWater"}, {"q": 7, "r": 0, "terrain": "DeepWater"}, {"q": 8, "r": 0, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 1, "terrain": "ShallowRiver"}, {"q": 5, "r": 1, "terrain": "DeepWater"}, {"q": 6, "r": 1, "terrain": "DeepWater"}, {"q": 7, "r": 1, "terrain": "DeepWater"}, {"q": 8, "r": 1, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 2, "terrain": "ShallowRiver"}, {"q": 5, "r": 2, "terrain": "DeepWater"}, {"q": 6, "r": 2, "terrain": "DeepWater"}, {"q": 7, "r": 2, "terrain": "DeepWater"}, {"q": 8, "r": 2, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 3, "terrain": "ShallowRiver"}, {"q": 5, "r": 3, "terrain": "DeepWater"}, {"q": 6, "r": 3, "terrain": "DeepWater"}, {"q": 7, "r": 3, "terrain": "DeepWater"}, {"q": 8, "r": 3, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 4, "terrain": "ShallowRiver"}, {"q": 5, "r": 4, "terrain": "DeepWater"}, {"q": 6, "r": 4, "terrain": "DeepWater"}, {"q": 7, "r": 4, "terrain": "DeepWater"}, {"q": 8, "r": 4, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 5, "terrain": "ShallowRiver"}, {"q": 5, "r": 5, "terrain": "DeepWater"}, {"q": 6, "r": 5, "terrain": "DeepWater"}, {"q": 7, "r": 5, "terrain": "DeepWater"}, {"q": 8, "r": 5, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 6, "terrain": "ShallowRiver"}, {"q": 5, "r": 6, "terrain": "DeepWater"}, {"q": 6, "r": 6, "terrain": "DeepWater"}, {"q": 7, "r": 6, "terrain": "DeepWater"}, {"q": 8, "r": 6, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 7, "terrain": "ShallowRiver"}, {"q": 5, "r": 7, "terrain": "DeepWater"}, {"q": 6, "r": 7, "terrain": "DeepWater"}, {"q": 7, "r": 7, "terrain": "DeepWater"}, {"q": 8, "r": 7, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 8, "terrain": "ShallowRiver"}, {"q": 5, "r": 8, "terrain": "DeepWater"}, {"q": 6, "r": 8, "terrain": "DeepWater"}, {"q": 7, "r": 8, "terrain": "DeepWater"}, {"q": 8, "r": 8, "terrain": "ShallowRiver"},
+    {"q": 4, "r": 9, "terrain": "ShallowRiver"}, {"q": 5, "r": 9, "terrain": "DeepWater"}, {"q": 6, "r": 9, "terrain": "DeepWater"}, {"q": 7, "r": 9, "terrain": "DeepWater"}, {"q": 8, "r": 9, "terrain": "ShallowRiver"},
+
+    {"q": 0, "r": 0, "terrain": "Forest"}, {"q": 1, "r": 0, "terrain": "Forest"}, {"q": 2, "r": 0, "terrain": "Forest"},
+    {"q": 0, "r": 1, "terrain": "Forest"}, {"q": 1, "r": 1, "terrain": "Forest"}, {"q": 2, "r": 1, "terrain": "Forest"},
+    {"q": 0, "r": 2, "terrain": "Forest"}, {"q": 1, "r": 2, "terrain": "Forest"}, {"q": 2, "r": 2, "terrain": "Forest"},
+    {"q": 0, "r": 3, "terrain": "Forest"}, {"q": 1, "r": 3, "terrain": "Forest"}, {"q": 2, "r": 3, "terrain": "Forest"}, {"q": 3, "r": 3, "terrain": "Forest"},
+    {"q": 0, "r": 4, "terrain": "Forest"}, {"q": 1, "r": 4, "terrain": "Forest"}, {"q": 2, "r": 4, "terrain": "Forest"}, {"q": 3, "r": 4, "terrain": "Forest"},
+
+    {"q": 2, "r": 5, "terrain": "Swamp"}, {"q": 3, "r": 6, "terrain": "Swamp"},
+    {"q": 2, "r": 8, "terrain": "RoadPort"}, {"q": 3, "r": 8, "terrain": "RoadPort"},
+
+    {"q": 9, "r": 2, "terrain": "Hills"}, {"q": 10, "r": 2, "terrain": "Hills"}, {"q": 11, "r": 2, "terrain": "Hills"},
+    {"q": 9, "r": 3, "terrain": "Hills"}, {"q": 10, "r": 3, "terrain": "Hills"}, {"q": 11, "r": 3, "terrain": "Hills"},
+    {"q": 9, "r": 4, "terrain": "Fort", "fort_owner": 2}, {"q": 10, "r": 4, "terrain": "Hills"}, {"q": 11, "r": 4, "terrain": "Hills"},
+    {"q": 9, "r": 5, "terrain": "Hills"}, {"q": 10, "r": 5, "terrain": "Hills"}, {"q": 11, "r": 5, "terrain": "Hills"},
+    {"q": 9, "r": 6, "terrain": "Hills"}, {"q": 10, "r": 6, "terrain": "Hills"}, {"q": 11, "r": 6, "terrain": "Hills"}
+  ],
+  "areas": [
+    {
+      "area_id": "signal_dock",
+      "name": "Bến Cọc Bạch Đằng (SignalDock)",
+      "hexes": [{"q": 2, "r": 8}],
+      "initial_owner": 1,
+      "is_objective": true
+    },
+    {
+      "area_id": "area_bai_coc",
+      "name": "Bãi Cọc Ngầm Bạch Đằng",
+      "hexes": [
+        {"q": 5, "r": 4},
+        {"q": 6, "r": 4},
+        {"q": 6, "r": 5},
+        {"q": 7, "r": 5},
+        {"q": 5, "r": 5},
+        {"q": 6, "r": 3}
+      ],
+      "initial_owner": 0,
+      "is_objective": false
+    }
+  ],
+  "placements": [
+    {
+      "unit_id": 101,
+      "faction_id": 1,
+      "troop_id": 40101,
+      "troop_stack": 3,
+      "hex": {"q": 2, "r": 8},
+      "general_id": 1001,
+      "general_name": "Trần Quốc Tuấn",
+      "is_commander_in_chief": true,
+      "general_command_stat": 98,
+      "general_luck": 15,
+      "m_command": 1.15,
+      "aura_radius_hex": 2,
+      "aura_damage_deepen": 10,
+      "aura_damage_resist": 10,
+      "grants_dead_mate_immunity": true,
+      "initial_morale": "HIGH",
+      "modeling_type": "historical_claim",
+      "source_ref": "Đại Việt Sử Ký Toàn Thư (1288)"
+    },
+    {
+      "unit_id": 102,
+      "faction_id": 1,
+      "troop_id": 40201,
+      "troop_stack": 3,
+      "hex": {"q": 5, "r": 6},
+      "general_id": 1002,
+      "general_name": "Trần Khánh Dư",
+      "general_command_stat": 90,
+      "general_luck": 12,
+      "m_command": 1.10,
+      "aura_radius_hex": 1,
+      "aura_damage_deepen": 5,
+      "initial_morale": "HIGH",
+      "modeling_type": "abstraction",
+      "source_ref": "Thủy quân tiền tiêu Bạch Đằng"
+    },
+    {
+      "unit_id": 103,
+      "faction_id": 1,
+      "troop_id": 40102,
+      "troop_stack": 3,
+      "hex": {"q": 3, "r": 5},
+      "modeling_type": "abstraction",
+      "source_ref": "Cung nỏ bờ tây"
+    },
+    {
+      "unit_id": 104,
+      "faction_id": 1,
+      "troop_id": 40104,
+      "troop_stack": 2,
+      "hex": {"q": 2, "r": 7},
+      "modeling_type": "abstraction",
+      "source_ref": "Tượng binh hộ giá bến đò"
+    },
+    {
+      "unit_id": 105,
+      "faction_id": 1,
+      "troop_id": 40202,
+      "troop_stack": 2,
+      "hex": {"q": 4, "r": 7},
+      "modeling_type": "historical_claim",
+      "source_ref": "Chiến thuật hỏa công Bạch Đằng"
+    },
+    {
+      "unit_id": 201,
+      "faction_id": 2,
+      "troop_id": 40902,
+      "troop_stack": 3,
+      "hex": {"q": 6, "r": 1},
+      "general_id": 9001,
+      "general_name": "Ô Mã Nhi",
+      "is_commander_in_chief": true,
+      "general_command_stat": 92,
+      "general_luck": 10,
+      "m_command": 1.10,
+      "aura_radius_hex": 2,
+      "aura_damage_deepen": 8,
+      "initial_morale": "NORMAL",
+      "modeling_type": "historical_claim",
+      "source_ref": "Nguyên Sử & ĐVSKTT (1288)"
+    },
+    {
+      "unit_id": 202,
+      "faction_id": 2,
+      "troop_id": 40901,
+      "troop_stack": 2,
+      "hex": {"q": 5, "r": 2},
+      "modeling_type": "fixture",
+      "source_ref": "Chiến thuyền tiền phong hữu"
+    },
+    {
+      "unit_id": 203,
+      "faction_id": 2,
+      "troop_id": 40901,
+      "troop_stack": 2,
+      "hex": {"q": 7, "r": 2},
+      "modeling_type": "fixture",
+      "source_ref": "Chiến thuyền tiền phong tả"
+    },
+    {
+      "unit_id": 204,
+      "faction_id": 2,
+      "troop_id": 40901,
+      "troop_stack": 2,
+      "hex": {"q": 6, "r": 2},
+      "modeling_type": "fixture",
+      "source_ref": "Chiến thuyền trung quân"
+    },
+    {
+      "unit_id": 205,
+      "faction_id": 2,
+      "troop_id": 40901,
+      "troop_stack": 2,
+      "hex": {"q": 7, "r": 3},
+      "modeling_type": "fixture",
+      "source_ref": "Thuyền hộ tống"
+    },
+    {
+      "unit_id": 206,
+      "faction_id": 2,
+      "troop_id": 40101,
+      "troop_stack": 2,
+      "hex": {"q": 9, "r": 4},
+      "modeling_type": "fixture",
+      "source_ref": "Đồn bộ binh bờ đông"
+    },
+    {
+      "unit_id": 207,
+      "faction_id": 2,
+      "troop_id": 40102,
+      "troop_stack": 2,
+      "hex": {"q": 9, "r": 5},
+      "modeling_type": "fixture",
+      "source_ref": "Cung thủ bờ đông"
+    }
+  ],
+  "victory_conditions": [
+    {
+      "type": "DefeatGeneralWhileHoldingArea",
+      "target_general_id": 9001,
+      "required_area_id": "signal_dock",
+      "instant": true
+    },
+    {
+      "type": "HoldAreaAndEnemyCasualtyAtMaxRound",
+      "required_area_id": "signal_dock",
+      "min_enemy_defeated_percent": 75.0,
+      "at_round": 10
+    }
+  ],
+  "defeat_conditions": [
+    {
+      "type": "LoseKeyArea",
+      "area_id": "signal_dock"
+    },
+    {
+      "type": "GeneralDefeated",
+      "target_general_id": 1001
+    },
+    {
+      "type": "AllUnitsEliminated",
+      "faction_id": 1
+    },
+    {
+      "type": "MaxRoundsUnfulfilled",
+      "max_rounds": 10
+    }
+  ],
+  "star_conditions": [
+    {
+      "star": 1,
+      "type": "Victory",
+      "description": "Đạt điều kiện chiến thắng"
+    },
+    {
+      "star": 2,
+      "type": "MaxRoundLimit",
+      "max_rounds": 8,
+      "description": "Chiến thắng trong vòng <= 8 lượt"
+    },
+    {
+      "star": 3,
+      "type": "CasualtyHpPercentLimit",
+      "max_loss_percent": 20.0,
+      "description": "Tổn thất quân Đại Việt <= 20% tổng MaxHP"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "evt_10101_opening",
+      "name": "Khai Màn Thủy Chiến Bạch Đằng",
+      "trigger_type": "OnRoundStart",
+      "once": true,
+      "logic_operator": "AND",
+      "conditions": [
+        {"field": "current_round", "op": "==", "value": 1}
+      ],
+      "results": [
+        {"action": "CameraFocus", "target_hex": {"q": 6, "r": 4}, "duration": 1.0},
+        {"action": "PlayDialogue", "dialogue_id": "talk_opening_bach_dang"}
+      ]
+    },
+    {
+      "event_id": "evt_10101_tide_fall",
+      "name": "Nước Rút Lộ Bãi Cọc Bạch Đằng",
+      "trigger_type": "OnRoundStart",
+      "once": true,
+      "logic_operator": "AND",
+      "conditions": [
+        {"field": "current_round", "op": "==", "value": 4}
+      ],
+      "results": [
+        {"action": "CameraFocus", "target_hex": {"q": 6, "r": 4}, "duration": 1.2},
+        {"action": "PlayDialogue", "dialogue_id": "talk_trieu_rut"},
+        {"action": "AlterTerrain", "area_id": "area_bai_coc", "new_terrain": "StakedWater"},
+        {
+          "action": "ApplyAreaEffect",
+          "area_id": "area_bai_coc",
+          "target_faction_id": 2,
+          "hp_loss_max_ratio": 0.35,
+          "march_disabled_turns": 2,
+          "chaos_turns": 2
+        },
+        {
+          "action": "SpawnReinforcements",
+          "placements": [
+            {
+              "unit_id": 106,
+              "faction_id": 1,
+              "troop_id": 40202,
+              "troop_stack": 2,
+              "hex": {"q": 4, "r": 4},
+              "initial_morale": "HIGH",
+              "name": "Thuyền Hỏa Công Bờ Tây"
+            },
+            {
+              "unit_id": 107,
+              "faction_id": 1,
+              "troop_id": 40103,
+              "troop_stack": 2,
+              "hex": {"q": 2, "r": 3},
+              "initial_morale": "HIGH",
+              "name": "Khinh Kỵ Tập Kích"
+            }
+          ]
+        },
+        {"action": "ModifyMorale", "faction_id": 1, "delta": 1}
+      ]
+    },
+    {
+      "event_id": "evt_10101_omnhi_wounded",
+      "name": "Soái Hạm Ô Mã Nhi Trọng Thương",
+      "trigger_type": "OnAfterCommand",
+      "once": true,
+      "logic_operator": "AND",
+      "conditions": [
+        {"field": "general_alive", "general_id": 9001, "value": true},
+        {"field": "unit_hp_ratio", "general_id": 9001, "op": "<=", "value": 0.5}
+      ],
+      "results": [
+        {"action": "PlayDialogue", "dialogue_id": "talk_omnhi_hoang_loan"},
+        {"action": "ModifyMorale", "faction_id": 2, "delta": -1}
+      ]
+    }
+  ],
+  "dialogues": {
+    "talk_opening_bach_dang": {
+      "speaker": "Trần Quốc Tuấn",
+      "line": "Nhử thủy binh Ô Mã Nhi tiến sâu qua lòng sông, giữ vững Bến Tín Hiệu chờ con nước rút!"
+    },
+    "talk_trieu_rut": {
+      "speaker": "Trần Quốc Tuấn",
+      "line": "Nước triều đã rút! Toàn quân phát hỏa công, thúc kích chặn đường tháo chạy của giặc Nguyên!"
+    },
+    "talk_omnhi_hoang_loan": {
+      "speaker": "Ô Mã Nhi",
+      "line": "Cọc ngầm vỡ thuyền! Đội hình thủy quân đại loạn rồi!"
+    }
+  }
+}

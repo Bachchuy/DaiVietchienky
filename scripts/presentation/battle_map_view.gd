@@ -112,8 +112,15 @@ func _rebuild_hex_geometry_cache() -> void:
 func bind_battle_state(map_state: BattleMapState, navigator: HexGridNavigator) -> void:
 	_map_state = map_state
 	_navigator = navigator
+	_key_areas.clear()
 	clear_selection()
 	refresh_all_layers()
+
+
+func clear_key_areas() -> void:
+	_key_areas.clear()
+	_queue_layer_redraw("FactionBorderLayer")
+	_queue_layer_redraw("BuildingAndFortLayer")
 
 
 func set_key_area(axial: Vector2i, faction_id: int) -> void:
@@ -575,7 +582,12 @@ func _draw_unit_hud_layer(canvas: Node2D) -> void:
 		)
 		canvas.draw_rect(Rect2(top_left - Vector2(1.0, 1.0), Vector2(bar_w + 2.0, bar_h + 2.0)), Color(0.95, 0.90, 0.78, 0.85), true)
 		canvas.draw_rect(Rect2(top_left, Vector2(bar_w, bar_h)), Color(0.08, 0.08, 0.10, 0.92), true)
-		var hp_col := Color(0.24, 0.86, 0.38) if unit.faction_id == 1 else Color(0.95, 0.34, 0.28)
+		var is_ally: bool = (
+			_map_state.is_allied(1, unit.faction_id)
+			if _map_state != null
+			else (unit.faction_id == 1)
+		)
+		var hp_col := Color(0.24, 0.86, 0.38) if is_ally else Color(0.95, 0.34, 0.28)
 		canvas.draw_rect(Rect2(top_left, Vector2(bar_w * ratio, bar_h)), hp_col, true)
 		canvas.draw_circle(top_left + Vector2(bar_w + 6.0, bar_h * 0.5), 3.6, _morale_color(unit.state.morale))
 
@@ -605,15 +617,15 @@ func _terrain_color(terrain: BattleMapState.TerrainType) -> Color:
 
 
 func _faction_primary_color(faction_id: int) -> Color:
-	match faction_id:
-		1:
-			return Color(0.76, 0.16, 0.16)
-		2:
-			return Color(0.20, 0.58, 0.32)
-		3:
-			return Color(0.18, 0.32, 0.58)
-		_:
-			return Color(0.45, 0.45, 0.45)
+	if faction_id == 1:
+		return Color(0.76, 0.16, 0.16)
+	if _map_state != null and _map_state.is_hostile(1, faction_id):
+		return Color(0.18, 0.32, 0.58)
+	if faction_id == 2:
+		return Color(0.20, 0.58, 0.32)
+	if faction_id == 3:
+		return Color(0.18, 0.32, 0.58)
+	return Color(0.45, 0.45, 0.45)
 
 
 func _faction_trim_color(faction_id: int) -> Color:

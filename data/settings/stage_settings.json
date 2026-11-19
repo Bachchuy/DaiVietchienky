@@ -1,0 +1,14 @@
+[
+  {
+    "id": 10101,
+    "code": "bach_dang_1288",
+    "name": "Đại Chiến Bạch Đằng 1288",
+    "chapter": 1,
+    "battle_file": "res://data/battles/battle_10101.json",
+    "max_rounds": 10,
+    "enable_economy": false,
+    "recommended_difficulty": "normal",
+    "modeling_type": "historical_claim",
+    "source_ref": "Đại Việt Sử Ký Toàn Thư (1288)"
+  }
+]

@@ -63,3 +63,9 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lựa chọn:** Giữ nguyên toàn bộ 6 ID cũ và bổ sung `40202` (*Thuyền Hỏa Công Đại Việt*, `NavalLight`, `attack_mode: "Fire" (6)`, tầm `1–2`) và `40902` (*Soái Hạm Lâu Thuyền Đại Nguyên*, `NavalHeavy`, `strength: 240`, `base_atk: 46`, `base_def: 18`, tầm `1–2`) vào `data/settings/troop_settings.json`.
 - **Lý do:** Bảo toàn 100% tương thích ngược với test C1/C2 đồng thời tái hiện đúng hỏa công & soái hạm Bạch Đằng 1288.
 - **Cách đổi:** Chỉnh thông số hoặc thêm/bớt phần tử trong `data/settings/troop_settings.json`.
+
+## DEC-011 — Tách RNG Nhiễu Quyết Định AI Khỏi RNG Mô Phỏng Chiến Đấu (`BattleContext.rng`)
+- **Vấn đề:** Khi `AIDecisionMatrix.execute_faction_turn` dùng trực tiếp `controller.context.rng` cho nhiễu cộng tính ở Pha 3 (`plan_unit_turn`), quá trình phát lại chuỗi lệnh `replay_from_dict` (vốn chỉ chạy lại các lệnh đã xuất ra chứ không chạy lại bộ lập kế hoạch AI) bị lệch trạng thái RNG ngay ở đòn đánh đầu tiên và làm gãy phát lại AI-vs-AI.
+- **Lựa chọn:** Giữ `plan_unit_turn(..., rng)` nhận bất kỳ `SeededRng` nào cho unit test, nhưng trong `AIDecisionMatrix.execute_faction_turn`, tạo `decision_rng := SeededRng.new(initial_seed ^ (current_round * 100003) ^ (faction_id * 1009) ^ (uid * 97))` hoàn toàn tách biệt khỏi `controller.context.rng`.
+- **Lý do:** Bảo toàn tuyệt đối 100% tính tất định cho cả hai chiều: cùng seed thì AI ra quyết định giống hệt nhau, và khi phát lại JSON Replay chỉ chứa `BattleCommands`, `BattleContext.rng.get_state()`, HP và tọa độ khớp 100%.
+- **Cách đổi:** Điều chỉnh công thức băm `turn_seed` hoặc truyền RNG AI chuyên biệt trong `scripts/ai/ai_decision_matrix.gd`.

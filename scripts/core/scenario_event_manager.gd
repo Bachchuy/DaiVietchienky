@@ -315,7 +315,9 @@ func _apply_modify_morale(
 	var target_faction: int = int(action_data.get("faction_id", -1))
 	var delta: int = int(action_data.get("delta", 0))
 	var area_id: String = str(action_data.get("area_id", ""))
-	var area_hexes: Array[Vector2i] = director.get_area_hexes(area_id) if (director != null and not area_id.is_empty()) else []
+	var area_hexes: Array[Vector2i] = []
+	if director != null and not area_id.is_empty():
+		area_hexes = director.get_area_hexes(area_id)
 
 	for u: BattleUnit in ctx.map_state.get_all_units():
 		if target_faction != -1 and u.faction_id != target_faction:

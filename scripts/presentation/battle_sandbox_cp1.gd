@@ -28,6 +28,11 @@ var _controller: BattleGameController = null
 var _map_view: BattleMapView = null
 var _camera: BattleCameraController = null
 
+var _ai_brain: AIDecisionMatrix = null
+var _auto_enemy_ai: bool = true
+var _last_event_text: String = ""
+var _dialogues: Dictionary = {}
+
 var _mode_label: Label = null
 var _selection_label: Label = null
 var _perf_label: Label = null
@@ -39,6 +44,7 @@ var _status_banner: String = ""
 
 func _ready() -> void:
 	_troop_defs = StaticDataLoader.load_troop_settings()
+	_ai_brain = AIDecisionMatrix.new(AIDifficultyProfile.create_preset(&"normal"))
 	_setup_scene_nodes()
 	_build_hud()
 	load_bach_dang_preview_12x10()
@@ -127,7 +133,7 @@ func _build_hud() -> void:
 	_selection_label = Label.new()
 	_selection_label.add_theme_color_override("font_color", Color(0.94, 0.92, 0.86))
 	_selection_label.add_theme_font_size_override("font_size", 13)
-	_selection_label.text = "Click trái: Chọn quân / Đi ô xanh / Đánh địch đỏ | [Z] Undo Đi | [W] Đợi | [Space] Kết thúc lượt | [R] Kiểm chứng Replay | [F1/F2] Đổi bản đồ"
+	_selection_label.text = "Click trái: Chọn/Đi/Đánh | [Z] Undo | [W] Đợi | [Space] Hết lượt (AI tự đánh) | [A] AI đi ngay | [R] Replay | [F1/F2] Đổi bản đồ"
 	bottom_panel.add_child(_selection_label)
 
 
@@ -136,12 +142,20 @@ func _process(_delta: float) -> void:
 		var fps: int = Engine.get_frames_per_second()
 		var lod_text: String = "TOKEN" if _map_view.is_strategic_lod() else "MODEL"
 		var fac_text: String = "ĐẠI VIỆT" if _controller.current_faction_id == 1 else "ĐẠI NGUYÊN"
+		var status_text: String = "LƯỢT: %s" % fac_text
+		if _controller.outcome == BattleGameController.BattleOutcome.VICTORY:
+			var stars_n: int = 1
+			if _controller.victory_evaluator != null:
+				stars_n = int(_controller.victory_evaluator.evaluate_stars(_controller).get("stars", 1))
+			status_text = "CHIẾN THẮNG (%d/3 SAO)" % stars_n
+		elif _controller.outcome == BattleGameController.BattleOutcome.DEFEAT:
+			status_text = "THẤT BẠI"
 		if _mode_label != null:
-			_mode_label.text = "%s | VÒNG %02d/%02d | LƯỢT: %s" % [
+			_mode_label.text = "%s | VÒNG %02d/%02d | %s" % [
 				_current_mode_title,
 				_controller.current_round,
 				_controller.max_rounds,
-				fac_text,
+				status_text,
 			]
 		_perf_label.text = "FPS: %d | Zoom: %.2fx [%s] | Quân: %d" % [
 			fps if fps > 0 else 60,
@@ -181,6 +195,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					try_wait_selected()
 				KEY_SPACE, KEY_ENTER:
 					end_active_faction_turn()
+				KEY_A:
+					run_ai_for_current_faction()
 				KEY_R:
 					verify_deterministic_replay_live()
 				KEY_T:
@@ -189,65 +205,39 @@ func _unhandled_input(event: InputEvent) -> void:
 					pass
 
 
-func _populate_bach_dang_12x10(target_map: BattleMapState) -> void:
-	target_map.staked_water_owner_faction = 1
-	for row: int in range(10):
-		for col: int in range(12):
-			var ax: Vector2i = HexMath.odd_r_to_axial(Vector2i(col, row))
-			if col >= 5 and col <= 7:
-				target_map.set_terrain(ax, BattleMapState.TerrainType.DEEP_WATER)
-			elif col == 4 or col == 8:
-				target_map.set_terrain(ax, BattleMapState.TerrainType.SHALLOW_RIVER)
-			elif col <= 2 and row <= 4:
-				target_map.set_terrain(ax, BattleMapState.TerrainType.FOREST)
-			elif col >= 9 and row >= 2 and row <= 6:
-				target_map.set_terrain(ax, BattleMapState.TerrainType.HILLS)
-
-	for stake_cell: Vector2i in [Vector2i(6, 4), Vector2i(6, 5), Vector2i(7, 5)]:
-		target_map.set_terrain(HexMath.odd_r_to_axial(stake_cell), BattleMapState.TerrainType.STAKED_WATER)
-
-	var signal_dock: Vector2i = HexMath.odd_r_to_axial(Vector2i(2, 8))
-	target_map.set_terrain(signal_dock, BattleMapState.TerrainType.ROAD_PORT)
-	target_map.set_terrain(HexMath.odd_r_to_axial(Vector2i(3, 8)), BattleMapState.TerrainType.ROAD_PORT)
-
-	var enemy_fort: Vector2i = HexMath.odd_r_to_axial(Vector2i(9, 4))
-	target_map.set_terrain(enemy_fort, BattleMapState.TerrainType.FORT)
-	target_map.set_fort_owner(enemy_fort, 3)
-
-	var u1: BattleUnit = _spawn_unit_into(target_map, 1, 1, 40101, Vector2i(2, 8), 3)
-	u1.general_id = 1001
-	u1.general_name = "Trần Quốc Tuấn"
-	u1.is_commander_in_chief = true
-	u1.aura_radius_hex = 2
-	u1.aura_damage_deepen = 10
-	u1.grants_dead_mate_immunity = true
-
-	_spawn_unit_into(target_map, 2, 1, 40102, Vector2i(3, 5), 3)
-	_spawn_unit_into(target_map, 3, 1, 40103, Vector2i(2, 6), 2)
-	_spawn_unit_into(target_map, 4, 1, 40104, Vector2i(3, 7), 2)
-	_spawn_unit_into(target_map, 5, 1, 40201, Vector2i(5, 6), 3)
-
-	var e1: BattleUnit = _spawn_unit_into(target_map, 101, 3, 40901, Vector2i(6, 3), 3)
-	e1.general_id = 9001
-	e1.general_name = "Ô Mã Nhi"
-	e1.is_commander_in_chief = true
-	e1.aura_radius_hex = 2
-
-	_spawn_unit_into(target_map, 102, 3, 40901, Vector2i(7, 4), 3)
-	_spawn_unit_into(target_map, 103, 3, 40901, Vector2i(5, 4), 2)
-	_spawn_unit_into(target_map, 104, 3, 40101, Vector2i(9, 4), 3)
-	_spawn_unit_into(target_map, 105, 3, 40102, Vector2i(9, 5), 2)
-
-
 func load_bach_dang_preview_12x10() -> void:
 	_is_stress_mode = false
-	_current_mode_title = "ĐẠI VIỆT CHIẾN KỲ [CP2] — Bạch Đằng 12×10"
-	_map_state = BattleMapState.new(12, 10, BattleMapState.TerrainType.PLAINS)
-	_populate_bach_dang_12x10(_map_state)
-	_controller = BattleGameController.new(_map_state, DEFAULT_BATTLE_SEED, [1, 3], 10)
-	_controller.start_battle()
+	_last_event_text = ""
+	_current_mode_title = "ĐẠI VIỆT CHIẾN KỲ [CP3] — Bạch Đằng 12×10"
+	_controller = ScenarioLoader.load_stage(10101, DEFAULT_BATTLE_SEED)
+	if _controller == null:
+		return
+	_map_state = _controller.context.map_state
+	_dialogues = ScenarioLoader.load_stage_dialogues(10101)
+	if _controller.event_manager != null and not _controller.event_manager.event_triggered.is_connected(_on_scenario_event_triggered):
+		_controller.event_manager.event_triggered.connect(_on_scenario_event_triggered)
+	if not _controller.battle_finished.is_connected(_on_battle_finished):
+		_controller.battle_finished.connect(_on_battle_finished)
 	_apply_loaded_map()
-	_map_view.set_key_area(HexMath.odd_r_to_axial(Vector2i(2, 8)), 1)
+	_sync_objective_markers()
+	var open_dlg: Dictionary = _dialogues.get("talk_opening_bach_dang", {})
+	if not open_dlg.is_empty():
+		_set_bottom_banner("[VÒNG 1] %s: \"%s\" | [A] AI đi | [Space] Kết thúc lượt | [R] Replay" % [
+			str(open_dlg.get("speaker", "Tướng lĩnh")),
+			str(open_dlg.get("line", "")),
+		])
+
+
+func _sync_objective_markers() -> void:
+	if _map_view == null:
+		return
+	_map_view.clear_key_areas()
+	if _controller == null or _controller.director == null:
+		return
+	for area_id: String in _controller.director.primary_objective_area_ids:
+		var owner_f: int = _controller.director.get_area_owner(area_id)
+		for hex: Vector2i in _controller.director.get_area_hexes(area_id):
+			_map_view.set_key_area(hex, owner_f)
 
 
 func _populate_stress_30x30(target_map: BattleMapState, unit_count: int) -> void:
@@ -351,14 +341,16 @@ func click_world_position(world_pos: Vector2) -> void:
 				axial
 			)
 			if _controller.submit_command(m_cmd):
-				_map_view.refresh_units()
+				_sync_objective_markers()
+				_map_view.refresh_all_layers()
 				_map_view.select_hex(selected.hex_position)
-				var undo_hint: String = "[Z] Hoàn tác được" if _controller.can_undo() else "Khóa Undo (ZoC/Sự kiện/Đã dùng)"
-				_set_bottom_banner("Đã hành quân tới (%d,%d) | %s | Click địch đỏ để Đánh hoặc [W] Đợi" % [
-					HexMath.axial_to_odd_r(axial).x,
-					HexMath.axial_to_odd_r(axial).y,
-					undo_hint,
-				])
+				if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+					var undo_hint: String = "[Z] Hoàn tác được" if _controller.can_undo() else "Khóa Undo (ZoC/Sự kiện/Đã dùng)"
+					_set_bottom_banner("Đã hành quân tới (%d,%d) | %s | Click địch đỏ để Đánh hoặc [W] Đợi" % [
+						HexMath.axial_to_odd_r(axial).x,
+						HexMath.axial_to_odd_r(axial).y,
+						undo_hint,
+					])
 				return
 
 		# 2. Click hostile unit in attack range -> AttackCommand
@@ -381,13 +373,14 @@ func click_world_position(world_pos: Vector2) -> void:
 					_camera.add_trauma(0.45 if bool(rep.get("is_crit", false)) else 0.22)
 					_map_view.refresh_units()
 					_map_view.clear_selection()
-					_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST | Sĩ khí địch: %s" % [
-						int(rep.get("damage", 0)),
-						crit_tag,
-						flank_tag,
-						int(rep.get("counter_damage", 0)),
-						MORALE_NAMES.get(int(clicked_unit.state.morale), "Đã hạ"),
-					])
+					if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+						_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST | Sĩ khí địch: %s" % [
+							int(rep.get("damage", 0)),
+							crit_tag,
+							flank_tag,
+							int(rep.get("counter_damage", 0)),
+							MORALE_NAMES.get(int(clicked_unit.state.morale), "Đã hạ"),
+						])
 					return
 
 	_map_view.select_hex(axial)
@@ -459,30 +452,105 @@ func end_active_faction_turn() -> bool:
 		return false
 	if _controller.submit_command(BattleCommands.EndTurnCommand.new(_controller.current_faction_id)):
 		_map_view.clear_selection()
-		_map_view.refresh_units()
-		var next_fac: String = "Đại Việt" if _controller.current_faction_id == 1 else "Đại Nguyên"
-		_set_bottom_banner("Chuyển sang Vòng %d — Lượt của phe %s!" % [_controller.current_round, next_fac])
+		_sync_objective_markers()
+		_map_view.refresh_all_layers()
+		if (
+			_auto_enemy_ai
+			and not _is_stress_mode
+			and _controller.outcome == BattleGameController.BattleOutcome.ONGOING
+			and _controller.current_faction_id != _controller.player_faction_id
+		):
+			run_ai_for_current_faction()
+			return true
+		if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+			var next_fac: String = "Đại Việt" if _controller.current_faction_id == 1 else "Đại Nguyên"
+			_set_bottom_banner("Chuyển sang Vòng %d — Lượt của phe %s!" % [_controller.current_round, next_fac])
 		return true
 	return false
+
+
+func run_ai_for_current_faction() -> Dictionary:
+	if _controller == null or _ai_brain == null:
+		return {}
+	if _controller.outcome != BattleGameController.BattleOutcome.ONGOING:
+		return {}
+	var active_fac: int = _controller.current_faction_id
+	_last_event_text = ""
+	var rep: Dictionary = _ai_brain.execute_faction_turn(_controller, active_fac, _controller.director)
+	_map_view.clear_selection()
+	_sync_objective_markers()
+	_map_view.refresh_all_layers()
+	if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+		if not _last_event_text.is_empty():
+			_set_bottom_banner(_last_event_text)
+		else:
+			var prev_name: String = "Đại Việt" if active_fac == 1 else "Đại Nguyên"
+			var next_name: String = "Đại Việt" if _controller.current_faction_id == 1 else "Đại Nguyên"
+			_set_bottom_banner("[AI %s] Hoàn tất %d lệnh trong %.1f ms -> Vòng %d (%s)" % [
+				prev_name,
+				int(rep.get("executed_commands", 0)),
+				float(rep.get("elapsed_ms", 0.0)),
+				_controller.current_round,
+				next_name,
+			])
+	return rep
+
+
+func _on_scenario_event_triggered(event_id: String, event_name: String) -> void:
+	_sync_objective_markers()
+	_map_view.refresh_all_layers()
+	if event_id == "evt_10101_tide_fall":
+		var dlg: Dictionary = _dialogues.get("talk_trieu_rut", {})
+		_last_event_text = "[SỰ KIỆN VÒNG 4 — NƯỚC RÚT LỘ BÃI CỌC] %s: \"%s\"" % [
+			str(dlg.get("speaker", "Trần Quốc Tuấn")),
+			str(dlg.get("line", event_name)),
+		]
+	elif event_id == "evt_10101_omnhi_wounded":
+		var dlg_w: Dictionary = _dialogues.get("talk_omnhi_hoang_loan", {})
+		_last_event_text = "[SỰ KIỆN] %s: \"%s\"" % [
+			str(dlg_w.get("speaker", "Ô Mã Nhi")),
+			str(dlg_w.get("line", event_name)),
+		]
+	else:
+		_last_event_text = "[SỰ KIỆN] %s" % event_name
+	_set_bottom_banner(_last_event_text)
+
+
+func _on_battle_finished(outcome_code: int) -> void:
+	if outcome_code == int(BattleGameController.BattleOutcome.VICTORY):
+		var stars_res: Dictionary = (
+			_controller.victory_evaluator.evaluate_stars(_controller)
+			if _controller != null and _controller.victory_evaluator != null
+			else {"stars": 1}
+		)
+		_set_bottom_banner("[CHIẾN THẮNG — %d/3 SAO] Bạch Đằng toàn thắng tại Vòng %d! | [R] Kiểm chứng Replay | [F1] Chơi lại" % [
+			int(stars_res.get("stars", 1)),
+			_controller.current_round if _controller != null else 0,
+		])
+	elif outcome_code == int(BattleGameController.BattleOutcome.DEFEAT):
+		_set_bottom_banner("[THẤT BẠI] Trận Bạch Đằng chưa giữ được thế trận tại Vòng %d | [F1] Tải lại" % [
+			_controller.current_round if _controller != null else 0,
+		])
 
 
 func verify_deterministic_replay_live() -> bool:
 	if _controller == null:
 		return false
 	var replay_payload: Dictionary = _controller.export_replay()
-	var verify_map := BattleMapState.new(_map_state.width, _map_state.height, BattleMapState.TerrainType.PLAINS)
+	var verify_ctrl: BattleGameController = null
 	if _is_stress_mode:
+		var verify_map := BattleMapState.new(_map_state.width, _map_state.height, BattleMapState.TerrainType.PLAINS)
 		_populate_stress_30x30(verify_map, _stress_unit_count)
+		verify_ctrl = BattleGameController.new(verify_map, DEFAULT_BATTLE_SEED, [1, 3], _controller.max_rounds)
 	else:
-		_populate_bach_dang_12x10(verify_map)
+		verify_ctrl = ScenarioLoader.load_stage(10101, DEFAULT_BATTLE_SEED)
 
-	var verify_ctrl := BattleGameController.new(verify_map, DEFAULT_BATTLE_SEED, [1, 3], _controller.max_rounds)
-	if not verify_ctrl.replay_from_dict(replay_payload):
+	if verify_ctrl == null or not verify_ctrl.replay_from_dict(replay_payload):
 		_set_bottom_banner("[REPLAY ERROR] Không thể phát lại chuỗi lệnh!")
 		return false
 
 	var live_units: Array[BattleUnit] = _map_state.get_all_units()
-	var rep_units: Array[BattleUnit] = verify_map.get_all_units()
+	var rep_units: Array[BattleUnit] = verify_ctrl.context.map_state.get_all_units()
 	if live_units.size() != rep_units.size():
 		_set_bottom_banner("[REPLAY DESYNC] Sai lệch quân số!")
 		return false
@@ -493,13 +561,17 @@ func verify_deterministic_replay_live() -> bool:
 			_set_bottom_banner("[REPLAY DESYNC] Lệch HP/tọa độ tại đơn vị %d!" % u_live.unit_id)
 			return false
 
+	var outcome_match: bool = (verify_ctrl.outcome == _controller.outcome)
+	var round_match: bool = (verify_ctrl.current_round == _controller.current_round)
 	var rng_match: bool = (verify_ctrl.context.rng.get_state() == _controller.context.rng.get_state())
-	_set_bottom_banner("[REPLAY VERIFIED 100%%] Phát lại %d lệnh từ Seed %d khớp tuyệt đối từng điểm HP, Sĩ khí & RNG (%s)!" % [
+	var all_ok: bool = outcome_match and round_match and rng_match
+	_set_bottom_banner("[REPLAY VERIFIED 100%%] Phát lại %d lệnh từ Seed %d khớp tuyệt đối HP, Tọa độ, Vòng %d & RNG (%s)!" % [
 		_controller.command_history.get_replay_stream_size(),
 		DEFAULT_BATTLE_SEED,
-		"OK" if rng_match else "DIFF",
+		_controller.current_round,
+		"OK" if all_ok else "DIFF",
 	])
-	return rng_match
+	return all_ok
 
 
 func _set_bottom_banner(msg: String) -> void:

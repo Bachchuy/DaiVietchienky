@@ -431,11 +431,18 @@ func execute_faction_turn(
 			continue
 
 		var vis_view: AIVisibleMapView = AIVisibleMapView.from_context(controller.context, faction_id)
+		var turn_seed: int = (
+			controller.command_history.initial_seed
+			^ (controller.current_round * 100003)
+			^ (faction_id * 1009)
+			^ (uid * 97)
+		)
+		var decision_rng := SeededRng.new(turn_seed)
 		var cmds: Array[BattleCommands.BaseCommand] = plan_unit_turn(
 			unit,
 			vis_view,
 			director,
-			controller.context.rng
+			decision_rng
 		)
 		for cmd: BattleCommands.BaseCommand in cmds:
 			if controller.outcome != BattleGameController.BattleOutcome.ONGOING:
