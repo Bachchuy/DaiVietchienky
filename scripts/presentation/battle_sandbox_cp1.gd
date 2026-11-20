@@ -29,6 +29,9 @@ var _map_view: BattleMapView = null
 var _camera: BattleCameraController = null
 var _input_fsm: BattleInputFSM = null
 var _hud_controller: BattleHudController = null
+var _juice_helper: CombatJuiceHelper = null
+var _audio_manager: BattleAudioManager = null
+var _save_manager: BattleSaveManager = null
 
 var _ai_brain: AIDecisionMatrix = null
 var _auto_enemy_ai: bool = true
@@ -68,6 +71,18 @@ func _setup_scene_nodes() -> void:
 	_hud_controller = BattleHudController.new()
 	_hud_controller.name = "BattleHudController"
 	add_child(_hud_controller)
+
+	_juice_helper = CombatJuiceHelper.new()
+	_juice_helper.name = "CombatJuiceHelper"
+	add_child(_juice_helper)
+	_juice_helper.setup(_map_view, _camera)
+
+	_audio_manager = BattleAudioManager.new()
+	_audio_manager.name = "BattleAudioManager"
+	add_child(_audio_manager)
+	_audio_manager.setup()
+
+	_save_manager = BattleSaveManager.new()
 
 	_camera.strategic_lod_changed.connect(_on_camera_strategic_lod_changed)
 	_camera.clean_right_clicked.connect(_on_camera_clean_right_clicked)
@@ -551,31 +566,48 @@ func _on_controller_command_executed(command_type: String, faction_id: int) -> v
 		return
 	if command_type == "March":
 		_sync_objective_markers()
+		var p: Dictionary = _controller.context.last_command_payload
+		var to_ax: Vector2i = p.get("to_hex", Vector2i.ZERO)
 		if _hud_controller != null:
-			var p: Dictionary = _controller.context.last_command_payload
-			var to_off: Vector2i = HexMath.axial_to_odd_r(p.get("to_hex", Vector2i.ZERO))
+			var to_off: Vector2i = HexMath.axial_to_odd_r(to_ax)
 			_hud_controller.append_combat_log("Đơn vị #%d hành quân tới (%d,%d)" % [int(p.get("unit_id", 0)), to_off.x, to_off.y])
+		if _juice_helper != null and _map_view != null:
+			_juice_helper.spawn_particle_preset("DustTrailCPU2D", HexMath.axial_to_world(to_ax, _map_view.hex_size), "Tran_Nguyen")
 	elif command_type == "Attack":
 		var rep: Dictionary = _controller.context.get_last_combat_report()
 		var p_atk: Dictionary = _controller.context.last_command_payload
 		var atk_id: int = int(p_atk.get("attacker_id", rep.get("attacker_id", 0)))
 		var def_id: int = int(p_atk.get("defender_id", rep.get("defender_id", 0)))
-		var crit_tag: String = " [BẠO KÍCH!]" if bool(rep.get("is_crit", false)) else ""
+		var dmg_val: int = int(rep.get("damage", 0))
+		var is_cr: bool = bool(rep.get("is_crit", false))
+		var crit_tag: String = " [BẠO KÍCH!]" if is_cr else ""
 		var flank_tag: String = " [BỌC SƯỜN]" if bool(rep.get("is_flanked", false)) else ""
 		if _hud_controller != null:
 			_hud_controller.append_combat_log("Giao chiến: #%d đánh #%d gây %d ST%s%s | Phản kích: %d ST" % [
 				atk_id,
 				def_id,
-				int(rep.get("damage", 0)),
+				dmg_val,
 				crit_tag,
 				flank_tag,
 				int(rep.get("counter_damage", 0)),
 			])
+		var def_u: BattleUnit = _controller.context.get_unit(def_id)
+		var def_world: Vector2 = HexMath.axial_to_world(def_u.hex_position, _map_view.hex_size) if def_u != null and _map_view != null else Vector2(200.0, 200.0)
+		if _juice_helper != null and _map_view != null:
+			_juice_helper.spawn_particle_preset("MetalSparksCPU2D", def_world, "Tran_Nguyen")
+			_juice_helper.spawn_floating_text(
+				_map_view.get_layer_node("WorldSpaceUnitHudAndTextLayer"),
+				def_world,
+				dmg_val,
+				&"crit" if is_cr else (&"blocked" if dmg_val <= 0 else &"normal")
+			)
+		if _audio_manager != null:
+			_audio_manager.play_sfx("sword_hit", def_world, "Tran_Nguyen")
 		if faction_id == _controller.player_faction_id:
-			_camera.add_trauma(0.45 if bool(rep.get("is_crit", false)) else 0.22)
+			_camera.add_trauma(0.45 if is_cr else 0.22)
 			if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
 				_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST" % [
-					int(rep.get("damage", 0)),
+					dmg_val,
 					crit_tag,
 					flank_tag,
 					int(rep.get("counter_damage", 0)),
@@ -583,8 +615,17 @@ func _on_controller_command_executed(command_type: String, faction_id: int) -> v
 	elif command_type == "CastSkill":
 		if _hud_controller != null:
 			_hud_controller.append_combat_log("Thi triển Mưu Lược #10001 Hịch Tướng Sĩ (+Sĩ khí, giải Hỗn Loạn)")
+		var p_sk: Dictionary = _controller.context.last_command_payload
+		var sk_pos: Vector2 = HexMath.axial_to_world(p_sk.get("target_hex", Vector2i.ZERO), _map_view.hex_size) if _map_view != null else Vector2.ZERO
+		if _juice_helper != null:
+			_juice_helper.spawn_particle_preset("MoraleAuraCPU2D", sk_pos, "Tran_Nguyen")
+		if _audio_manager != null:
+			_audio_manager.play_sfx("horn_charge", sk_pos, "Tran_Nguyen")
 		if faction_id == _controller.player_faction_id:
 			_set_bottom_banner("Đã thi triển Mưu Lược Hịch Tướng Sĩ (CD: 3 lượt)!")
+	elif command_type == "EndTurn":
+		if not _is_stress_mode and _save_manager != null:
+			_save_manager.save_battle_session(_controller)
 	if _hud_controller != null:
 		_hud_controller.update_dock_buttons()
 
@@ -743,3 +784,15 @@ func get_input_fsm() -> BattleInputFSM:
 
 func get_hud_controller() -> BattleHudController:
 	return _hud_controller
+
+
+func get_juice_helper() -> CombatJuiceHelper:
+	return _juice_helper
+
+
+func get_audio_manager() -> BattleAudioManager:
+	return _audio_manager
+
+
+func get_save_manager() -> BattleSaveManager:
+	return _save_manager

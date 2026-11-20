@@ -85,6 +85,12 @@ func _ensure_layers_created() -> void:
 		var drawer := MapCanvasDrawer.new(self, l_name, l_z)
 		if l_name == "StrategicTokenLayer":
 			drawer.visible = false
+		elif l_name == "WaterAndTideLayer" and ResourceLoader.exists("res://assets_clean/shaders/water_flow.gdshader"):
+			var water_sh: Shader = load("res://assets_clean/shaders/water_flow.gdshader") as Shader
+			if water_sh != null:
+				var water_mat := ShaderMaterial.new()
+				water_mat.shader = water_sh
+				drawer.material = water_mat
 		add_child(drawer)
 		_layers[l_name] = drawer
 
@@ -138,6 +144,10 @@ func set_key_area(axial: Vector2i, faction_id: int) -> void:
 
 func get_screen_hud_layer() -> CanvasLayer:
 	return _hud_canvas_layer
+
+
+func get_layer_node(layer_name: String) -> Node2D:
+	return _layers.get(layer_name, null)
 
 
 func set_strategic_lod(use_tokens: bool) -> void:
