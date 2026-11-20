@@ -1016,7 +1016,8 @@ func _build_top_status_bar() -> void:
 	_pause_btn.name = "PauseButton"
 	_pause_btn.text = "⏸ TẠM DỪNG"
 	_pause_btn.add_theme_font_size_override("font_size", 12)
-	_pause_btn.pressed.connect(toggle_pause_modal)
+	# Idempotent open: closing is done via [TIẾP TỤC] / Esc, so rapid double-clicks never re-close the modal.
+	_pause_btn.pressed.connect(open_pause_modal)
 	hbox.add_child(_pause_btn)
 
 	if ResourceLoader.exists("res://assets_clean/emblems/dai_viet_emblem.png"):

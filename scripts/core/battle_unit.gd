@@ -85,6 +85,13 @@ func get_active_banners() -> int:
 		return 0
 	var s_max: int = get_effective_stack()
 	var hp_ratio: float = clampf(float(state.current_hp) / maxf(1.0, float(state.max_hp)), 0.0, 1.0)
+	# GDD combat_formulas.md: 3-banner units use explicit thresholds >66% / 33–66% / <33% (DEC-020).
+	if s_max == 3:
+		if hp_ratio > 0.66:
+			return 3
+		if hp_ratio >= 0.33:
+			return 2
+		return 1
 	return clampi(ceili(hp_ratio * float(s_max)), 1, s_max)
 
 

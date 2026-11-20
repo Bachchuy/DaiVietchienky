@@ -117,3 +117,18 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
   3. Triển khai `AssetIpAuditor` (`scripts/core/asset_ip_auditor.gd`) duyệt từng phân đoạn thư mục bằng `DirAccess.list_dir_begin()`/`get_next()` để kiểm tra khớp chính xác chữ hoa/thường 100% ngay trên Windows, kiểm tra đăng ký `ASSETS.md` và cô lập `scripts/core/` + `scripts/ai/`.
 - **Lý do:** Đảm bảo 100% tính minh bạch lịch sử theo GDD v3.4.1 và chặn đứng mọi lỗi đường dẫn `.pck` hoặc rò rỉ tài nguyên trước khi xuất bản Web/Android.
 - **Cách đổi:** Bổ sung màn chơi vào `data/settings/stage_settings.json` hoặc mục tư liệu vào `data/settings/codex_entries.json`.
+
+## DEC-019 — Cấu Hình `export_presets.cfg` Cho Web (Single-Threaded Wasm) & Android (`arm64-v8a`, `gl_compatibility`)
+- **Vấn đề:** Bản xuất Web (HTML5/Wasm) nếu bật đa luồng (`variant/thread_support = true`) sẽ yêu cầu máy chủ cấu hình header `Cross-Origin-Opener-Policy: same-origin` và `Cross-Origin-Embedder-Policy: require-corp` (`SharedArrayBuffer`), dễ gây lỗi màn hình trắng trên các dịch vụ lưu trữ tĩnh phổ thông (GitHub Pages, itch.io mặc định). Đồng thời cần chặn tuyệt đối thư mục tham khảo `Assets/` và bộ kiểm thử `tests/` khỏi gói `.pck` phát hành.
+- **Lựa chọn:**
+  1. Thiết lập `[preset.0]` (`name="Web"`, `platform="Web"`, `export_path="build/web/index.html"`) với `variant/thread_support=false`, `html/canvas_resize_policy=2` (Adaptive), `html/focus_canvas_on_start=true`, và `exclude_filter="Assets/*,tests/*,.ai/*,docs/*"`.
+  2. Thiết lập `[preset.1]` (`name="Android"`, `platform="Android"`, `export_path="build/android/dai_viet_chien_ky.apk"`) với `package/unique_name="com.daiviet.chienky"`, `package/name="Đại Việt Chiến Kỳ"`, `architectures/arm64-v8a=true`, `screen/immersive_mode=true`, và cùng bộ lọc `exclude_filter="Assets/*,tests/*,.ai/*,docs/*"`.
+  3. Giữ `rendering/renderer/rendering_method="gl_compatibility"` và `rendering/renderer/rendering_method.mobile="gl_compatibility"` thống nhất giữa Desktop, WebGL2 và Android GLES3.
+- **Lý do:** Chạy trực tiếp trên mọi static host mà không cần COOP/COEP header, giữ dung lượng `.pck` tối giản sạch 100% bản quyền và đạt 60 FPS (`<= 16.67 ms/frame`) nhờ batching 2D + LOD `StrategicTokenLayer` + hồ hạt `CPUParticles2D`.
+- **Cách đổi:** Chỉnh tùy chọn trong `export_presets.cfg` hoặc qua hộp thoại `Project -> Export` của Godot Editor sau khi cài đặt gói Export Templates `.tpz`.
+
+## DEC-020 — Ngưỡng Cờ Hiển Thị (`active_banners`) Cho Đạo 3 Cờ & `PauseButton` Mở Modal Idempotent
+- **Vấn đề:** (1) GDD (`mechanics/combat_formulas.md`) vừa nêu ngưỡng tường minh `3 / 2 / 1` cờ ứng với `> 66%`, `33%–66%`, `< 33%` `max_hp` cho đạo 3 cờ, vừa nêu công thức tổng quát `clampi(ceili(hp_ratio * max_stack), 1, max_stack)`; hai cách cho kết quả khác nhau tại biên (ví dụ `320/480 = 66.7%` → ngưỡng cho `3`, `ceili(2.0)` cho `2`). (2) `PauseButton` dùng `toggle_pause_modal`, nên nhấp đúp nhanh mở rồi đóng ngay modal.
+- **Lựa chọn:** (1) `BattleUnit.get_active_banners()` dùng ngưỡng tường minh khi `s_max == 3`, giữ công thức `ceili` cho `s_max` 1–2. (2) `PauseButton.pressed` gọi `open_pause_modal()` (idempotent); đóng modal qua `[TIẾP TỤC]` hoặc phím `Esc` (vẫn dùng `toggle_pause_modal`).
+- **Lý do:** Ngưỡng tường minh là quy tắc cụ thể hơn trong GDD và chỉ ảnh hưởng hiển thị (không đổi sát thương `M_hp`); modal tạm dừng không được tự đóng vì nhấp đúp.
+- **Cách đổi:** Sửa nhánh `s_max == 3` trong `scripts/core/battle_unit.gd` hoặc nối lại `_pause_btn.pressed` trong `scripts/presentation/battle_hud_controller.gd`.

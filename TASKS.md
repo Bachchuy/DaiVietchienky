@@ -45,4 +45,4 @@ Lộ trình nhiệm vụ bám sát đặc tả **GDD v3.4.1** (`docs/gdd/04_prod
 
 - [x] **C5-T1:** Triển khai module Kinh tế chiến trường (`Coin`, `Food`, `Tech`, `Mana`, `MealFood`, `Starvation`) khi `enable_economy = true`.
 - [x] **C5-T2:** Hoàn thiện Gói Chiến dịch Thời Trần, Tutorial ngữ cảnh, Codex lịch sử & rà soát Asset IP Gate sạch 100%.
-- [ ] **C5-T3:** Cấu hình xuất bản Web (HTML5/Wasm) & Android, kiểm thử hiệu năng 60 FPS và hồi quy toàn diện.
+- [x] **C5-T3:** Cấu hình xuất bản Web (HTML5/Wasm) & Android, kiểm thử hiệu năng 60 FPS và hồi quy toàn diện.

@@ -9,6 +9,7 @@
 /godot.cmd
 
 # Export builds & temporary artifacts
+build/
 builds/
 export/
 *.pck
