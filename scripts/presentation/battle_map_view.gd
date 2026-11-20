@@ -43,6 +43,10 @@ var _hud_canvas_layer: CanvasLayer = null
 var _hex_corner_offsets: PackedVector2Array = PackedVector2Array()
 var _inner_corner_offsets: PackedVector2Array = PackedVector2Array()
 var _branch_icons: Dictionary[int, Texture2D] = {}
+var _projected_target_hex: Vector2i = Vector2i(-9999, -9999)
+var _projected_target_damage: int = 0
+var _fog_context: BattleContext = null
+var _fog_viewer_faction: int = 1
 
 
 class MapCanvasDrawer extends Node2D:
@@ -273,6 +277,24 @@ func has_aim_target() -> bool:
 	return _has_aim_target
 
 
+func set_projected_target_damage(target_hex: Vector2i, damage: int) -> void:
+	_projected_target_hex = target_hex
+	_projected_target_damage = maxi(0, damage)
+	_queue_layer_redraw("WorldSpaceUnitHudAndTextLayer")
+
+
+func clear_projected_target_damage() -> void:
+	_projected_target_hex = Vector2i(-9999, -9999)
+	_projected_target_damage = 0
+	_queue_layer_redraw("WorldSpaceUnitHudAndTextLayer")
+
+
+func set_fog_of_war_context(ctx: BattleContext, viewer_faction: int = 1) -> void:
+	_fog_context = ctx
+	_fog_viewer_faction = viewer_faction
+	_queue_layer_redraw("FogOfWarLayer")
+
+
 func get_selected_unit() -> BattleUnit:
 	return _selected_unit
 
@@ -410,6 +432,8 @@ func _draw_world_layer(canvas: Node2D, layer_id: String) -> void:
 			_draw_unit_model_layer(canvas)
 		"StrategicTokenLayer":
 			_draw_strategic_token_layer(canvas)
+		"FogOfWarLayer":
+			_draw_fog_of_war_layer(canvas)
 		"WorldSpaceUnitHudAndTextLayer":
 			_draw_unit_hud_layer(canvas)
 		_:
@@ -688,6 +712,37 @@ func _draw_strategic_token_layer(canvas: Node2D) -> void:
 				canvas.draw_texture_rect(tex, Rect2(center - Vector2(16.0, 16.0), Vector2(32.0, 32.0)), false)
 
 
+func _draw_fog_of_war_layer(canvas: Node2D) -> void:
+	if _fog_context == null or not _fog_context.enable_fog_of_war or _map_state == null:
+		return
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var idxs := PackedInt32Array()
+	var visible_lookup: Dictionary[Vector2i, bool] = {}
+
+	for u: BattleUnit in _map_state.get_all_units():
+		if not _map_state.is_allied(_fog_viewer_faction, u.faction_id):
+			continue
+		var vr: int = maxi(1, u.vision_range)
+		for dq: int in range(-vr, vr + 1):
+			var r_min: int = maxi(-vr, -dq - vr)
+			var r_max: int = mini(vr, -dq + vr)
+			for dr: int in range(r_min, r_max + 1):
+				var cand: Vector2i = u.hex_position + Vector2i(dq, dr)
+				if _map_state.is_valid_hex(cand) and (cand == u.hex_position or _fog_context.navigator.has_line_of_sight(_map_state, u.hex_position, cand)):
+					visible_lookup[cand] = true
+
+	for row: int in range(_map_state.height):
+		for col: int in range(_map_state.width):
+			var ax: Vector2i = HexMath.odd_r_to_axial(Vector2i(col, row))
+			if visible_lookup.has(ax):
+				continue
+			var center: Vector2 = HexMath.axial_to_world(ax, hex_size)
+			_append_batched_hex(pts, cols, idxs, center, Color(0.05, 0.06, 0.08, 0.56), false)
+
+	_flush_batched_triangles(canvas, pts, cols, idxs)
+
+
 func _draw_unit_hud_layer(canvas: Node2D) -> void:
 	if _strategic_lod:
 		return
@@ -696,11 +751,9 @@ func _draw_unit_hud_layer(canvas: Node2D) -> void:
 		var bar_w: float = 42.0
 		var bar_h: float = 6.0
 		var top_left: Vector2 = center + Vector2(-bar_w * 0.5, -hex_size * 0.58)
-		var ratio: float = clampf(
-			float(unit.state.current_hp) / maxf(1.0, float(unit.state.max_hp)),
-			0.0,
-			1.0
-		)
+		var max_hp_f: float = maxf(1.0, float(unit.state.max_hp))
+		var ratio: float = clampf(float(unit.state.current_hp) / max_hp_f, 0.0, 1.0)
+
 		canvas.draw_rect(Rect2(top_left - Vector2(1.0, 1.0), Vector2(bar_w + 2.0, bar_h + 2.0)), Color(0.95, 0.90, 0.78, 0.85), true)
 		canvas.draw_rect(Rect2(top_left, Vector2(bar_w, bar_h)), Color(0.08, 0.08, 0.10, 0.92), true)
 		var is_ally: bool = (
@@ -710,7 +763,55 @@ func _draw_unit_hud_layer(canvas: Node2D) -> void:
 		)
 		var hp_col := Color(0.24, 0.86, 0.38) if is_ally else Color(0.95, 0.34, 0.28)
 		canvas.draw_rect(Rect2(top_left, Vector2(bar_w * ratio, bar_h)), hp_col, true)
-		canvas.draw_circle(top_left + Vector2(bar_w + 6.0, bar_h * 0.5), 3.6, _morale_color(unit.state.morale))
+
+		# Highlight projected HP loss segment during AIMING_TARGET
+		if _projected_target_damage > 0 and unit.hex_position == _projected_target_hex:
+			var post_ratio: float = clampf(float(maxi(0, unit.state.current_hp - _projected_target_damage)) / max_hp_f, 0.0, ratio)
+			var loss_x: float = top_left.x + bar_w * post_ratio
+			var loss_w: float = bar_w * (ratio - post_ratio)
+			if loss_w > 0.5:
+				canvas.draw_rect(Rect2(Vector2(loss_x, top_left.y), Vector2(loss_w, bar_h)), Color(1.0, 0.92, 0.32, 0.92), true)
+
+		# Segmented HP dividers by max_stack (1x..3x)
+		var segs: int = unit.get_effective_stack()
+		if segs > 1:
+			for s_i: int in range(1, segs):
+				var sx: float = top_left.x + (bar_w * float(s_i) / float(segs))
+				canvas.draw_line(Vector2(sx, top_left.y), Vector2(sx, top_left.y + bar_h), Color(0.06, 0.06, 0.08, 0.95), 1.4)
+
+		# Morale badge (color + non-color geometry)
+		var m_pos: Vector2 = top_left + Vector2(bar_w + 6.0, bar_h * 0.5)
+		canvas.draw_circle(m_pos, 4.2, Color(0.08, 0.08, 0.10, 0.92))
+		canvas.draw_circle(m_pos, 3.4, _morale_color(unit.state.morale))
+		match unit.state.morale:
+			UnitCombatState.MoraleLevel.HIGH:
+				canvas.draw_line(m_pos + Vector2(-2.0, 1.0), m_pos + Vector2(0.0, -1.6), Color(0.10, 0.08, 0.04), 1.3)
+				canvas.draw_line(m_pos + Vector2(0.0, -1.6), m_pos + Vector2(2.0, 1.0), Color(0.10, 0.08, 0.04), 1.3)
+			UnitCombatState.MoraleLevel.LOW:
+				canvas.draw_line(m_pos + Vector2(-2.0, -1.0), m_pos + Vector2(0.0, 1.6), Color(0.10, 0.08, 0.04), 1.3)
+				canvas.draw_line(m_pos + Vector2(0.0, 1.6), m_pos + Vector2(2.0, -1.0), Color(0.10, 0.08, 0.04), 1.3)
+			UnitCombatState.MoraleLevel.CHAOS:
+				canvas.draw_line(m_pos + Vector2(-1.8, -1.8), m_pos + Vector2(1.8, 1.8), Color.WHITE, 1.3)
+				canvas.draw_line(m_pos + Vector2(-1.8, 1.8), m_pos + Vector2(1.8, -1.8), Color.WHITE, 1.3)
+			_:
+				canvas.draw_line(m_pos + Vector2(-1.8, 0.0), m_pos + Vector2(1.8, 0.0), Color(0.10, 0.08, 0.04), 1.2)
+
+		# Overhead CC & Status badges above HP bar
+		var badge_x: float = top_left.x + 4.0
+		var badge_y: float = top_left.y - 7.0
+		if unit.state.morale == UnitCombatState.MoraleLevel.CHAOS or unit.state.chaos_turns > 0:
+			canvas.draw_rect(Rect2(Vector2(badge_x - 4.0, badge_y - 4.0), Vector2(8.0, 8.0)), Color(0.76, 0.16, 0.78, 0.95), true)
+			canvas.draw_line(Vector2(badge_x - 2.2, badge_y - 2.2), Vector2(badge_x + 2.2, badge_y + 2.2), Color.WHITE, 1.4)
+			canvas.draw_line(Vector2(badge_x - 2.2, badge_y + 2.2), Vector2(badge_x + 2.2, badge_y - 2.2), Color.WHITE, 1.4)
+			badge_x += 11.0
+		if unit.state.march_disabled_turns > 0:
+			canvas.draw_rect(Rect2(Vector2(badge_x - 4.0, badge_y - 4.0), Vector2(8.0, 8.0)), Color(0.92, 0.50, 0.14, 0.95), true)
+			canvas.draw_line(Vector2(badge_x - 2.2, badge_y), Vector2(badge_x + 2.2, badge_y), Color.WHITE, 1.5)
+			badge_x += 11.0
+		if unit.state.attack_disabled_turns > 0:
+			canvas.draw_rect(Rect2(Vector2(badge_x - 4.0, badge_y - 4.0), Vector2(8.0, 8.0)), Color(0.90, 0.20, 0.20, 0.95), true)
+			canvas.draw_line(Vector2(badge_x - 2.0, badge_y + 2.0), Vector2(badge_x + 2.0, badge_y - 2.0), Color.WHITE, 1.5)
+			badge_x += 11.0
 
 
 func _terrain_color(terrain: BattleMapState.TerrainType) -> Color:

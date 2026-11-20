@@ -28,6 +28,7 @@ var _controller: BattleGameController = null
 var _map_view: BattleMapView = null
 var _camera: BattleCameraController = null
 var _input_fsm: BattleInputFSM = null
+var _hud_controller: BattleHudController = null
 
 var _ai_brain: AIDecisionMatrix = null
 var _auto_enemy_ai: bool = true
@@ -64,6 +65,10 @@ func _setup_scene_nodes() -> void:
 	_input_fsm.name = "BattleInputFSM"
 	add_child(_input_fsm)
 
+	_hud_controller = BattleHudController.new()
+	_hud_controller.name = "BattleHudController"
+	add_child(_hud_controller)
+
 	_camera.strategic_lod_changed.connect(_on_camera_strategic_lod_changed)
 	_camera.clean_right_clicked.connect(_on_camera_clean_right_clicked)
 	_map_view.hex_selected.connect(_on_hex_selected)
@@ -77,76 +82,11 @@ func _setup_scene_nodes() -> void:
 
 func _build_hud() -> void:
 	var hud_layer: CanvasLayer = _map_view.get_screen_hud_layer()
-
-	var top_panel := PanelContainer.new()
-	top_panel.name = "TopStatusBar"
-	top_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	top_panel.offset_bottom = 44.0
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.10, 0.09, 0.08, 0.90)
-	style.border_width_bottom = 2
-	style.border_color = Color(0.78, 0.62, 0.26, 0.90)
-	style.content_margin_left = 12.0
-	style.content_margin_right = 12.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	top_panel.add_theme_stylebox_override("panel", style)
-	hud_layer.add_child(top_panel)
-
-	var hbox := HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 14)
-	top_panel.add_child(hbox)
-
-	if ResourceLoader.exists("res://assets_clean/emblems/dai_viet_emblem.png"):
-		var dv_icon := TextureRect.new()
-		dv_icon.texture = load("res://assets_clean/emblems/dai_viet_emblem.png") as Texture2D
-		dv_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		dv_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		dv_icon.custom_minimum_size = Vector2(28.0, 28.0)
-		hbox.add_child(dv_icon)
-
-	_mode_label = Label.new()
-	_mode_label.add_theme_color_override("font_color", Color(0.98, 0.90, 0.68))
-	_mode_label.add_theme_font_size_override("font_size", 14)
-	hbox.add_child(_mode_label)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(spacer)
-
-	_perf_label = Label.new()
-	_perf_label.add_theme_color_override("font_color", Color(0.68, 0.94, 0.74))
-	_perf_label.add_theme_font_size_override("font_size", 13)
-	hbox.add_child(_perf_label)
-
-	if ResourceLoader.exists("res://assets_clean/emblems/dai_nguyen_emblem.png"):
-		var dn_icon := TextureRect.new()
-		dn_icon.texture = load("res://assets_clean/emblems/dai_nguyen_emblem.png") as Texture2D
-		dn_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		dn_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		dn_icon.custom_minimum_size = Vector2(28.0, 28.0)
-		hbox.add_child(dn_icon)
-
-	var bottom_panel := PanelContainer.new()
-	bottom_panel.name = "BottomInspectBar"
-	bottom_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom_panel.offset_top = -40.0
-	var b_style := StyleBoxFlat.new()
-	b_style.bg_color = Color(0.10, 0.09, 0.08, 0.88)
-	b_style.border_width_top = 1
-	b_style.border_color = Color(0.65, 0.52, 0.24, 0.85)
-	b_style.content_margin_left = 14.0
-	b_style.content_margin_right = 14.0
-	b_style.content_margin_top = 6.0
-	b_style.content_margin_bottom = 6.0
-	bottom_panel.add_theme_stylebox_override("panel", b_style)
-	hud_layer.add_child(bottom_panel)
-
-	_selection_label = Label.new()
-	_selection_label.add_theme_color_override("font_color", Color(0.94, 0.92, 0.86))
-	_selection_label.add_theme_font_size_override("font_size", 13)
-	_selection_label.text = "Click trái: Chọn/Đi/Đánh | [Z] Undo | [W] Đợi | [Space] Hết lượt (AI tự đánh) | [A] AI đi ngay | [R] Replay | [F1/F2] Đổi bản đồ"
-	bottom_panel.add_child(_selection_label)
+	if _hud_controller != null:
+		_hud_controller.setup(self, hud_layer, _map_view, _camera, _input_fsm)
+		_mode_label = _hud_controller.get_mode_label()
+		_selection_label = _hud_controller.get_selection_label()
+		_perf_label = _hud_controller.get_perf_label()
 
 
 func _process(_delta: float) -> void:
@@ -177,17 +117,43 @@ func _process(_delta: float) -> void:
 		]
 
 
+func _is_screen_point_on_hud(screen_pos: Vector2) -> bool:
+	if _hud_controller != null and _hud_controller.is_any_modal_open():
+		return true
+	if _map_view == null:
+		return false
+	var hud_layer: CanvasLayer = _map_view.get_screen_hud_layer()
+	if hud_layer == null:
+		return false
+	for child: Node in hud_layer.get_children():
+		if child is Control:
+			var ctrl: Control = child as Control
+			if ctrl.visible and ctrl.mouse_filter == Control.MOUSE_FILTER_STOP:
+				if ctrl.get_global_rect().has_point(screen_pos):
+					return true
+	return false
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
 		if not mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			click_world_position(get_global_mouse_position())
+			if _is_screen_point_on_hud(mb.position):
+				return
+			var canvas_inv: Transform2D = get_canvas_transform().affine_inverse()
+			click_world_position(canvas_inv * mb.position)
 	elif event is InputEventMouseMotion:
+		var mm: InputEventMouseMotion = event as InputEventMouseMotion
+		if _is_screen_point_on_hud(mm.position):
+			return
 		if _input_fsm != null and _input_fsm.get_state() != BattleInputFSM.State.IDLE:
-			hover_world_position(get_global_mouse_position())
+			var canvas_inv_m: Transform2D = get_canvas_transform().affine_inverse()
+			hover_world_position(canvas_inv_m * mm.position)
 	elif event is InputEventScreenTouch:
 		var st: InputEventScreenTouch = event as InputEventScreenTouch
 		if st.pressed:
+			if _is_screen_point_on_hud(st.position):
+				return
 			var canvas_inv: Transform2D = get_canvas_transform().affine_inverse()
 			click_world_position(canvas_inv * st.position)
 	elif event is InputEventKey:
@@ -205,8 +171,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				KEY_K, KEY_Q:
 					try_enter_skill_targeting()
 				KEY_ESCAPE:
-					if _input_fsm != null:
+					if _hud_controller != null and _hud_controller.is_any_modal_open():
+						_hud_controller.close_pause_modal()
+					elif _input_fsm != null and _input_fsm.get_state() != BattleInputFSM.State.IDLE:
 						_input_fsm.cancel_or_deselect()
+					elif _hud_controller != null:
+						_hud_controller.toggle_pause_modal()
 				KEY_ENTER:
 					if _input_fsm != null and _input_fsm.get_state() == BattleInputFSM.State.AIMING_TARGET:
 						_input_fsm.confirm_attack()
@@ -227,7 +197,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func load_bach_dang_preview_12x10() -> void:
 	_is_stress_mode = false
 	_last_event_text = ""
-	_current_mode_title = "ĐẠI VIỆT CHIẾN KỲ [CP3] — Bạch Đằng 12×10"
+	_current_mode_title = "ĐẠI VIỆT CHIẾN KỲ [CP4] — Bạch Đằng 12×10"
 	_controller = ScenarioLoader.load_stage(10101, DEFAULT_BATTLE_SEED)
 	if _controller == null:
 		return
@@ -241,6 +211,19 @@ func load_bach_dang_preview_12x10() -> void:
 		_controller.command_executed.connect(_on_controller_command_executed)
 	_apply_loaded_map()
 	_sync_objective_markers()
+	_map_view.set_fog_of_war_context(_controller.context, _controller.player_faction_id)
+
+	var stages: Dictionary[int, Dictionary] = StaticDataLoader.load_stage_settings()
+	var stage_meta: Dictionary = stages.get(10101, {
+		"id": 10101,
+		"name": "Đại Chiến Bạch Đằng 1288",
+		"modeling_type": "historical_claim",
+		"source_ref": "Đại Việt Sử Ký Toàn Thư (1288)",
+	})
+	if _hud_controller != null:
+		_hud_controller.set_mode_title(_current_mode_title)
+		_hud_controller.bind_battle(_controller, stage_meta, _dialogues, true)
+
 	var open_dlg: Dictionary = _dialogues.get("talk_opening_bach_dang", {})
 	if not open_dlg.is_empty():
 		_set_bottom_banner("[VÒNG 1] %s: \"%s\" | [A] AI đi | [Space] Kết thúc lượt | [R] Replay" % [
@@ -301,12 +284,15 @@ func _populate_stress_30x30(target_map: BattleMapState, unit_count: int) -> void
 func load_stress_benchmark_30x30(unit_count: int = 44) -> void:
 	_is_stress_mode = true
 	_stress_unit_count = unit_count
-	_current_mode_title = "ĐẠI VIỆT CHIẾN KỲ [CP2] — Stress 30×30 (%d Quân)" % unit_count
+	_current_mode_title = "ĐẠI VIỆT CHIẾN KỲ [CP4] — Stress 30×30 (%d Quân)" % unit_count
 	_map_state = BattleMapState.new(30, 30, BattleMapState.TerrainType.PLAINS)
 	_populate_stress_30x30(_map_state, unit_count)
 	_controller = BattleGameController.new(_map_state, DEFAULT_BATTLE_SEED, [1, 3], 30)
 	_controller.start_battle()
 	_apply_loaded_map()
+	if _hud_controller != null:
+		_hud_controller.set_mode_title(_current_mode_title)
+		_hud_controller.bind_battle(_controller, {"id": 99999, "name": "Stress 30x30"}, {}, false)
 
 
 func _spawn_unit_into(
@@ -466,6 +452,8 @@ func run_ai_for_current_faction() -> Dictionary:
 func _on_scenario_event_triggered(event_id: String, event_name: String) -> void:
 	_sync_objective_markers()
 	_map_view.refresh_all_layers()
+	if _hud_controller != null:
+		_hud_controller.append_combat_log("Sự kiện kịch bản: %s (%s)" % [event_name, event_id])
 	if event_id == "evt_10101_tide_fall":
 		var dlg: Dictionary = _dialogues.get("talk_trieu_rut", {})
 		_last_event_text = "[SỰ KIỆN VÒNG 4 — NƯỚC RÚT LỘ BÃI CỌC] %s: \"%s\"" % [
@@ -484,6 +472,8 @@ func _on_scenario_event_triggered(event_id: String, event_name: String) -> void:
 
 
 func _on_battle_finished(outcome_code: int) -> void:
+	if _hud_controller != null:
+		_hud_controller.show_result_summary(outcome_code)
 	if outcome_code == int(BattleGameController.BattleOutcome.VICTORY):
 		var stars_res: Dictionary = (
 			_controller.victory_evaluator.evaluate_stars(_controller)
@@ -559,27 +549,51 @@ func _on_camera_clean_right_clicked(_screen_pos: Vector2) -> void:
 func _on_controller_command_executed(command_type: String, faction_id: int) -> void:
 	if _controller == null or _controller.context == null:
 		return
-	if faction_id != _controller.player_faction_id:
-		return
 	if command_type == "March":
 		_sync_objective_markers()
+		if _hud_controller != null:
+			var p: Dictionary = _controller.context.last_command_payload
+			var to_off: Vector2i = HexMath.axial_to_odd_r(p.get("to_hex", Vector2i.ZERO))
+			_hud_controller.append_combat_log("Đơn vị #%d hành quân tới (%d,%d)" % [int(p.get("unit_id", 0)), to_off.x, to_off.y])
 	elif command_type == "Attack":
 		var rep: Dictionary = _controller.context.get_last_combat_report()
+		var p_atk: Dictionary = _controller.context.last_command_payload
+		var atk_id: int = int(p_atk.get("attacker_id", rep.get("attacker_id", 0)))
+		var def_id: int = int(p_atk.get("defender_id", rep.get("defender_id", 0)))
 		var crit_tag: String = " [BẠO KÍCH!]" if bool(rep.get("is_crit", false)) else ""
 		var flank_tag: String = " [BỌC SƯỜN]" if bool(rep.get("is_flanked", false)) else ""
-		_camera.add_trauma(0.45 if bool(rep.get("is_crit", false)) else 0.22)
-		if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
-			_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST" % [
+		if _hud_controller != null:
+			_hud_controller.append_combat_log("Giao chiến: #%d đánh #%d gây %d ST%s%s | Phản kích: %d ST" % [
+				atk_id,
+				def_id,
 				int(rep.get("damage", 0)),
 				crit_tag,
 				flank_tag,
 				int(rep.get("counter_damage", 0)),
 			])
+		if faction_id == _controller.player_faction_id:
+			_camera.add_trauma(0.45 if bool(rep.get("is_crit", false)) else 0.22)
+			if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+				_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST" % [
+					int(rep.get("damage", 0)),
+					crit_tag,
+					flank_tag,
+					int(rep.get("counter_damage", 0)),
+				])
 	elif command_type == "CastSkill":
-		_set_bottom_banner("Đã thi triển Mưu Lược Hịch Tướng Sĩ (CD: 3 lượt)!")
+		if _hud_controller != null:
+			_hud_controller.append_combat_log("Thi triển Mưu Lược #10001 Hịch Tướng Sĩ (+Sĩ khí, giải Hỗn Loạn)")
+		if faction_id == _controller.player_faction_id:
+			_set_bottom_banner("Đã thi triển Mưu Lược Hịch Tướng Sĩ (CD: 3 lượt)!")
+	if _hud_controller != null:
+		_hud_controller.update_dock_buttons()
 
 
 func _on_fsm_state_changed(_old_state: BattleInputFSM.State, new_state: BattleInputFSM.State) -> void:
+	if _hud_controller != null:
+		_hud_controller.update_dock_buttons()
+		if new_state != BattleInputFSM.State.AIMING_TARGET:
+			_hud_controller.hide_combat_preview()
 	if _controller == null or _input_fsm == null:
 		return
 	if new_state == BattleInputFSM.State.POST_MOVE_ACTION:
@@ -609,6 +623,8 @@ func _on_fsm_target_preview_requested(
 ) -> void:
 	if attacker == null or defender == null:
 		return
+	if _hud_controller != null:
+		_hud_controller.show_combat_preview(attacker, defender, prev)
 	_set_bottom_banner("XÁC NHẬN ĐÁNH [%s -> %s]: ST %d~%d | Crit %d%% (~%d) | Phản kích %d~%d | Click lần 2 / [Enter] để Đánh | Chuột phải Hủy" % [
 		attacker.display_name,
 		defender.display_name,
@@ -622,6 +638,8 @@ func _on_fsm_target_preview_requested(
 
 
 func _on_fsm_target_preview_cleared() -> void:
+	if _hud_controller != null:
+		_hud_controller.hide_combat_preview()
 	if _input_fsm != null and _input_fsm.get_active_unit() != null:
 		var u: BattleUnit = _input_fsm.get_active_unit()
 		_update_selection_hud(u.hex_position, u)
@@ -639,6 +657,8 @@ func _on_hex_selected(axial: Vector2i, unit: BattleUnit) -> void:
 
 
 func _update_selection_hud(axial: Vector2i, unit: BattleUnit) -> void:
+	if _hud_controller != null:
+		_hud_controller.update_unit_card(axial, unit)
 	if _selection_label == null or _map_state == null:
 		return
 	if not _map_view.has_selected_hex():
@@ -671,6 +691,32 @@ func _update_selection_hud(axial: Vector2i, unit: BattleUnit) -> void:
 		]
 
 
+func save_session_and_profile() -> bool:
+	if ResourceLoader.exists("res://scripts/core/battle_save_manager.gd"):
+		var scr: GDScript = load("res://scripts/core/battle_save_manager.gd") as GDScript
+		if scr != null and scr.can_instantiate():
+			var mgr: Object = scr.new()
+			var ok_s: bool = bool(mgr.call("save_battle_session", _controller)) if mgr.has_method("save_battle_session") else false
+			var prof: Dictionary = mgr.call("load_player_profile") if mgr.has_method("load_player_profile") else {}
+			if _hud_controller != null:
+				prof["reduce_flashing"] = _hud_controller.reduce_flashing
+				prof["vfx_quality"] = _hud_controller.vfx_quality_index
+			if _camera != null:
+				prof["shake_scale"] = _camera.shake_user_scale
+			var ok_p: bool = bool(mgr.call("save_player_profile", prof)) if mgr.has_method("save_player_profile") else false
+			return ok_s and ok_p
+	DirAccess.make_dir_recursive_absolute("user://saves")
+	var fa1: FileAccess = FileAccess.open("user://saves/battle_session.json", FileAccess.WRITE)
+	if fa1 != null:
+		fa1.store_string(JSON.stringify({"version": 1, "stage_id": 10101}))
+		fa1.close()
+	var fa2: FileAccess = FileAccess.open("user://saves/player_profile.json", FileAccess.WRITE)
+	if fa2 != null:
+		fa2.store_string(JSON.stringify({"version": 1, "reduce_flashing": _hud_controller.reduce_flashing if _hud_controller != null else false}))
+		fa2.close()
+	return true
+
+
 func get_map_state() -> BattleMapState:
 	return _map_state
 
@@ -693,3 +739,7 @@ func get_camera() -> BattleCameraController:
 
 func get_input_fsm() -> BattleInputFSM:
 	return _input_fsm
+
+
+func get_hud_controller() -> BattleHudController:
+	return _hud_controller

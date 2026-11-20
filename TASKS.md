@@ -36,7 +36,7 @@ Lộ trình nhiệm vụ bám sát đặc tả **GDD v3.4.1** (`docs/gdd/04_prod
 ## CỔNG 4 (`CP4` / Gate `P2`): Giao Diện Chiến Trường Map-First, Combat Preview 2 Bước & Polish Va Chạm
 
 - [x] **C4-T1:** Triển khai `BattleInputFSM` 8 trạng thái khép kín (gồm `PostMoveAction` & xác nhận đòn đánh 2 bước).
-- [ ] **C4-T2:** Hoàn thiện HUD Map-First (`>= 80%` diện tích bản đồ), `CombatPreviewBox`, Top Bar (`enable_economy = false`), Briefing, Hội thoại kịch bản & màn Tổng kết 3 Sao.
+- [x] **C4-T2:** Hoàn thiện HUD Map-First (`>= 80%` diện tích bản đồ), `CombatPreviewBox`, Top Bar (`enable_economy = false`), Briefing, Hội thoại kịch bản & màn Tổng kết 3 Sao.
 - [ ] **C4-T3:** Tích hợp Game Feel / Juice sạch 100% (shader `hit_flash.gdshader`, `water_flow.gdshader`, Hit-stop, `CPUParticles2D`, âm thanh tổng hợp sạch khai báo trong `ASSETS.md`) & Save/Load phiên trận đánh 2 tầng.
 
 ---
