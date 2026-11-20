@@ -31,6 +31,9 @@ var _selected_unit: BattleUnit = null
 var _reachable_hexes: Dictionary[Vector2i, int] = {}
 var _attackable_hexes: Array[Vector2i] = []
 var _skill_hexes: Array[Vector2i] = []
+var _skill_aoe_hexes: Array[Vector2i] = []
+var _aim_target_hex: Vector2i = Vector2i(-9999, -9999)
+var _has_aim_target: bool = false
 var _preview_path: Array[Vector2i] = []
 var _key_areas: Dictionary[Vector2i, int] = {}
 var _strategic_lod: bool = false
@@ -194,8 +197,80 @@ func clear_selection() -> void:
 	_reachable_hexes.clear()
 	_attackable_hexes.clear()
 	_skill_hexes.clear()
+	_skill_aoe_hexes.clear()
+	_has_aim_target = false
+	_aim_target_hex = Vector2i(-9999, -9999)
 	_preview_path.clear()
 	_refresh_overlay_layers()
+
+
+func set_post_move_overlays(unit: BattleUnit) -> void:
+	if _map_state == null or _navigator == null or unit == null:
+		clear_selection()
+		return
+	_selected_hex = unit.hex_position
+	_has_selection = true
+	_selected_unit = unit
+	_preview_path.clear()
+	_reachable_hexes.clear()
+	_skill_hexes.clear()
+	_skill_aoe_hexes.clear()
+	_has_aim_target = false
+	_aim_target_hex = Vector2i(-9999, -9999)
+	_attackable_hexes.clear()
+	if unit.state.can_attack():
+		for h: Vector2i in _navigator.get_attackable_hexes(_map_state, unit, unit.hex_position):
+			var occ: BattleUnit = _map_state.get_unit_at(h)
+			if occ != null and _map_state.is_hostile(unit.faction_id, occ.faction_id):
+				_attackable_hexes.append(h)
+	_refresh_overlay_layers()
+
+
+func set_skill_area_hexes(range_hexes: Array[Vector2i], aoe_hexes: Array[Vector2i] = []) -> void:
+	_skill_hexes = range_hexes.duplicate()
+	_skill_aoe_hexes = aoe_hexes.duplicate()
+	_queue_layer_redraw("SkillAreaLayer")
+
+
+func clear_move_and_attack_overlays() -> void:
+	_reachable_hexes.clear()
+	_attackable_hexes.clear()
+	_preview_path.clear()
+	_refresh_overlay_layers()
+
+
+func clear_skill_area_hexes() -> void:
+	_skill_hexes.clear()
+	_skill_aoe_hexes.clear()
+	_queue_layer_redraw("SkillAreaLayer")
+
+
+func get_skill_area_hexes() -> Array[Vector2i]:
+	return _skill_hexes
+
+
+func get_skill_aoe_hexes() -> Array[Vector2i]:
+	return _skill_aoe_hexes
+
+
+func set_aim_target_hex(axial: Vector2i) -> void:
+	_aim_target_hex = axial
+	_has_aim_target = true
+	_queue_layer_redraw("SelectionAndAimLayer")
+
+
+func clear_aim_target_hex() -> void:
+	_has_aim_target = false
+	_aim_target_hex = Vector2i(-9999, -9999)
+	_queue_layer_redraw("SelectionAndAimLayer")
+
+
+func get_aim_target_hex() -> Vector2i:
+	return _aim_target_hex
+
+
+func has_aim_target() -> bool:
+	return _has_aim_target
 
 
 func get_selected_unit() -> BattleUnit:
@@ -323,6 +398,8 @@ func _draw_world_layer(canvas: Node2D, layer_id: String) -> void:
 			_draw_reachable_layer(canvas)
 		"AttackableAreaLayer":
 			_draw_attackable_layer(canvas)
+		"SkillAreaLayer":
+			_draw_skill_layer(canvas)
 		"SelectionAndAimLayer":
 			_draw_selection_and_path_layer(canvas)
 		"BuildingAndFortLayer":
@@ -485,6 +562,35 @@ func _draw_attackable_layer(canvas: Node2D) -> void:
 		canvas.draw_multiline(rims, Color(1.0, 0.44, 0.34, 0.94), 2.4)
 
 
+func _draw_skill_layer(canvas: Node2D) -> void:
+	if _skill_hexes.is_empty():
+		return
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var idxs := PackedInt32Array()
+	var rims := PackedVector2Array()
+	var fill := Color(0.95, 0.74, 0.16, 0.28)
+	var aoe_fill := Color(1.0, 0.88, 0.28, 0.48)
+	var aoe_lookup: Dictionary[Vector2i, bool] = {}
+	for ah: Vector2i in _skill_aoe_hexes:
+		aoe_lookup[ah] = true
+
+	for hex: Vector2i in _skill_hexes:
+		var center: Vector2 = HexMath.axial_to_world(hex, hex_size)
+		var c: Color = aoe_fill if aoe_lookup.has(hex) else fill
+		_append_batched_hex(pts, cols, idxs, center, c, true)
+		_append_batched_hex_rim(rims, center, true)
+
+	_flush_batched_triangles(canvas, pts, cols, idxs)
+	if not rims.is_empty():
+		canvas.draw_multiline(rims, Color(1.0, 0.86, 0.30, 0.88), 2.2)
+	if not _skill_aoe_hexes.is_empty():
+		var aoe_rims := PackedVector2Array()
+		for ah: Vector2i in _skill_aoe_hexes:
+			_append_batched_hex_rim(aoe_rims, HexMath.axial_to_world(ah, hex_size), true)
+		canvas.draw_multiline(aoe_rims, Color(1.0, 0.96, 0.60, 0.98), 3.0)
+
+
 func _draw_selection_and_path_layer(canvas: Node2D) -> void:
 	if _has_selection and _map_state.is_valid_hex(_selected_hex):
 		var sel_center: Vector2 = HexMath.axial_to_world(_selected_hex, hex_size)
@@ -498,6 +604,18 @@ func _draw_selection_and_path_layer(canvas: Node2D) -> void:
 		canvas.draw_polyline(pts, Color(1.0, 0.92, 0.42, 0.95), 4.0)
 		var end_pt: Vector2 = pts[pts.size() - 1]
 		canvas.draw_circle(end_pt, 7.0, Color(1.0, 0.88, 0.25))
+
+	if _has_aim_target and _map_state.is_valid_hex(_aim_target_hex):
+		var aim_center: Vector2 = HexMath.axial_to_world(_aim_target_hex, hex_size)
+		canvas.draw_polyline(_hex_closed_loop_at(aim_center, false), Color(1.0, 0.28, 0.18, 0.98), 4.0)
+		canvas.draw_polyline(_hex_closed_loop_at(aim_center, true), Color(1.0, 0.84, 0.22, 0.95), 2.5)
+		var r: float = hex_size * 0.46
+		canvas.draw_arc(aim_center, r, 0.0, TAU, 24, Color(1.0, 0.28, 0.18, 0.92), 2.5)
+		var tick: float = 8.0
+		canvas.draw_line(aim_center + Vector2(-r - 4.0, 0.0), aim_center + Vector2(-r + tick, 0.0), Color(1.0, 0.88, 0.30), 2.8)
+		canvas.draw_line(aim_center + Vector2(r + 4.0, 0.0), aim_center + Vector2(r - tick, 0.0), Color(1.0, 0.88, 0.30), 2.8)
+		canvas.draw_line(aim_center + Vector2(0.0, -r - 4.0), aim_center + Vector2(0.0, -r + tick), Color(1.0, 0.88, 0.30), 2.8)
+		canvas.draw_line(aim_center + Vector2(0.0, r + 4.0), aim_center + Vector2(0.0, r - tick), Color(1.0, 0.88, 0.30), 2.8)
 
 
 func _draw_building_layer(canvas: Node2D) -> void:
@@ -555,6 +673,9 @@ func _draw_strategic_token_layer(canvas: Node2D) -> void:
 		var center: Vector2 = HexMath.axial_to_world(unit.hex_position, hex_size)
 		var f_col: Color = _faction_primary_color(unit.faction_id)
 		var trim_col: Color = _faction_trim_color(unit.faction_id)
+		if unit.state.has_acted:
+			f_col = f_col.darkened(0.42)
+			trim_col = trim_col.darkened(0.32)
 		canvas.draw_rect(Rect2(center - Vector2(26.0, 22.0), Vector2(52.0, 44.0)), trim_col, true)
 		canvas.draw_rect(Rect2(center - Vector2(23.0, 19.0), Vector2(46.0, 38.0)), f_col, true)
 

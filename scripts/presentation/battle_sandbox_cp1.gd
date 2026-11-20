@@ -27,6 +27,7 @@ var _map_state: BattleMapState = null
 var _controller: BattleGameController = null
 var _map_view: BattleMapView = null
 var _camera: BattleCameraController = null
+var _input_fsm: BattleInputFSM = null
 
 var _ai_brain: AIDecisionMatrix = null
 var _auto_enemy_ai: bool = true
@@ -59,8 +60,19 @@ func _setup_scene_nodes() -> void:
 	_camera.name = "BattleCameraController"
 	add_child(_camera)
 
+	_input_fsm = BattleInputFSM.new()
+	_input_fsm.name = "BattleInputFSM"
+	add_child(_input_fsm)
+
 	_camera.strategic_lod_changed.connect(_on_camera_strategic_lod_changed)
+	_camera.clean_right_clicked.connect(_on_camera_clean_right_clicked)
 	_map_view.hex_selected.connect(_on_hex_selected)
+
+	_input_fsm.state_changed.connect(_on_fsm_state_changed)
+	_input_fsm.unit_focused.connect(_on_fsm_unit_focused)
+	_input_fsm.target_preview_requested.connect(_on_fsm_target_preview_requested)
+	_input_fsm.target_preview_cleared.connect(_on_fsm_target_preview_cleared)
+	_input_fsm.action_rejected.connect(_on_fsm_action_rejected)
 
 
 func _build_hud() -> void:
@@ -168,13 +180,10 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+		if not mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 			click_world_position(get_global_mouse_position())
-		elif mb.pressed and mb.button_index == MOUSE_BUTTON_RIGHT:
-			_map_view.clear_selection()
-			_update_selection_hud(Vector2i.ZERO, null)
 	elif event is InputEventMouseMotion:
-		if _map_view.get_selected_unit() != null:
+		if _input_fsm != null and _input_fsm.get_state() != BattleInputFSM.State.IDLE:
 			hover_world_position(get_global_mouse_position())
 	elif event is InputEventScreenTouch:
 		var st: InputEventScreenTouch = event as InputEventScreenTouch
@@ -193,7 +202,17 @@ func _unhandled_input(event: InputEvent) -> void:
 					try_undo_march()
 				KEY_W:
 					try_wait_selected()
-				KEY_SPACE, KEY_ENTER:
+				KEY_K, KEY_Q:
+					try_enter_skill_targeting()
+				KEY_ESCAPE:
+					if _input_fsm != null:
+						_input_fsm.cancel_or_deselect()
+				KEY_ENTER:
+					if _input_fsm != null and _input_fsm.get_state() == BattleInputFSM.State.AIMING_TARGET:
+						_input_fsm.confirm_attack()
+					else:
+						end_active_faction_turn()
+				KEY_SPACE:
 					end_active_faction_turn()
 				KEY_A:
 					run_ai_for_current_faction()
@@ -218,6 +237,8 @@ func load_bach_dang_preview_12x10() -> void:
 		_controller.event_manager.event_triggered.connect(_on_scenario_event_triggered)
 	if not _controller.battle_finished.is_connected(_on_battle_finished):
 		_controller.battle_finished.connect(_on_battle_finished)
+	if not _controller.command_executed.is_connected(_on_controller_command_executed):
+		_controller.command_executed.connect(_on_controller_command_executed)
 	_apply_loaded_map()
 	_sync_objective_markers()
 	var open_dlg: Dictionary = _dialogues.get("talk_opening_bach_dang", {})
@@ -309,6 +330,8 @@ func _spawn_unit_into(
 
 func _apply_loaded_map() -> void:
 	_map_view.bind_battle_state(_map_state, _controller.context.navigator)
+	if _input_fsm != null:
+		_input_fsm.bind(_controller, _map_view, _camera)
 	var bounds: Rect2 = HexMath.compute_map_world_bounds(_map_state.width, _map_state.height, _map_view.hex_size, 48.0)
 	_camera.map_world_bounds = bounds
 	_camera.set_zoom_level(BattleCameraController.ZOOM_DEFAULT, true)
@@ -316,81 +339,20 @@ func _apply_loaded_map() -> void:
 
 
 func click_world_position(world_pos: Vector2) -> void:
-	var axial: Vector2i = HexMath.world_to_axial(world_pos, _map_view.hex_size)
-	if not _map_state.is_valid_hex(axial):
-		_map_view.clear_selection()
-		return
-
-	var selected: BattleUnit = _map_view.get_selected_unit()
-	var clicked_unit: BattleUnit = _map_state.get_unit_at(axial)
-
-	# Active turn command dispatch when a current-faction unit is already selected
-	if (
-		selected != null
-		and _controller.outcome == BattleGameController.BattleOutcome.ONGOING
-		and selected.faction_id == _controller.current_faction_id
-		and not selected.state.has_acted
-	):
-		# 1. Click empty reachable tile -> MarchCommand
-		var reach: Dictionary[Vector2i, int] = _map_view.get_reachable_overlay_hexes()
-		if clicked_unit == null and reach.has(axial) and axial != selected.hex_position:
-			var m_cmd := BattleCommands.MarchCommand.new(
-				_controller.current_faction_id,
-				selected.unit_id,
-				selected.hex_position,
-				axial
-			)
-			if _controller.submit_command(m_cmd):
-				_sync_objective_markers()
-				_map_view.refresh_all_layers()
-				_map_view.select_hex(selected.hex_position)
-				if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
-					var undo_hint: String = "[Z] Hoàn tác được" if _controller.can_undo() else "Khóa Undo (ZoC/Sự kiện/Đã dùng)"
-					_set_bottom_banner("Đã hành quân tới (%d,%d) | %s | Click địch đỏ để Đánh hoặc [W] Đợi" % [
-						HexMath.axial_to_odd_r(axial).x,
-						HexMath.axial_to_odd_r(axial).y,
-						undo_hint,
-					])
-				return
-
-		# 2. Click hostile unit in attack range -> AttackCommand
-		if clicked_unit != null and _map_state.is_hostile(selected.faction_id, clicked_unit.faction_id):
-			var atk_hexes: Array[Vector2i] = _controller.context.navigator.get_attackable_hexes(
-				_map_state,
-				selected,
-				selected.hex_position
-			)
-			if atk_hexes.has(axial):
-				var atk_cmd := BattleCommands.AttackCommand.new(
-					_controller.current_faction_id,
-					selected.unit_id,
-					clicked_unit.unit_id
-				)
-				if _controller.submit_command(atk_cmd):
-					var rep: Dictionary = _controller.context.get_last_combat_report()
-					var crit_tag: String = " [BẠO KÍCH!]" if bool(rep.get("is_crit", false)) else ""
-					var flank_tag: String = " [BỌC SƯỜN]" if bool(rep.get("is_flanked", false)) else ""
-					_camera.add_trauma(0.45 if bool(rep.get("is_crit", false)) else 0.22)
-					_map_view.refresh_units()
-					_map_view.clear_selection()
-					if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
-						_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST | Sĩ khí địch: %s" % [
-							int(rep.get("damage", 0)),
-							crit_tag,
-							flank_tag,
-							int(rep.get("counter_damage", 0)),
-							MORALE_NAMES.get(int(clicked_unit.state.morale), "Đã hạ"),
-						])
-					return
-
-	_map_view.select_hex(axial)
+	if _input_fsm != null:
+		_input_fsm.tap_world_position(world_pos)
 
 
 func hover_world_position(world_pos: Vector2) -> void:
-	var axial: Vector2i = HexMath.world_to_axial(world_pos, _map_view.hex_size)
-	_map_view.preview_path_to(axial)
+	if _input_fsm == null or _controller == null or _map_state == null:
+		return
+	_input_fsm.hover_world_position(world_pos)
 
-	var selected: BattleUnit = _map_view.get_selected_unit()
+	var st: BattleInputFSM.State = _input_fsm.get_state()
+	if st != BattleInputFSM.State.UNIT_SELECTED and st != BattleInputFSM.State.POST_MOVE_ACTION:
+		return
+	var axial: Vector2i = HexMath.world_to_axial(world_pos, _map_view.hex_size)
+	var selected: BattleUnit = _input_fsm.get_active_unit()
 	if selected == null or not _map_state.is_valid_hex(axial):
 		return
 	var target: BattleUnit = _map_state.get_unit_at(axial)
@@ -407,7 +369,7 @@ func hover_world_position(world_pos: Vector2) -> void:
 				selected,
 				target
 			)
-			_set_bottom_banner("DỰ BÁO ĐÁNH [%s -> %s]: ST %d~%d | Crit %d%% (~%d) | Phản kích %d~%d | Khắc chế %d%%%s" % [
+			_set_bottom_banner("DỰ BÁO ĐÁNH [%s -> %s]: ST %d~%d | Crit %d%% (~%d) | Phản kích %d~%d | Khắc chế %d%%%s (Click để ngắm)" % [
 				selected.display_name,
 				target.display_name,
 				int(prev["min_damage"]),
@@ -422,13 +384,9 @@ func hover_world_position(world_pos: Vector2) -> void:
 
 
 func try_undo_march() -> bool:
-	if _controller == null:
+	if _controller == null or _input_fsm == null:
 		return false
-	if _controller.undo_last_action():
-		_map_view.refresh_units()
-		var sel: BattleUnit = _map_view.get_selected_unit()
-		if sel != null:
-			_map_view.select_hex(sel.hex_position)
+	if _input_fsm.request_undo():
 		_set_bottom_banner("Đã Hoàn Tác (Undo 1/1) bước di chuyển về ô cũ & hoàn trả đủ MP!")
 		return true
 	_set_bottom_banner("Không thể Undo (chưa đi / đã hành động / vào ZoC / dính bẫy / đã dùng 1 lần Undo).")
@@ -436,21 +394,28 @@ func try_undo_march() -> bool:
 
 
 func try_wait_selected() -> bool:
-	var sel: BattleUnit = _map_view.get_selected_unit()
-	if sel == null or sel.faction_id != _controller.current_faction_id:
+	if _input_fsm == null:
 		return false
-	if _controller.submit_command(BattleCommands.WaitCommand.new(_controller.current_faction_id, sel.unit_id)):
-		_map_view.refresh_units()
-		_map_view.clear_selection()
-		_set_bottom_banner("Đơn vị [%s] chốt vị trí Đợi." % sel.display_name)
+	var sel: BattleUnit = _input_fsm.get_active_unit()
+	if _input_fsm.request_wait():
+		if sel != null:
+			_set_bottom_banner("Đơn vị [%s] chốt vị trí Đợi." % sel.display_name)
 		return true
 	return false
+
+
+func try_enter_skill_targeting() -> bool:
+	if _input_fsm == null:
+		return false
+	return _input_fsm.enter_skill_targeting()
 
 
 func end_active_faction_turn() -> bool:
 	if _controller == null:
 		return false
 	if _controller.submit_command(BattleCommands.EndTurnCommand.new(_controller.current_faction_id)):
+		if _input_fsm != null:
+			_input_fsm.sync_with_controller()
 		_map_view.clear_selection()
 		_sync_objective_markers()
 		_map_view.refresh_all_layers()
@@ -477,6 +442,8 @@ func run_ai_for_current_faction() -> Dictionary:
 	var active_fac: int = _controller.current_faction_id
 	_last_event_text = ""
 	var rep: Dictionary = _ai_brain.execute_faction_turn(_controller, active_fac, _controller.director)
+	if _input_fsm != null:
+		_input_fsm.sync_with_controller()
 	_map_view.clear_selection()
 	_sync_objective_markers()
 	_map_view.refresh_all_layers()
@@ -584,6 +551,89 @@ func _on_camera_strategic_lod_changed(use_tokens: bool) -> void:
 	_map_view.set_strategic_lod(use_tokens)
 
 
+func _on_camera_clean_right_clicked(_screen_pos: Vector2) -> void:
+	if _input_fsm != null:
+		_input_fsm.cancel_or_deselect()
+
+
+func _on_controller_command_executed(command_type: String, faction_id: int) -> void:
+	if _controller == null or _controller.context == null:
+		return
+	if faction_id != _controller.player_faction_id:
+		return
+	if command_type == "March":
+		_sync_objective_markers()
+	elif command_type == "Attack":
+		var rep: Dictionary = _controller.context.get_last_combat_report()
+		var crit_tag: String = " [BẠO KÍCH!]" if bool(rep.get("is_crit", false)) else ""
+		var flank_tag: String = " [BỌC SƯỜN]" if bool(rep.get("is_flanked", false)) else ""
+		_camera.add_trauma(0.45 if bool(rep.get("is_crit", false)) else 0.22)
+		if _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+			_set_bottom_banner("Giao chiến: Gây %d ST%s%s | Phản kích: %d ST" % [
+				int(rep.get("damage", 0)),
+				crit_tag,
+				flank_tag,
+				int(rep.get("counter_damage", 0)),
+			])
+	elif command_type == "CastSkill":
+		_set_bottom_banner("Đã thi triển Mưu Lược Hịch Tướng Sĩ (CD: 3 lượt)!")
+
+
+func _on_fsm_state_changed(_old_state: BattleInputFSM.State, new_state: BattleInputFSM.State) -> void:
+	if _controller == null or _input_fsm == null:
+		return
+	if new_state == BattleInputFSM.State.POST_MOVE_ACTION:
+		var u: BattleUnit = _input_fsm.get_active_unit()
+		if u != null and _controller.outcome == BattleGameController.BattleOutcome.ONGOING:
+			var off: Vector2i = HexMath.axial_to_odd_r(u.hex_position)
+			var undo_hint: String = "[Z] Hoàn tác được" if _input_fsm.can_undo_post_move() else "Khóa Undo"
+			var skill_hint: String = " | [K] Mưu Lược" if _input_fsm.can_active_unit_use_skill() else ""
+			_set_bottom_banner("Sau hành quân (%d,%d) | %s%s | Click địch để Ngắm | [W] hoặc click lại ô để Đợi" % [
+				off.x, off.y, undo_hint, skill_hint
+			])
+	elif new_state == BattleInputFSM.State.SKILL_TARGETING:
+		_set_bottom_banner("MƯU LƯỢC [Hịch Tướng Sĩ]: Chọn ô vàng (tầm 2, AoE 1) | Chuột phải / [Esc] Hủy")
+
+
+func _on_fsm_unit_focused(unit: BattleUnit) -> void:
+	if unit == null:
+		_update_selection_hud(Vector2i.ZERO, null)
+	else:
+		_update_selection_hud(unit.hex_position, unit)
+
+
+func _on_fsm_target_preview_requested(
+	attacker: BattleUnit,
+	defender: BattleUnit,
+	prev: Dictionary
+) -> void:
+	if attacker == null or defender == null:
+		return
+	_set_bottom_banner("XÁC NHẬN ĐÁNH [%s -> %s]: ST %d~%d | Crit %d%% (~%d) | Phản kích %d~%d | Click lần 2 / [Enter] để Đánh | Chuột phải Hủy" % [
+		attacker.display_name,
+		defender.display_name,
+		int(prev.get("min_damage", 0)),
+		int(prev.get("max_damage", 0)),
+		int(prev.get("crit_rate", 0)),
+		int(prev.get("crit_max_damage", 0)),
+		int(prev.get("counter_min_damage", 0)),
+		int(prev.get("counter_max_damage", 0)),
+	])
+
+
+func _on_fsm_target_preview_cleared() -> void:
+	if _input_fsm != null and _input_fsm.get_active_unit() != null:
+		var u: BattleUnit = _input_fsm.get_active_unit()
+		_update_selection_hud(u.hex_position, u)
+
+
+func _on_fsm_action_rejected(reason: String) -> void:
+	if reason == "post_move_must_act_undo_or_wait":
+		_set_bottom_banner("Đã di chuyển: Chọn Địch để Đánh, [K] Mưu lược, [Z] Hoàn tác, hoặc [W]/click lại ô để Đợi!")
+	elif reason == "cannot_undo_use_wait_or_action":
+		_set_bottom_banner("Không thể Hoàn tác (ZoC/Sự kiện/FoW/Đã dùng Undo) — Hãy chọn Đánh, Mưu lược hoặc [W] Đợi!")
+
+
 func _on_hex_selected(axial: Vector2i, unit: BattleUnit) -> void:
 	_update_selection_hud(axial, unit)
 
@@ -639,3 +689,7 @@ func get_map_view() -> BattleMapView:
 
 func get_camera() -> BattleCameraController:
 	return _camera
+
+
+func get_input_fsm() -> BattleInputFSM:
+	return _input_fsm

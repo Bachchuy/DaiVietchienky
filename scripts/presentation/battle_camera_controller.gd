@@ -2,11 +2,13 @@ class_name BattleCameraController
 extends Camera2D
 
 signal strategic_lod_changed(use_strategic_tokens: bool)
+signal clean_right_clicked(screen_pos: Vector2)
 
 const ZOOM_TACTICAL: float = 1.2
 const ZOOM_DEFAULT: float = 1.0
 const ZOOM_STRATEGIC: float = 0.5
 const DEFAULT_STRATEGIC_THRESHOLD: float = 0.65
+const DRAG_THRESHOLD_PX: float = 6.0
 
 @export_group("Navigation & Bounds")
 @export var smooth_speed: float = 10.0
@@ -30,6 +32,10 @@ var _current_zoom: float = ZOOM_DEFAULT
 var _is_strategic_mode: bool = false
 var _trauma: float = 0.0
 var _is_mouse_dragging: bool = false
+var _drag_button: int = -1
+var _drag_start_pos: Vector2 = Vector2.ZERO
+var _drag_accumulated: Vector2 = Vector2.ZERO
+var _drag_exceeded_threshold: bool = false
 
 ## Visual-only RNG strictly isolated from core battle simulation RNG.
 var _fx_rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -45,20 +51,48 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if camera_locked:
-		_is_mouse_dragging = false
+		_reset_drag_state()
 		return
 
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
-		if mb.button_index == MOUSE_BUTTON_MIDDLE or mb.button_index == MOUSE_BUTTON_RIGHT:
-			_is_mouse_dragging = mb.pressed
+		if (
+			mb.button_index == MOUSE_BUTTON_MIDDLE
+			or mb.button_index == MOUSE_BUTTON_RIGHT
+			or mb.button_index == MOUSE_BUTTON_LEFT
+		):
+			if mb.pressed:
+				_drag_button = mb.button_index
+				_drag_start_pos = mb.position
+				_drag_accumulated = Vector2.ZERO
+				_drag_exceeded_threshold = false
+				_is_mouse_dragging = false
+			elif mb.button_index == _drag_button:
+				var btn: int = _drag_button
+				var was_drag: bool = _drag_exceeded_threshold
+				_reset_drag_state()
+				if was_drag:
+					if get_viewport() != null:
+						get_viewport().set_input_as_handled()
+				elif btn == MOUSE_BUTTON_RIGHT:
+					clean_right_clicked.emit(mb.position)
+					if get_viewport() != null:
+						get_viewport().set_input_as_handled()
 		elif mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_UP:
 			set_zoom_level(_target_zoom + zoom_step)
 		elif mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			set_zoom_level(_target_zoom - zoom_step)
-	elif event is InputEventMouseMotion and _is_mouse_dragging:
+	elif event is InputEventMouseMotion and _drag_button != -1:
 		var mm: InputEventMouseMotion = event as InputEventMouseMotion
-		_target_position = _clamp_to_map_bounds(_target_position - mm.relative / maxf(_current_zoom, 0.1))
+		_drag_accumulated += mm.relative
+		var dist: float = maxf(mm.position.distance_to(_drag_start_pos), _drag_accumulated.length())
+		if not _drag_exceeded_threshold and dist > DRAG_THRESHOLD_PX:
+			_drag_exceeded_threshold = true
+			_is_mouse_dragging = true
+		if _is_mouse_dragging:
+			_target_position = _clamp_to_map_bounds(_target_position - mm.relative / maxf(_current_zoom, 0.1))
+			if get_viewport() != null:
+				get_viewport().set_input_as_handled()
 	elif event is InputEventScreenDrag:
 		var sd: InputEventScreenDrag = event as InputEventScreenDrag
 		_target_position = _clamp_to_map_bounds(_target_position - sd.relative / maxf(_current_zoom, 0.1))
@@ -145,6 +179,18 @@ func get_trauma() -> float:
 
 func is_strategic_mode() -> bool:
 	return _is_strategic_mode
+
+
+func is_mouse_dragging() -> bool:
+	return _is_mouse_dragging
+
+
+func _reset_drag_state() -> void:
+	_drag_button = -1
+	_drag_start_pos = Vector2.ZERO
+	_drag_accumulated = Vector2.ZERO
+	_drag_exceeded_threshold = false
+	_is_mouse_dragging = false
 
 
 func pan_to_world_pos(world_pos: Vector2, instant: bool = false) -> void:
