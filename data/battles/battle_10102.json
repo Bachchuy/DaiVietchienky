@@ -1,0 +1,47 @@
+{
+	"stage_id": 10102,
+	"name": "Hội Thề Bình Than & Phòng Tuyến Vạn Kiếp 1282",
+	"coordinate_space": "odd_r",
+	"map_width": 10,
+	"map_height": 8,
+	"max_rounds": 8,
+	"enable_economy": false,
+	"player_faction_id": 1,
+	"default_terrain": "Plains",
+	"turn_order": [1, 2],
+	"factions": [
+		{"faction_id": 1, "name": "Đại Việt", "team_id": 1, "is_player": true, "target_generals": [9002], "protected_generals": [1001]},
+		{"faction_id": 2, "name": "Đại Nguyên", "team_id": 2, "is_player": false, "target_generals": [1001], "protected_generals": [9002]}
+	],
+	"terrain_overrides": [
+		{"q": 2, "r": 5, "terrain": "Fort", "fort_owner": 1},
+		{"q": 3, "r": 4, "terrain": "Forest"},
+		{"q": 4, "r": 4, "terrain": "Hills"}
+	],
+	"areas": [
+		{"area_id": "van_kiep_camp", "name": "Dinh Trại Vạn Kiếp", "hexes": [{"q": 2, "r": 5}], "initial_owner": 1, "is_objective": true}
+	],
+	"placements": [
+		{"unit_id": 101, "faction_id": 1, "troop_id": 40105, "troop_stack": 3, "hex": {"q": 2, "r": 5}, "general_id": 1001, "general_name": "Trần Quốc Tuấn", "is_commander_in_chief": true, "initial_morale": "HIGH"},
+		{"unit_id": 102, "faction_id": 1, "troop_id": 40103, "troop_stack": 2, "hex": {"q": 3, "r": 5}, "general_id": 1007, "general_name": "Trần Quốc Toản", "initial_morale": "HIGH"},
+		{"unit_id": 201, "faction_id": 2, "troop_id": 40903, "troop_stack": 3, "hex": {"q": 7, "r": 2}, "general_id": 9002, "general_name": "Thoát Hoan", "is_commander_in_chief": true},
+		{"unit_id": 202, "faction_id": 2, "troop_id": 40904, "troop_stack": 2, "hex": {"q": 6, "r": 3}}
+	],
+	"victory_conditions": [
+		{"type": "DefeatGeneral", "target_general_id": 9002},
+		{"type": "HoldAreaAndAttrition", "area_id": "van_kiep_camp", "required_owner": 1, "min_enemy_defeated_percent": 50.0, "at_round": 8}
+	],
+	"defeat_conditions": [
+		{"type": "LoseKeyArea", "area_id": "van_kiep_camp"},
+		{"type": "GeneralDefeated", "target_general_id": 1001}
+	],
+	"star_conditions": [
+		{"star": 1, "type": "Victory", "description": "Giữ vững phòng tuyến Vạn Kiếp"},
+		{"star": 2, "type": "MaxRounds", "max_rounds": 6, "description": "Chiến thắng trong <= 6 vòng"},
+		{"star": 3, "type": "MaxHpLossPercent", "max_loss_percent": 25.0, "description": "Tổn thất HP <= 25%"}
+	],
+	"dialogues": {
+		"talk_opening_10102": {"speaker": "Trần Quốc Toản", "line": "Phá cường địch, báo hoàng ân! Giữ vững phòng tuyến Bình Than – Vạn Kiếp!"}
+	},
+	"events": []
+}

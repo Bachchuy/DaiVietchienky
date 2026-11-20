@@ -2,14 +2,15 @@
 
 - **Dự án:** Đại Việt Chiến Kỳ (`VietNamHistoryStrategy`) — Godot 4.7.2, Thuần GDScript 2.0 (`gl_compatibility`).
 - **Tài liệu chuẩn:** GDD v3.4.1 (`docs/gdd/`).
-- **Cổng hiện tại:** **ĐANG THỰC HIỆN CỔNG 5 (`CP5` / Gates `P3–P5`)** — Hoàn thành `C5-T1` (Kinh tế chiến trường `BattleEconomy`).
-- **Nhiệm vụ vừa xong:** `C5-T1` (`BattleEconomy` 4 tài nguyên `Coin`, `Food`, `Tech`, `Mana`, `facility_settings.json`, thu hoạch công trình & `TotalMealFood`, luật `Starvation` hạ sĩ khí chạm đáy `LOW` + `0.75x` sát thương + khóa hồi máu, và 7 lệnh kinh tế tất định không hoàn tác).
-- **Tiến độ Cổng 5:** `1 / 3` nhiệm vụ hoàn thành (Cổng 1: `6 / 6`, Cổng 2: `4 / 4`, Cổng 3: `3 / 3`, Cổng 4: `3 / 3`).
-- **Trạng thái bộ test (`tests/run_tests.gd`):** `74/74 passed | 0 failed | 6376 assertions`.
+- **Cổng hiện tại:** **ĐANG THỰC HIỆN CỔNG 5 (`CP5` / Gates `P3–P5`)** — Hoàn thành `C5-T2` (Gói Chiến dịch Thời Trần 6 màn, Tutorial ngữ cảnh, Codex lịch sử & Asset IP Gate sạch 100%).
+- **Nhiệm vụ vừa xong:** `C5-T2` (`stage_settings.json` 6 màn + `battle_10101..10106.json` gồm Vân Đồn `enable_economy: true`, 12 binh chủng sạch thế kỷ XIII, 9 danh tướng `general_settings.json`, `codex_entries.json` phân tách `938/981/1288`, `CampaignMenuController`, `TutorialOverlay`, `CodexPanel`, và `AssetIpAuditor`).
+- **Tiến độ Cổng 5:** `2 / 3` nhiệm vụ hoàn thành (Cổng 1: `6 / 6`, Cổng 2: `4 / 4`, Cổng 3: `3 / 3`, Cổng 4: `3 / 3`).
+- **Trạng thái bộ test (`tests/run_tests.gd`):** `79/79 passed | 0 failed | 6456 assertions`.
 
 ---
 
 ## Lịch sử hoàn thành gần nhất
+- `C5-T2`: Hoàn thiện gói dữ liệu & giao diện Chiến dịch thời Trần 6 màn (`data/settings/stage_settings.json`, `data/battles/battle_10102..10106.json`, `data/settings/general_settings.json`, `data/settings/codex_entries.json`, mở rộng `data/settings/troop_settings.json` lên 12 binh chủng sạch không thuốc súng — toàn bộ đăng ký trong `ASSETS.md`), triển khai `CampaignMenuController` (`scenes/main_menu.tscn`), `TutorialOverlay`, `CodexPanel` (`scenes/ui/codex_panel.tscn`), và `AssetIpAuditor` (`scripts/core/asset_ip_auditor.gd`), kiểm chứng qua 5 bài test TDD tại `tests/test_tran_campaign_and_ip_gate.gd` (`79/79` pass).
 - `C5-T1`: Triển khai `BattleEconomy` (`scripts/core/battle_economy.gd`) và `data/settings/facility_settings.json` (đã đăng ký trong `ASSETS.md`), tích hợp 7 lệnh kinh tế (`RobAreaIncomeCommand`, `TradeCommand`, `UpgradeFacilityCommand`, `FortifyHexCommand`, `UnlockBattleTechCommand`, `RecruitCommand`, `ApplyTacticCommand`) vào `BattleCommands`, `BattleContext`, `BattleGameController`, `ScenarioLoader`, `BattleInputFSM` và `BattleHudController`, kiểm chứng qua 5 bài test TDD tại `tests/test_battlefield_economy.gd` (`74/74` pass).
 - `C4-T3`: Hoàn thiện gói Game Feel / Juice sạch 100% (`assets_clean/shaders/hit_flash.gdshader`, `assets_clean/shaders/water_flow.gdshader`, 7 tệp âm thanh PCM `.wav` tổng hợp sạch tại `assets_clean/audio/` đã đăng ký trong `ASSETS.md`), `CombatJuiceHelper` (`scripts/presentation/combat_juice_helper.gd`), `BattleAudioManager` (`scripts/presentation/battle_audio_manager.gd`), và `BattleSaveManager` (`scripts/core/battle_save_manager.gd`), tích hợp vào `BattleMapView` và `BattleSandboxCP1`, kiểm chứng qua 6 bài test TDD tại `tests/test_juice_and_save_load.gd` (`69/69` pass).
 - `C4-T2`: Triển khai `BattleHudController` (`scripts/presentation/battle_hud_controller.gd`), nâng cấp `BattleMapView` (vẽ thanh HP chia vạch `100 HP`, nhấp nháy lượng HP dự kiến mất khi ngắm đánh, huy hiệu hình học sĩ khí/CC phi màu sắc, màn sương Fog of War 2 mức trên `FogOfWarLayer z=50`), tích hợp đầy đủ vào `BattleSandboxCP1` kèm chặn click xuyên HUD (`_is_screen_point_on_hud`), và bổ sung 7 bài test TDD tại `tests/test_battle_hud_and_flow.gd` (`63/63` pass).

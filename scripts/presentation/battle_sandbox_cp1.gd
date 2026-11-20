@@ -796,3 +796,11 @@ func get_audio_manager() -> BattleAudioManager:
 
 func get_save_manager() -> BattleSaveManager:
 	return _save_manager
+
+
+func get_tutorial_overlay() -> TutorialOverlay:
+	return _hud_controller.get_tutorial_overlay() if _hud_controller != null else null
+
+
+func get_codex_panel() -> CodexPanel:
+	return _hud_controller.get_codex_panel() if _hud_controller != null else null

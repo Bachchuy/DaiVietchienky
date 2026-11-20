@@ -1,0 +1,59 @@
+{
+	"stage_id": 10105,
+	"name": "Phục Kích Đoàn Lương Vân Đồn 1288",
+	"coordinate_space": "odd_r",
+	"map_width": 10,
+	"map_height": 8,
+	"max_rounds": 10,
+	"enable_economy": true,
+	"player_faction_id": 1,
+	"default_terrain": "Plains",
+	"turn_order": [1, 2],
+	"economy": {
+		"factions": {
+			"1": {"coin": 360, "food": 280, "tech": 140, "mana": 90},
+			"2": {"coin": 300, "food": 120, "tech": 100, "mana": 60}
+		},
+		"facilities": [
+			{"id": "van_don_farm_1", "owner": 1, "type": "Farm", "level": 1, "turns_unrobbed": 1, "has_granary": true},
+			{"id": "van_don_market_1", "owner": 1, "type": "Market", "level": 1, "turns_unrobbed": 1, "has_granary": false},
+			{"id": "van_don_granary_1", "owner": 1, "type": "Granary", "level": 1, "turns_unrobbed": 1, "has_granary": true},
+			{"id": "yuan_supply_convoy", "owner": 2, "type": "Farm", "level": 2, "turns_unrobbed": 2, "has_granary": false}
+		]
+	},
+	"factions": [
+		{"faction_id": 1, "name": "Đại Việt", "team_id": 1, "is_player": true, "target_generals": [9001], "protected_generals": [1004]},
+		{"faction_id": 2, "name": "Đoàn Lương Đại Nguyên", "team_id": 2, "is_player": false, "target_generals": [1004], "protected_generals": [9001]}
+	],
+	"terrain_overrides": [
+		{"q": 4, "r": 0, "terrain": "DeepWater"}, {"q": 5, "r": 0, "terrain": "DeepWater"},
+		{"q": 4, "r": 1, "terrain": "DeepWater"}, {"q": 5, "r": 1, "terrain": "DeepWater"},
+		{"q": 4, "r": 2, "terrain": "DeepWater"}, {"q": 5, "r": 2, "terrain": "DeepWater"},
+		{"q": 4, "r": 3, "terrain": "DeepWater"}, {"q": 5, "r": 3, "terrain": "DeepWater"},
+		{"q": 4, "r": 4, "terrain": "ShallowRiver"}, {"q": 5, "r": 4, "terrain": "ShallowRiver"},
+		{"q": 2, "r": 6, "terrain": "Fort", "fort_owner": 1}
+	],
+	"areas": [
+		{"area_id": "van_don_supply_port", "name": "Bến Lương Vân Đồn", "hexes": [{"q": 2, "r": 6}], "initial_owner": 1, "is_objective": true}
+	],
+	"placements": [
+		{"unit_id": 101, "faction_id": 1, "troop_id": 40202, "troop_stack": 3, "hex": {"q": 4, "r": 4}, "general_id": 1004, "general_name": "Trần Khánh Dư", "is_commander_in_chief": true, "initial_morale": "HIGH"},
+		{"unit_id": 102, "faction_id": 1, "troop_id": 40105, "troop_stack": 2, "hex": {"q": 2, "r": 6}, "general_id": 1006, "general_name": "Nguyễn Khoái"},
+		{"unit_id": 201, "faction_id": 2, "troop_id": 40901, "troop_stack": 3, "hex": {"q": 5, "r": 2}, "general_id": 9001, "general_name": "Trương Văn Hổ", "is_commander_in_chief": true},
+		{"unit_id": 202, "faction_id": 2, "troop_id": 40901, "troop_stack": 2, "hex": {"q": 4, "r": 2}}
+	],
+	"victory_conditions": [
+		{"type": "DefeatGeneral", "target_general_id": 9001}
+	],
+	"defeat_conditions": [
+		{"type": "LoseKeyArea", "area_id": "van_don_supply_port"},
+		{"type": "GeneralDefeated", "target_general_id": 1004}
+	],
+	"star_conditions": [
+		{"star": 1, "type": "Victory", "description": "Thiêu hủy đoàn thuyền lương Vân Đồn"},
+		{"star": 2, "type": "MaxRounds", "max_rounds": 7, "description": "Chiến thắng trong <= 7 vòng"},
+		{"star": 3, "type": "MaxHpLossPercent", "max_loss_percent": 20.0, "description": "Tổn thất HP <= 20%"}
+	],
+	"dialogues": {},
+	"events": []
+}

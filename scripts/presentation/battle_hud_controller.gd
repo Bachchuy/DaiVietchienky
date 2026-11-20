@@ -104,6 +104,8 @@ var _sfx_vol_slider: HSlider = null
 var _resume_btn: Button = null
 var _restart_btn: Button = null
 var _save_exit_btn: Button = null
+var _tutorial_overlay: TutorialOverlay = null
+var _codex_panel: CodexPanel = null
 
 var _stage_dialogues: Dictionary = {}
 var _dialogue_queue: Array[Dictionary] = []
@@ -138,6 +140,14 @@ func setup(
 	_build_result_summary_modal()
 	_build_pause_settings_modal()
 
+	_tutorial_overlay = TutorialOverlay.new()
+	_tutorial_overlay.visible = false
+	_hud_layer.add_child(_tutorial_overlay)
+
+	_codex_panel = CodexPanel.new()
+	_codex_panel.visible = false
+	_hud_layer.add_child(_codex_panel)
+
 	apply_viewport_layout(_get_current_viewport_size())
 
 
@@ -157,6 +167,10 @@ func bind_battle(
 		_summary_modal.visible = false
 	if _pause_modal != null:
 		_pause_modal.visible = false
+	if _tutorial_overlay != null:
+		_tutorial_overlay.visible = false
+	if _codex_panel != null:
+		_codex_panel.visible = false
 	hide_combat_preview()
 
 	if _controller != null:
@@ -380,6 +394,14 @@ func get_perf_label() -> Label:
 	return _perf_label
 
 
+func get_tutorial_overlay() -> TutorialOverlay:
+	return _tutorial_overlay
+
+
+func get_codex_panel() -> CodexPanel:
+	return _codex_panel
+
+
 func is_any_modal_open() -> bool:
 	if _briefing_modal != null and _briefing_modal.visible:
 		return true
@@ -409,6 +431,10 @@ func dismiss_all_modals() -> void:
 		_summary_modal.visible = false
 	if _pause_modal != null:
 		_pause_modal.visible = false
+	if _tutorial_overlay != null:
+		_tutorial_overlay.visible = false
+	if _codex_panel != null:
+		_codex_panel.visible = false
 	if _camera != null:
 		_camera.camera_locked = false
 	if _input_fsm != null:
@@ -859,6 +885,10 @@ func open_pause_modal() -> void:
 func close_pause_modal() -> void:
 	if _pause_modal != null:
 		_pause_modal.visible = false
+	if _tutorial_overlay != null:
+		_tutorial_overlay.visible = false
+	if _codex_panel != null:
+		_codex_panel.visible = false
 
 
 func toggle_pause_modal() -> void:

@@ -1,0 +1,45 @@
+{
+	"stage_id": 10106,
+	"name": "Truy Kích Nội Bàng – Vạn Kiếp 1288",
+	"coordinate_space": "odd_r",
+	"map_width": 10,
+	"map_height": 8,
+	"max_rounds": 10,
+	"enable_economy": false,
+	"player_faction_id": 1,
+	"default_terrain": "Plains",
+	"turn_order": [1, 2],
+	"factions": [
+		{"faction_id": 1, "name": "Đại Việt", "team_id": 1, "is_player": true, "target_generals": [9002], "protected_generals": [1001]},
+		{"faction_id": 2, "name": "Đại Nguyên", "team_id": 2, "is_player": false, "target_generals": [1001], "protected_generals": [9002]}
+	],
+	"terrain_overrides": [
+		{"q": 3, "r": 3, "terrain": "Forest"},
+		{"q": 4, "r": 3, "terrain": "Forest"},
+		{"q": 5, "r": 3, "terrain": "Hills"},
+		{"q": 2, "r": 6, "terrain": "Fort", "fort_owner": 1}
+	],
+	"areas": [
+		{"area_id": "noi_bang_pass", "name": "Ải Nội Bàng", "hexes": [{"q": 2, "r": 6}], "initial_owner": 1, "is_objective": true}
+	],
+	"placements": [
+		{"unit_id": 101, "faction_id": 1, "troop_id": 40104, "troop_stack": 2, "hex": {"q": 2, "r": 6}, "general_id": 1001, "general_name": "Trần Quốc Tuấn", "is_commander_in_chief": true, "initial_morale": "HIGH"},
+		{"unit_id": 102, "faction_id": 1, "troop_id": 40101, "troop_stack": 3, "hex": {"q": 3, "r": 4}, "general_id": 1005, "general_name": "Phạm Ngũ Lão", "initial_morale": "HIGH"},
+		{"unit_id": 201, "faction_id": 2, "troop_id": 40903, "troop_stack": 3, "hex": {"q": 7, "r": 2}, "general_id": 9002, "general_name": "Thoát Hoan", "is_commander_in_chief": true},
+		{"unit_id": 202, "faction_id": 2, "troop_id": 40904, "troop_stack": 2, "hex": {"q": 6, "r": 2}}
+	],
+	"victory_conditions": [
+		{"type": "DefeatGeneral", "target_general_id": 9002}
+	],
+	"defeat_conditions": [
+		{"type": "LoseKeyArea", "area_id": "noi_bang_pass"},
+		{"type": "GeneralDefeated", "target_general_id": 1001}
+	],
+	"star_conditions": [
+		{"star": 1, "type": "Victory", "description": "Truy kích đại quân Thoát Hoan tại ải Nội Bàng"},
+		{"star": 2, "type": "MaxRounds", "max_rounds": 8, "description": "Chiến thắng trong <= 8 vòng"},
+		{"star": 3, "type": "MaxHpLossPercent", "max_loss_percent": 20.0, "description": "Tổn thất HP <= 20%"}
+	],
+	"dialogues": {},
+	"events": []
+}
