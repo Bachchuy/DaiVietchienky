@@ -31,6 +31,11 @@ var command_history: CommandHistory = null
 var director: ScenarioDirector = null
 var event_manager: ScenarioEventManager = null
 var victory_evaluator: ScenarioVictoryEvaluator = null
+var economy: RefCounted = null:
+	set(value):
+		economy = value
+		if context != null:
+			context.economy = value
 
 var faction_turn_order: Array[int] = [1, 3]
 var player_faction_id: int = 1
@@ -44,6 +49,8 @@ var outcome: BattleOutcome = BattleOutcome.ONGOING
 
 var _turn_order_index: int = 0
 var _custom_victory_evaluator: Callable = Callable()
+var _had_initial_player_units: bool = false
+var _had_initial_hostile_units: bool = false
 
 
 func _init(
@@ -71,6 +78,7 @@ func _sync_context_links() -> void:
 		context.director = director
 	if victory_evaluator != null:
 		context.victory_evaluator = victory_evaluator
+	context.economy = economy
 	context.current_round = current_round
 	context.current_faction_id = current_faction_id
 
@@ -80,6 +88,13 @@ func start_battle() -> void:
 	outcome = BattleOutcome.ONGOING
 	context.forced_battle_outcome = 0
 	command_history.clear_turn_undo_stack()
+	_had_initial_player_units = false
+	_had_initial_hostile_units = false
+	for u: BattleUnit in context.map_state.get_all_units():
+		if context.map_state.is_allied(player_faction_id, u.faction_id):
+			_had_initial_player_units = true
+		elif context.map_state.is_hostile(player_faction_id, u.faction_id):
+			_had_initial_hostile_units = true
 	_sync_context_links()
 	_begin_next_round()
 
@@ -95,6 +110,10 @@ func _begin_next_round() -> void:
 	_set_phase(BattlePhase.PHASE_1_BEGIN_ROUND)
 	current_round += 1
 	_sync_context_links()
+
+	if enable_economy and economy != null and economy.has_method("process_begin_round") and current_round > 1:
+		for f_id: int in faction_turn_order:
+			economy.call("process_begin_round", f_id, context.map_state)
 
 	if event_manager != null:
 		event_manager.check_and_execute("OnRoundStart", context, self, director)
@@ -221,9 +240,9 @@ func _check_immediate_victory_or_defeat() -> void:
 		elif context.map_state.is_hostile(player_faction_id, u.faction_id):
 			has_hostile_units = true
 
-	if not has_player_units:
+	if _had_initial_player_units and not has_player_units:
 		_finish_battle(BattleOutcome.DEFEAT)
-	elif not has_hostile_units:
+	elif _had_initial_hostile_units and not has_hostile_units:
 		_finish_battle(BattleOutcome.VICTORY)
 
 

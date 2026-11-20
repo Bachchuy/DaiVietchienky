@@ -11,16 +11,22 @@ static func load_stage(
 ) -> BattleGameController:
 	var stages: Dictionary[int, Dictionary] = StaticDataLoader.load_stage_settings(stage_settings_path)
 	if not stages.has(stage_id):
-		push_error("ScenarioLoader: stage_id %d not found in %s" % [stage_id, stage_settings_path])
 		return null
 
 	var stage_def: Dictionary = stages[stage_id]
 	var battle_path: String = str(stage_def.get("battle_file", ""))
 	if battle_path.is_empty():
-		push_error("ScenarioLoader: stage_id %d missing battle_file" % stage_id)
 		return null
 
-	return load_battle_file(battle_path, battle_seed, troop_settings_path)
+	var ctrl: BattleGameController = load_battle_file(battle_path, battle_seed, troop_settings_path)
+	if ctrl != null and bool(stage_def.get("enable_economy", false)):
+		ctrl.enable_economy = true
+		if ctrl.economy == null:
+			var eco := BattleEconomy.new()
+			eco.init_faction(1, 300, 300, 150, 100)
+			eco.init_faction(2, 300, 300, 150, 100)
+			ctrl.economy = eco
+	return ctrl
 
 
 ## Builds and initializes a complete deterministic BattleGameController from a battle JSON file.
@@ -64,6 +70,38 @@ static func load_battle_file(
 	var ctrl := BattleGameController.new(map_state, battle_seed, turn_order, max_rounds)
 	ctrl.player_faction_id = player_faction
 	ctrl.enable_economy = bool(data.get("enable_economy", false))
+	if ctrl.enable_economy:
+		var eco := BattleEconomy.new()
+		eco.init_faction(1, 300, 300, 150, 100)
+		eco.init_faction(2, 300, 300, 150, 100)
+		var raw_eco: Variant = data.get("economy", {})
+		if raw_eco is Dictionary:
+			var ed: Dictionary = raw_eco as Dictionary
+			var facs_in: Variant = ed.get("factions", {})
+			if facs_in is Dictionary:
+				for fk: Variant in (facs_in as Dictionary).keys():
+					var fd: Dictionary = (facs_in as Dictionary)[fk] as Dictionary
+					eco.init_faction(
+						int(str(fk)),
+						int(fd.get("coin", 300)),
+						int(fd.get("food", 300)),
+						int(fd.get("tech", 150)),
+						int(fd.get("mana", 100))
+					)
+			var fac_list: Variant = ed.get("facilities", [])
+			if fac_list is Array:
+				for f_item: Variant in fac_list as Array:
+					if f_item is Dictionary:
+						var f_d: Dictionary = f_item as Dictionary
+						eco.register_facility(
+							str(f_d.get("id", "fac")),
+							int(f_d.get("owner", 1)),
+							str(f_d.get("type", "Farm")),
+							int(f_d.get("level", 1)),
+							int(f_d.get("turns_unrobbed", 1)),
+							bool(f_d.get("has_granary", false))
+						)
+		ctrl.economy = eco
 	ctrl.director = director
 	ctrl.event_manager = event_mgr
 	ctrl.victory_evaluator = victory_eval

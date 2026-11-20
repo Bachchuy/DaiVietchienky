@@ -11,6 +11,7 @@ var enable_fog_of_war: bool = false
 var troop_defs: Dictionary = {}
 var director: ScenarioDirector = null
 var victory_evaluator: ScenarioVictoryEvaluator = null
+var economy: RefCounted = null
 var current_round: int = 0
 var current_faction_id: int = 1
 var coordinate_space: String = "odd_r"
@@ -262,12 +263,20 @@ func execute_attack(attacker_id: int, defender_id: int) -> bool:
 	var atk_fac: int = attacker.faction_id
 	var def_fac: int = defender.faction_id
 
+	var atk_starving: bool = false
+	var def_starving: bool = false
+	if economy != null and economy.has_method("is_starving"):
+		atk_starving = bool(economy.call("is_starving", atk_fac))
+		def_starving = bool(economy.call("is_starving", def_fac))
+
 	var report: Dictionary = combat_resolver.resolve_attack(
 		map_state,
 		navigator,
 		attacker,
 		defender,
-		rng
+		rng,
+		atk_starving,
+		def_starving
 	)
 	if not bool(report.get("ok", false)):
 		return false

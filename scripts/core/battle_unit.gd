@@ -67,6 +67,7 @@ var ignore_coc: bool = false
 var devoid_zoc: bool = false
 var ambush_forest: bool = false
 var no_retaliation: bool = false
+var features: Array[String] = []
 
 var state: UnitCombatState = UnitCombatState.new()
 
@@ -220,10 +221,11 @@ static func from_troop_dict(
 	unit.ignore_coc = bool(def.get("ignore_coc", false))
 	unit.devoid_zoc = bool(def.get("devoid_zoc", false))
 
-	var features: Variant = def.get("features", [])
-	if features is Array:
-		for feat: Variant in features:
+	var raw_features: Variant = def.get("features", [])
+	if raw_features is Array:
+		for feat: Variant in raw_features:
 			var f_str: String = str(feat)
+			unit.features.append(f_str)
 			if f_str == "forest_ambush" or f_str == "ambush_forest":
 				unit.ambush_forest = true
 			elif f_str == "ignore_zoc":

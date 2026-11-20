@@ -1,0 +1,61 @@
+[
+	{
+		"id": "Farm",
+		"type": 10,
+		"name": "Ruộng Quân Điền",
+		"food_yield_per_level": [80, 120, 160],
+		"upgrade_coin_cost": [120, 240],
+		"upgrade_tech_cost": [30, 60]
+	},
+	{
+		"id": "Market",
+		"type": 11,
+		"name": "Chợ Bến Giang Khẩu",
+		"coin_yield_per_level": [60, 90, 120],
+		"upgrade_coin_cost": [120, 240],
+		"upgrade_tech_cost": [30, 60]
+	},
+	{
+		"id": "Mine",
+		"type": 12,
+		"name": "Xưởng Rèn Vũ Khí",
+		"coin_yield_per_level": [30, 45, 60],
+		"tech_yield_per_level": [25, 40, 55],
+		"upgrade_coin_cost": [140, 280],
+		"upgrade_tech_cost": [40, 80]
+	},
+	{
+		"id": "Temple",
+		"type": 13,
+		"name": "Đền Quân Kỳ",
+		"mana_yield_per_level": [25, 40, 55],
+		"upgrade_coin_cost": [130, 260],
+		"upgrade_tech_cost": [35, 70]
+	},
+	{
+		"id": "Granary",
+		"type": 20,
+		"name": "Kho Lương Chiến Trường",
+		"food_cap_bonus_per_level": [500, 1000, 1500],
+		"rob_protection_multiplier": 0.50,
+		"upgrade_coin_cost": [100, 200],
+		"upgrade_tech_cost": [25, 50]
+	},
+	{
+		"id": "Academy",
+		"type": 21,
+		"name": "Giảng Võ Đường",
+		"tech_yield_per_level": [20, 35, 50],
+		"max_tech_tier_per_level": [1, 2, 3],
+		"upgrade_coin_cost": [150, 300],
+		"upgrade_tech_cost": [50, 100]
+	},
+	{
+		"id": "Fort",
+		"type": 22,
+		"name": "Thành Lũy / Doanh Trại",
+		"max_recruit_stack_per_level": [2, 3, 3],
+		"upgrade_coin_cost": [150, 300],
+		"upgrade_tech_cost": [40, 80]
+	}
+]

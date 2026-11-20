@@ -222,6 +222,48 @@ static func command_from_dict(data: Dictionary) -> BaseCommand:
 			cmd = WaitCommand.new(f_id, int(data.get("unit_id", 0)))
 		"EndTurn":
 			cmd = EndTurnCommand.new(f_id)
+		"RobAreaIncome":
+			cmd = BattleEconomy.RobAreaIncomeCommand.new(
+				f_id,
+				str(data.get("facility_id", "")),
+				float(data.get("efficiency", 0.80))
+			)
+		"Trade":
+			cmd = BattleEconomy.TradeCommand.new(
+				f_id,
+				str(data.get("trade_mode", "coin_to_food")),
+				int(data.get("amount", 100))
+			)
+		"UpgradeFacility":
+			cmd = BattleEconomy.UpgradeFacilityCommand.new(
+				f_id,
+				str(data.get("facility_id", ""))
+			)
+		"FortifyHex":
+			cmd = BattleEconomy.FortifyHexCommand.new(
+				f_id,
+				_vec2i_from_dict(data.get("target_hex", {}))
+			)
+		"UnlockBattleTech":
+			cmd = BattleEconomy.UnlockBattleTechCommand.new(
+				f_id,
+				int(data.get("tier", 1)),
+				str(data.get("branch", "INFANTRY")),
+				str(data.get("era", "Tran_Nguyen"))
+			)
+		"Recruit":
+			cmd = BattleEconomy.RecruitCommand.new(
+				f_id,
+				int(data.get("troop_id", 40101)),
+				int(data.get("stack", 1)),
+				_vec2i_from_dict(data.get("spawn_hex", {}))
+			)
+		"ApplyTactic":
+			cmd = BattleEconomy.ApplyTacticCommand.new(
+				f_id,
+				str(data.get("tactic_id", "forced_march")),
+				int(data.get("target_unit_id", 0))
+			)
 		_:
 			return null
 

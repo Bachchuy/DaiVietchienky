@@ -478,12 +478,20 @@ func _enter_unit_selected(unit: BattleUnit) -> void:
 
 func _enter_aiming_target(target_unit: BattleUnit) -> void:
 	_aim_target = target_unit
+	var atk_starving: bool = false
+	var def_starving: bool = false
+	if _controller.enable_economy and _controller.context.economy != null and _controller.context.economy.has_method("is_starving"):
+		atk_starving = bool(_controller.context.economy.call("is_starving", _active_unit.faction_id))
+		def_starving = bool(_controller.context.economy.call("is_starving", target_unit.faction_id))
 	var preview: Dictionary = _controller.context.combat_resolver.preview_combat(
 		_controller.context.map_state,
 		_controller.context.navigator,
 		_active_unit,
-		target_unit
+		target_unit,
+		atk_starving,
+		def_starving
 	)
+	preview["is_starving"] = atk_starving
 	if _map_view != null:
 		_map_view.set_aim_target_hex(target_unit.hex_position)
 	_transition_to(State.AIMING_TARGET)

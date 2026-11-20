@@ -2,14 +2,15 @@
 
 - **Dự án:** Đại Việt Chiến Kỳ (`VietNamHistoryStrategy`) — Godot 4.7.2, Thuần GDScript 2.0 (`gl_compatibility`).
 - **Tài liệu chuẩn:** GDD v3.4.1 (`docs/gdd/`).
-- **Cổng hiện tại:** **HOÀN THÀNH CỔNG 4 (`CP4` / Gate `P2`) — CHUYỂN SANG CỔNG 5 (`CP5` / Gates `P3–P5`)**.
-- **Nhiệm vụ vừa xong:** `C4-T3` (`hit_flash.gdshader`, `water_flow.gdshader`, `CombatJuiceHelper` Local Hit-stop + Squash/Stretch + Floating Text + hồ `16 PooledParticleCPU2D` trên `MapEffectLayer z=42`, `BattleAudioManager` 5 bus kèm `AudioEffectHardLimiter` + hồ `24 AudioStreamPlayer2D` / `6 AudioStreamPlayer` + 7 file `.wav` tổng hợp sạch, và `BattleSaveManager` lưu/nạp 2 tầng `battle_session.json` & `player_profile.json`/`.bak`).
-- **Tiến độ Cổng 4:** `3 / 3` nhiệm vụ hoàn thành (Cổng 1: `6 / 6`, Cổng 2: `4 / 4`, Cổng 3: `3 / 3`, Cổng 4: `3 / 3`).
-- **Trạng thái bộ test (`tests/run_tests.gd`):** `69/69 passed | 0 failed | 6337 assertions`.
+- **Cổng hiện tại:** **ĐANG THỰC HIỆN CỔNG 5 (`CP5` / Gates `P3–P5`)** — Hoàn thành `C5-T1` (Kinh tế chiến trường `BattleEconomy`).
+- **Nhiệm vụ vừa xong:** `C5-T1` (`BattleEconomy` 4 tài nguyên `Coin`, `Food`, `Tech`, `Mana`, `facility_settings.json`, thu hoạch công trình & `TotalMealFood`, luật `Starvation` hạ sĩ khí chạm đáy `LOW` + `0.75x` sát thương + khóa hồi máu, và 7 lệnh kinh tế tất định không hoàn tác).
+- **Tiến độ Cổng 5:** `1 / 3` nhiệm vụ hoàn thành (Cổng 1: `6 / 6`, Cổng 2: `4 / 4`, Cổng 3: `3 / 3`, Cổng 4: `3 / 3`).
+- **Trạng thái bộ test (`tests/run_tests.gd`):** `74/74 passed | 0 failed | 6376 assertions`.
 
 ---
 
 ## Lịch sử hoàn thành gần nhất
+- `C5-T1`: Triển khai `BattleEconomy` (`scripts/core/battle_economy.gd`) và `data/settings/facility_settings.json` (đã đăng ký trong `ASSETS.md`), tích hợp 7 lệnh kinh tế (`RobAreaIncomeCommand`, `TradeCommand`, `UpgradeFacilityCommand`, `FortifyHexCommand`, `UnlockBattleTechCommand`, `RecruitCommand`, `ApplyTacticCommand`) vào `BattleCommands`, `BattleContext`, `BattleGameController`, `ScenarioLoader`, `BattleInputFSM` và `BattleHudController`, kiểm chứng qua 5 bài test TDD tại `tests/test_battlefield_economy.gd` (`74/74` pass).
 - `C4-T3`: Hoàn thiện gói Game Feel / Juice sạch 100% (`assets_clean/shaders/hit_flash.gdshader`, `assets_clean/shaders/water_flow.gdshader`, 7 tệp âm thanh PCM `.wav` tổng hợp sạch tại `assets_clean/audio/` đã đăng ký trong `ASSETS.md`), `CombatJuiceHelper` (`scripts/presentation/combat_juice_helper.gd`), `BattleAudioManager` (`scripts/presentation/battle_audio_manager.gd`), và `BattleSaveManager` (`scripts/core/battle_save_manager.gd`), tích hợp vào `BattleMapView` và `BattleSandboxCP1`, kiểm chứng qua 6 bài test TDD tại `tests/test_juice_and_save_load.gd` (`69/69` pass).
 - `C4-T2`: Triển khai `BattleHudController` (`scripts/presentation/battle_hud_controller.gd`), nâng cấp `BattleMapView` (vẽ thanh HP chia vạch `100 HP`, nhấp nháy lượng HP dự kiến mất khi ngắm đánh, huy hiệu hình học sĩ khí/CC phi màu sắc, màn sương Fog of War 2 mức trên `FogOfWarLayer z=50`), tích hợp đầy đủ vào `BattleSandboxCP1` kèm chặn click xuyên HUD (`_is_screen_point_on_hud`), và bổ sung 7 bài test TDD tại `tests/test_battle_hud_and_flow.gd` (`63/63` pass).
 - `C3-T3`: Hoàn thành bộ JSON Slice-01 (`data/settings/stage_settings.json`, `data/settings/tactic_settings.json`, `data/battles/battle_10101.json`, mở rộng `data/settings/troop_settings.json` thêm `40202`/`40902`), `ScenarioLoader` + `StaticDataLoader.load_stage_settings`, tách RNG quyết định AI (`DEC-011`), màu phe đối địch động trong `BattleMapView`, tích hợp Slice-01 + AI + Replay vào `BattleSandboxCP1`, xác minh 100 trận AI-vs-AI liên tiếp 0 treo lượt & `< 1.5s/lượt`, cùng 3 ảnh chụp `gl_compatibility` (`47/47` tests pass).
