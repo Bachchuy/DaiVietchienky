@@ -1,45 +1,40 @@
-# Project Guidelines: VietNamHistoryStrategy (Đại Việt Chiến Kỳ)
+# Project Guidelines: Đại Việt Chiến Kỳ (`VietNamHistoryStrategy`)
 
-## Tech Stack & Target
-- **Engine**: Godot 4.7
-- **Primary Language**: GDScript (Typed GDScript 2.0)
-- **Renderer**: GL Compatibility (`gl_compatibility`)
-- **Target Platforms**: Web (HTML5/Wasm) + Android (phát triển & kiểm thử trên Windows Desktop)
-- **Target Performance**: 60 FPS
+**Stack:** Godot 4.7 | Typed GDScript 2.0 | `gl_compatibility` | Web (HTML5/Wasm) + Android | 60 FPS
 
-## Development Rules
-1. **Skill Loading**: Chỉ đọc `SKILL.md` khi bắt đầu làm một hệ thống Godot mới hoặc chưa quen thuộc; không đọc lại cùng một skill ở mọi prompt.
-2. **GDD Reference**: Toàn bộ GDD v3.5 được chia nhỏ dạng cây tại `docs/gdd/README.md`. Chỉ đọc đúng file module cần dùng. **Cấm đọc/grep tệp hợp nhất 443 KB `docs/TONG_HOP_KE_HOACH_THIET_KE_GDD_3_4.md`**, và không tự động chạy `docs/build_master_gdd.py` trừ khi người dùng yêu cầu xuất bản tổng hợp.
-3. **Deterministic & Platform Safety**:
-   - Mọi logic mô phỏng chiến đấu/AI sử dụng `RandomNumberGenerator` có `seed` tách biệt với hiệu ứng hình ảnh để bảo toàn Replay tất định.
-   - Chú ý phân biệt chữ hoa/thường trong đường dẫn `res://` (`res://Assets/...`, `res://data/...`, `res://scripts/...`) để không lỗi khi đóng gói `.pck` trên Web và Android.
-4. **Verification & Evidence (Nhanh & Tối ưu Quota)**:
-   - Trong lúc làm việc, chạy lọc suite liên quan để phản hồi nhanh: `.\godot.cmd --headless --script res://tests/run_tests.gd -- --suite=<tên>`.
-   - Trước khi báo xong, chạy full fast suite: `.\godot.cmd --headless --script res://tests/run_tests.gd`. Chỉ thêm `--stress` (100 trận AI) khi sửa lớn tầng `sim/` hoặc chốt Cổng cuối.
-   - **Không mặc định chụp hay mở đọc ảnh PNG** (tránh tốn vision quota & vòng gọi tool); người dùng sẽ tự bấm `F5` kiểm tra trực quan. Chỉ chụp ảnh khi người dùng yêu cầu rõ ràng.
-   - Tuyệt đối không báo "xong" nếu chưa chạy test thực tế đạt 100%.
-5. **Kiến trúc** (chỉ mở skill `project-architecture` khi cần tra mẫu/sơ đồ thư mục):
-   - 4 tầng: Data (`.tres`) → Sim (`RefCounted` thuần, không Node) → `BattleSession` (Node duy nhất giữ Sim, phát signal) → Presentation (`.tscn`). Presentation chỉ đọc state qua signal và gửi Command; không sửa state trực tiếp.
-   - Autoload chỉ cho dịch vụ toàn cục (Settings, Save, Audio, SceneRouter); không chứa state trận đấu.
-   - Truyền phụ thuộc có kiểu qua `@export`; cấm service locator với biến `Node` không kiểu và `get_node("/root/...")`.
-   - Mỗi script ≤ 400 dòng; vượt thì tách component/scene con.
-6. **Editor-First**:
-   - Scene (bản đồ, đơn vị, HUD, modal) dựng bằng node trong `.tscn`, nhìn thấy trong view 2D của editor; không dựng toàn bộ cây node bằng `Node.new()`. Bản đồ dùng `TileMapLayer`; phần sinh theo dữ liệu dùng `@tool` để preview trong editor.
-   - Data thiết kế dùng custom `Resource` (`@export`, lưu `.tres`), chỉnh được trong Inspector. JSON chỉ cho save `user://` hoặc trao đổi ngoài. Style UI đặt trong `theme.tres`.
-   - Nếu GDD/spec đi ngược nguyên tắc này: báo người dùng và đề xuất sửa GDD trước khi code, không âm thầm làm theo.
-   - Mẫu tham chiếu: `D:\code\HexCrown` (`data/units/*.tres`, `scenes/base_unit.tscn`, `scenes/ui/gameplay_ui.tscn`) — chỉ đọc khi nhiệm vụ yêu cầu đối chiếu/kế thừa trực tiếp (như `R3`).
-7. **UI phải dùng được**:
-   - Modal: `PanelContainer > MarginContainer > VBoxContainer`, nội dung dài trong `ScrollContainer`; không hard-code size kèm `clip_contents`.
-   - Nút chính (Bắt đầu / Tiếp tục / Bỏ qua / Đóng) luôn ở chân modal, ngoài vùng cuộn, luôn nhìn thấy. Mọi màn chặn người chơi phải có lối thoát (nút + Enter/Esc).
-   - Không tự viết lại hit-test nút trong `_input`; dùng hệ GUI của Godot.
-8. **Kiểm chứng UI tự động & Hướng dẫn người dùng F5**:
-   - Test UI khẳng định nút *bấm được* bằng assertion hình học (`assert_button_reachable()`: rect nằm trọn trong mọi tổ tiên `clip_contents` và viewport) kết hợp click thật qua `Viewport.push_input` — không phụ thuộc chụp ảnh.
-   - Với thay đổi có giao diện/luồng chơi, cung cấp cho người dùng checklist `F5` ngắn gọn (2–3 bước) để tự kiểm tra thẩm mỹ trong Editor/Game.
-   - Trước khi chốt một Cổng, kiểm tra bằng Editor/checklist để xác nhận View 2D, Inspector và luồng từ `main_menu.tscn` không lỗi.
-9. **Cổng Thiết kế Asset & Bỏ Triết lý Biết Trước (`DEC-022`, `DEC-026`)**:
-   - **Cấm tuyệt đối tự ý vẽ hay sinh asset đồ họa mới:** Khi đến bất kỳ nhiệm vụ nào cần thiết kế/tạo asset mới (Chiến thuyền, Bãi cọc Bạch Đằng, Tileset mới, hoặc dựng 2 mẫu so sánh `Pixel Art` vs `2D Cách điệu kiểu EasyTech` ở Cổng `R4`), agent **BẮT BUỘC dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế.
-   - **Không biết trước sát thương (`DEC-026`):** Cấm hiển thị `CombatPreviewBox` tính hộ dải sát thương dự kiến hay xác nhận đánh 2 bước `AimingTarget`; chỉ dùng `UnitInspector` (`res://ui/battle_hud/unit_inspector.tscn`) hiển thị thông số thô của đạo quân để người chơi tự tính toán, và chạm 1 lần vào địch trong tầm đỏ là tấn công ngay như `HexCrown` (hệ thống tự tính + quay `Seeded RNG` khi va chạm).
-10. **Đọc Tối Thiểu & Khóa Phạm Vi Sửa File (`Scope Lock`)**:
-   - **Đọc tối thiểu:** Khởi đầu tác vụ chỉ đọc đúng các file cần sửa và interface/test liên quan trực tiếp (ưu tiên tìm đúng hàm/đoạn dòng thay vì đọc trọn file lớn). Không đọc lan sang `DECISIONS.md`, `docs/gdd/README.md` (19 KB), `.ai/HANDOFF.md` hay `D:\code\HexCrown` nếu prompt đã nêu rõ yêu cầu.
-   - **Khóa phạm vi sửa file (`Scope Lock`):** Chỉ sửa đúng các file thuộc nhiệm vụ được giao. Cấm "tiện tay" refactor, format lại hoặc sửa bug phụ ở file ngoài phạm vi; nếu phát hiện vấn đề ở file khác, chỉ ghi chú 1 dòng cuối câu trả lời để người dùng quyết định.
-   - **Giảm chạm file hành chính:** Chỉ cập nhật `STATE.md`/`TASKS.md` khi hoàn tất một Task/Cổng trong lộ trình; chỉ thêm mục vào `DECISIONS.md` khi có quyết định kiến trúc/thiết kế mới thật sự quan trọng; giữ `.ai/HANDOFF.md` ngắn gọn (`≤ 25` dòng) khi bàn giao task/feature.
+## Bảng Định Tuyến Nhanh (0 Tool-Call)
+| Miền | Thư mục / File chính | Spec Code GDD (`docs/gdd/...`) | `--suite=` |
+|---|---|---|---|
+| `data` | `data/defs/` *(R2)*, `data/stages/` *(R2)*, `data/settings/`, `sim/state/static_data_loader.gd`, `scenario_loader.gd` | `architecture/data_and_save_system.md` | `map_state,tran_campaign` |
+| `hex` | `sim/rules/hex_math.gd`, `hex_grid_navigator.gd`, `sim/state/battle_map_state.gd` | `mechanics/hex_grid_pathfinding.md` | `hex,map_state` |
+| `combat` | `sim/rules/combat_resolver.gd`, `morale_engine.gd`, `seeded_rng.gd`, `sim/state/battle_unit.gd` | `mechanics/combat_formulas.md`, `morale_and_status.md` | `combat,morale` |
+| `loop` | `sim/state/battle_game_controller.gd`, `battle_context.gd`, `sim/commands/` | `architecture/data_and_save_system.md` | `commands,controller,session` |
+| `ai` | `sim/ai/`, `sim/state/ai_visible_map_view.gd`, `scenario_director.gd` | `ai/ai_decision_matrix.md` | `ai,slice01` |
+| `scenario` | `sim/rules/scenario_event_manager.gd`, `scenario_victory_evaluator.gd`, `data/battles/` | `level_design/scenario_scripting_and_events.md` | `scenario,slice01` |
+| `economy` | `sim/rules/battle_economy.gd`, `sim/commands/battle_economy_commands.gd` | `mechanics/battlefield_economy.md` | `economy` |
+| `fsm` | `game/battle/battle_session.gd`, `battle_input_fsm.gd`, `battle_input_rules.gd` | `ui_ux/battle_ui_and_rendering.md` | `fsm,session` |
+| `hud` | `ui/common/` (`theme.tres`, `modal_frame.*`), `ui/battle_hud/` | `ui_ux/battle_ui_and_rendering.md` | `hud,smoke` |
+| `map/fx` | `game/battle/map/` *(R3)*, `game/battle/units/` *(R3)*, `scripts/presentation/` *(vỏ cũ xóa R3)* | `vfx_sfx/vfx_sfx_and_polish.md` | `camera,juice,map_view` |
+| `save/meta` | `sim/state/battle_save_manager.gd`, `scenes/main_menu.tscn`, `scripts/presentation/campaign_menu_controller.gd` | `architecture/data_and_save_system.md` | `juice,tran_campaign` |
+| `export` | `export_presets.cfg`, `sim/rules/asset_ip_auditor.gd`, `ASSETS.md` | *(không cần GDD)* | `release_export,tran_campaign` |
+
+## Kiến Trúc & Cấm Cứng
+1. **4 tầng (`≤ 400` dòng/script):** `Data (.tres)` → `Sim (RefCounted, không Node, SeededRng tách VFX)` → `BattleSession (Node giữ Sim, signal)` → `Presentation (.tscn)`. Phụ thuộc có kiểu qua `@export`; cấm `get_node("/root/...")`; Autoload chỉ dịch vụ toàn cục (không state trận); phân biệt hoa/thường `res://`.
+2. **Editor-First & UI dùng được:** Scene dựng bằng `.tscn` + `TileMapLayer` + `@tool` + `.tres` + `theme.tres` (JSON chỉ cho `user://` save & replay). Modal: `PanelContainer > MarginContainer > VBoxContainer`, nội dung dài trong `ScrollContainer`, nút chính ngoài vùng cuộn, hỗ trợ `Enter`/`Esc`, cấm size cứng kèm `clip_contents`, dùng GUI Godot (không tự hit-test `_input`).
+3. **Cấm thiết kế (`DEC-022`, `DEC-026`):**
+   - **Cổng dừng Asset (`R4`):** Cấm tuyệt đối tự vẽ hay sinh asset đồ họa mới — bắt buộc dừng hỏi người dùng chọn phương án & công cụ.
+   - **Không biết trước sát thương:** Cấm `CombatPreviewBox` & `AimingTarget`; chỉ dùng `UnitInspector` thô + đánh ngay 1 chạm.
+4. **Đọc Spec & Skill có chọn lọc (Chống đốt quota):**
+   - Chỉ đọc đúng Spec Code GDD thuộc miền ở bảng trên; **bỏ qua hoàn toàn** `docs/gdd/00..04/`, `appendices/`, `docs/gdd/README.md`, `docs/assets/ASSET_CATALOG.md`, và **cấm đọc/grep/auto-build** `docs/TONG_HOP_KE_HOACH_THIET_KE_GDD_3_4.md` (443 KB).
+   - Skill Godot: tận dụng `GodotPrompter` khi gặp hệ thống chưa quen + tra [templates.md](.agents/skills/project-architecture/references/templates.md) cho mẫu Godot 4.7; chỉ đọc `D:\code\HexCrown` khi task yêu cầu trực tiếp (như `R3`).
+   - **Không mặc định chụp hay mở ảnh PNG** trừ khi người dùng yêu cầu rõ ràng.
+
+## Quy Trình Thực Thi Gọn (`Scope Lock` + Thang Test 3 Bậc)
+1. **Gọi việc ngắn:** `Làm <Mã Task>` (vd `Làm R2-T1`) hoặc `Fix <miền>: <mô tả>`.
+2. **Đọc tối thiểu (`≤ 3–5` file):** Nhảy thẳng vào thẻ `[Đọc]` của task ở `TASKS.md` hoặc đúng hàng bảng định tuyến; đọc đúng hàm/đoạn dòng cần sửa.
+3. **Khóa phạm vi (`Scope Lock`):** Tự làm thẳng trong `[Sửa]` / miền được giao; **dừng hỏi** nếu buộc sửa ngoài Scope, đổi kiến trúc hoặc tạo asset (`R4`). Cấm "tiện tay" refactor file khác (lỗi ngoài miền chỉ ghi chú 1 dòng cuối câu trả lời). Trước khi báo xong, đối chiếu danh sách file đã sửa để chắc chắn 0 file lọt Scope.
+4. **Thang kiểm thử 3 bậc:**
+   - **Bậc 1 (Sửa cục bộ / Fix nhỏ):** `.\godot.cmd --headless --script res://tests/run_tests.gd -- --suite=<miền>`
+   - **Bậc 2 (Chốt Task lộ trình):** `.\godot.cmd --headless --script res://tests/run_tests.gd` (UI dùng `assert_button_reachable()` + `push_click_control()`)
+   - **Bậc 3 (Chốt Cổng / Sửa lớn `sim/`):** Thêm `--stress` + checklist `F5` (2–3 bước) cho người dùng tự kiểm tra.
+5. **Tối giản `.md`:** Fix nhỏ → **không sửa file `.md` nào**; xong 1 Task → chỉ tick `[x]` 1 dòng ở `TASKS.md` + cập nhật `.ai/HANDOFF.md` (`≤ 15` dòng, `READY_FOR_CODEX_REVIEW`); chỉ cập nhật `STATE.md`/`DECISIONS.md` khi chốt cả 1 Cổng hoặc có quyết định thiết kế lớn.

@@ -85,25 +85,9 @@ Modal (Control, anchors full rect, mouse_filter STOP)      # nền mờ chặn c
 
 Không đặt `size` cứng, không `clip_contents` trên Panel. Chiều cao tối đa: `minf(content, viewport.y * 0.8)`.
 
-## assert_button_reachable (E2E)
+## assert_button_reachable (dùng sẵn trong `GdTestCase`)
 
-```gdscript
-func assert_button_reachable(btn: BaseButton, label: String) -> void:
-	assert_not_null(btn, "%s exists" % label)
-	if btn == null:
-		return
-	assert_true(btn.is_visible_in_tree(), "%s visible in tree" % label)
-	var r: Rect2 = btn.get_global_rect()
-	var vp: Rect2 = btn.get_viewport().get_visible_rect()
-	assert_true(vp.encloses(r), "%s fully inside viewport" % label)
-	var n: Node = btn.get_parent()
-	while n != null:
-		if n is Control and (n as Control).clip_contents:
-			assert_true((n as Control).get_global_rect().encloses(r), "%s not clipped by %s" % [label, n.name])
-		n = n.get_parent()
-```
-
-Sau đó click bằng `InputEventMouseButton` qua `get_viewport().push_input(ev)` (không gọi `pressed.emit()`).
+`tests/test_case.gd` đã cung cấp sẵn `assert_button_reachable(btn, vp_size, label)` (kiểm tra `is_visible_in_tree()`, `!disabled`, kích thước `>= 20x20`, nằm trọn trong viewport & mọi tổ tiên `clip_contents`) và `push_click_control(ctrl)` (gửi `InputEventMouseButton` thật qua `_scene_tree.root.push_input()`). Không cần viết lại trong từng file test; khi kiểm tra chân modal, khẳng định thêm nút không nằm trong `ScrollContainer`.
 
 ## Chuyển JSON → .tres (một lần, chạy headless)
 
@@ -124,3 +108,64 @@ func _initialize() -> void:
 ```
 
 Kiểm chứng: số `.tres` = số mục JSON; unit test so sánh chỉ số Def với JSON gốc trước khi xóa JSON.
+
+---
+
+## Mẫu Godot 4.7 đặc thù cho `R2–R3`
+
+### 1. `StageDef` & Sub-Resource (`R2-T2`)
+```gdscript
+class_name StageDef
+extends Resource
+
+@export var stage_id: int = 10101
+@export var stage_name: String = ""
+@export var max_rounds: int = 10
+@export var enable_economy: bool = false
+@export var placements: Array[UnitPlacementDef] = []
+@export var events: Array[ScenarioEventDef] = []
+@export var dialogues: Array[DialogueLineDef] = []
+```
+- Mọi sub-resource phải đặt `class_name` và `extends Resource` để Inspector tạo trực tiếp bằng nút `+` trong mảng `@export`.
+
+### 2. `TileMapLayer` + `TileSet` Custom Data (`R3-T3`)
+```gdscript
+# Trên TileSet: tạo Custom Data Layer 0 tên "terrain_type" (int khớp BattleMapState.TerrainType)
+func sync_terrain_from_tilemap(tile_layer: TileMapLayer, map_state: BattleMapState) -> void:
+	for cell: Vector2i in tile_layer.get_used_cells():
+		var td: TileData = tile_layer.get_cell_tile_data(cell)
+		if td == null:
+			continue
+		var axial: Vector2i = HexMath.odd_r_to_axial(cell)
+		map_state.set_terrain(axial, int(td.get_custom_data("terrain_type")))
+```
+- Luôn dùng `TileMapLayer` (không dùng `TileMap` cũ của Godot 4.0–4.2); tọa độ cell của `TileMapLayer` (`odd_r`) quy đổi qua `HexMath.odd_r_to_axial(cell)`.
+
+### 3. `@tool` An Toàn Trong Editor (`R3-T3`)
+```gdscript
+@tool
+extends Node2D
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		_rebuild_editor_preview()
+		return
+	_start_runtime_battle()
+```
+- Trong nhánh `Engine.is_editor_hint()`: tuyệt đối không khởi tạo `BattleSession`, AI, hay ghi `user://`; trước khi sinh node preview tạm, dọn node preview cũ hoặc đặt `owner = null` để không lưu rác vào `.tscn`.
+
+### 4. `UnitView.tscn` Ghép Component (`R3-T2`)
+```text
+UnitView (Node2D — unit_view.gd, <= 200 dòng)
+├── Sprite2D               # ShaderMaterial FactionTint.gdshader
+├── AnimationPlayer        # idle / move / attack / hit
+├── HealthBarComponent     # thanh HP chia vạch theo max_stack
+└── StatusBadgeComponent   # biểu tượng sĩ khí / trói / buff
+```
+- `UnitView` chỉ nhận dữ liệu/tín hiệu từ `BattleSession` hoặc `BattleMap`; không giữ logic tính sát thương hay tự sửa `BattleUnit`.
+
+### 5. Checklist bẫy Godot 4.7 & `gl_compatibility`
+- **Typed Dictionary (`Godot 4.4+`):** Dùng `Dictionary[int, TroopDef]` cho dữ liệu tĩnh; khi parse JSON cần ép kiểu rõ (`var d: Dictionary = raw as Dictionary`), tránh gán `Dictionary` không kiểu vào biến typed.
+- **Renderer `gl_compatibility`:** Không dùng `GPUParticles2D` phụ thuộc compute/WebGL1; ưu tiên `CPUParticles2D` có pool; shader 2D giữ đơn giản (`canvas_item`, không `hint_screen_texture` nặng nếu không cần).
+- **Web/Android `.pck`:** Mọi đường dẫn `res://` phải khớp chính xác chữ hoa/thường (100% `snake_case` chữ thường).
+- **Test runner:** Không dùng `OS.execute` gọi lồng `godot` trong test; chạy lọc bằng `--suite=<tên>`.
