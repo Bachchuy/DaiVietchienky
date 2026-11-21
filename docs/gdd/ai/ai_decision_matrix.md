@@ -47,7 +47,7 @@ flowchart TD
 | :--- | :--- | :--- |
 | **`ReachableHexGenerator`** | Quét toàn bộ ô hex trong tầm `current_mp` hợp lệ, dừng bước khi chạm vùng ZOC của đơn vị địch **đang nhìn thấy** hoặc địa hình cấm theo `domain` (`Land` / `Naval`). | Chỉ đọc địa hình hiện hành trên `visible_map_view`; không được biết đơn vị địch đang nấp trong sương mù hay rừng rậm chưa bị phát hiện. |
 | **`AttackTargetGenerator`** | Từ mỗi ô đứng ứng viên, quét các đơn vị đối phương đã lộ diện nằm trong `[min_range, max_range]` và thỏa đường ngắm LOS. | Bị cản tầm nhìn bởi Rừng rậm / Cao điểm theo đúng quy tắc chiến trường. |
-| **`SkillTargetGenerator`** | Quét mục tiêu hợp lệ để thi triển Kỹ năng / Mưu kế chủ động của Tướng (`res://data/settings/tactic_settings.json`). | Kiểm tra `cooldown == 0` và `current_mana >= mana_cost`. |
+| **`SkillTargetGenerator`** | Quét mục tiêu hợp lệ để thi triển Kỹ năng / Mưu kế chủ động của Tướng (`TacticDef` tại `res://data/defs/tactics/*.tres` qua `DataRegistry`). | Kiểm tra `cooldown == 0` và `current_mana >= mana_cost`. |
 
 > [!IMPORTANT] **Quy tắc Cấm Tuyệt Đối AI "Map-Hack" Bãi Cọc Ngầm & Sương Mù:**  
 > Mọi hàm của AI chỉ nhận đối tượng khung nhìn đã lọc **`visible_map_view: AIVisibleMapView`**, tuyệt đối không truy cập trực tiếp `BattleMap` gốc chứa dữ liệu ẩn.  

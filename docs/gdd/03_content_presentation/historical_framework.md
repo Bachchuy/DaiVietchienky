@@ -49,7 +49,7 @@ Sông Bạch Đằng gắn liền với ba trận đại thủy chiến ở ba t
 ### Hồ sơ thẩm định chuẩn cho Slice-01: Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)
 
 1. **Chuẩn hóa Quốc hiệu & Mã thời kỳ (`historical_claim` — Grade A, `[S12], [S13], [S14]`):**
-   - Năm 1271, Hốt Tất Liệt đã chính thức đặt quốc hiệu là **Đại Nguyên**. Vì vậy, trong cuộc kháng chiến lần thứ ba (1287–1288), phe đối phương bắt buộc định danh chuẩn là **`"Đại Nguyên (Quân Nguyên)"`** và mã thời kỳ trong dữ liệu JSON là **`"Tran_Nguyen"`** (không gộp chung danh xưng với giai đoạn đế quốc Mông Cổ năm 1258).
+   - Năm 1271, Hốt Tất Liệt đã chính thức đặt quốc hiệu là **Đại Nguyên**. Vì vậy, trong cuộc kháng chiến lần thứ ba (1287–1288), phe đối phương bắt buộc định danh chuẩn là **`"Đại Nguyên (Quân Nguyên)"`** và mã thời kỳ trong dữ liệu `StageDef` (`.tres`) là **`"Tran_Nguyen"`** (không gộp chung danh xưng với giai đoạn đế quốc Mông Cổ năm 1258).
 
 2. **Chỉ huy lịch sử vs. Trừu tượng hóa Phó tướng trong Slice-01 (`abstraction` / `fixture`):**
    - **Dữ kiện chính sử (`[S12]` *Đại Việt Sử Ký Toàn Thư*, `[S13]` *An Nam Chí Lược*, `[S14]` *Nguyên Sử*):** Tại đại chiến sông Bạch Đằng ngày 8 tháng 3 năm Mậu Tý (9/4/1288), lực lượng Đại Việt do **Quốc công Tiết chế Hưng Đạo Vương Trần Quốc Tuấn** tổng chỉ huy cùng **Thượng hoàng Trần Thánh Tông**, **Vua Trần Nhân Tông** và các tướng lĩnh như **Nguyễn Khoái** (chỉ huy quân Thánh Dực), **Phạm Ngũ Lão**, **Trần Nhật Duật**... chặn đánh hạm đội rút lui của **Ô Mã Nhi (Omar)**, **Phàn Tiếp**, **Tích Lệ Cơ Ngọc**. Trong khi đó, **Nhân Huệ Vương Trần Khánh Dư** nổi danh với chiến thắng quyết định tiêu diệt đoàn thuyền lương của Trương Văn Hổ tại **Vân Đồn (cuối năm 1287 – đầu 1288)** tạo tiền đề buộc quân Nguyên phải rút lui đường thủy qua Bạch Đằng.
@@ -60,5 +60,5 @@ Sông Bạch Đằng gắn liền với ba trận đại thủy chiến ở ba t
    - Trong Slice-01, lưới bản đồ **`12 × 10` hex (Pointy-topped Axial)** là một **sa bàn phóng đại chiến thuật (`Tactical Zoom-in Map`)**, trong đó vùng cọc `area_bai_coc`, cứ điểm Bến Hiệu Lệnh `SignalDock (2, 8)` và nhịp rút triều cố định ở **đầu Vòng 4 (`MapPhase_TideFall`)** đều được gắn nhãn **`modeling_type: "fixture"`** nhằm phục vụ nhịp độ chiến thuật 10 lượt rõ ràng, có thể đọc hiểu và phản ứng được.
 
 > 📖 **Liên kết đặc tả dữ liệu & nguồn sử liệu:**
-> - Chi tiết cấu trúc JSON kịch bản `res://data/battles/battle_10101.json`, điều kiện Thắng/Thua, 3 Sao và hệ thống sự kiện: xem [scenario_scripting_and_events.md](../level_design/scenario_scripting_and_events.md).
+> - Chi tiết cấu trúc kịch bản `stage_10101.tres` + `stage_10101_map.tscn` (Resource `.tres` + `TileMapLayer`), điều kiện Thắng/Thua, 3 Sao và hệ thống sự kiện: xem [scenario_scripting_and_events.md](../level_design/scenario_scripting_and_events.md).
 > - Danh mục nguồn tham khảo lịch sử, khảo cổ học và benchmark (`[S1]`–`[S16]`): xem [appendix_b_sources.md](../appendices/appendix_b_sources.md).

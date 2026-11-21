@@ -43,8 +43,8 @@ res://
 │   └── registry.tres         # DataRegistry: Array[TroopDef], Array[StageDef]...
 ├── sim/state|commands|rules|ai/   # code scripts/core + scripts/ai hiện có chuyển vào đây
 ├── game/battle/              # battle.tscn, battle_session.gd, map/, units/unit_view.tscn, fx/
-├── ui/common/                # modal.tscn, theme.tres, button_row.tscn
-├── ui/battle_hud/            # top_bar.tscn, command_dock.tscn, briefing_modal.tscn, pause_modal.tscn
+├── ui/common/                # modal_frame.tscn, theme.tres, button_row.tscn
+├── ui/battle_hud/            # top_bar.tscn, unit_inspector.tscn, command_dock.tscn, briefing_modal.tscn, pause_modal.tscn
 ├── ui/menus/                 # main_menu.tscn, campaign, codex
 └── tests/
 ```
@@ -58,6 +58,8 @@ Tên thư mục/tệp `snake_case` chữ thường 100% (an toàn `.pck` Web/And
 - Signal theo phạm vi trận (trên `BattleSession`), không dùng EventBus toàn cục cho sự kiện trận.
 - Style UI trong `ui/common/theme.tres`; chỉ override cục bộ khi thật cần.
 - Data mới luôn là `.tres`. GDD yêu cầu JSON → báo người dùng, đề xuất sửa GDD trước.
+- **Không làm `CombatPreviewBox` tính trước sát thương / xác nhận đánh 2 bước:** HUD chỉ dùng `UnitInspector` (`unit_inspector.tscn`) hiện thông số từng đạo quân; chạm vào địch trong tầm đỏ là ra đòn 1 chạm ngay (`BattleInputFSM` 7 trạng thái, bỏ `AIMING_TARGET`).
+- **Cổng dừng Asset (`R4`):** Cấm tự ý sinh/vẽ asset đồ họa mới — phải dừng lại hỏi người dùng lên phương án và công cụ trước khi tạo.
 
 ## 4. Checklist thêm một tính năng
 

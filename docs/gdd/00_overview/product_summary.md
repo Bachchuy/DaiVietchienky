@@ -16,7 +16,7 @@
 |---|---|
 | **Thể loại** | Turn-Based Military Strategy / Historical Hex Wargame (Single-player) |
 | **Công nghệ & Nền tảng** | **Godot 4.7**, ngôn ngữ **Thuần GDScript 2.0 (Typed GDScript)**, Renderer **`gl_compatibility`**, mục tiêu **60 FPS** trên **Web (HTML5/Wasm) + Android** (phát triển & kiểm thử trên **Windows Desktop**) |
-| **Không gian trận đánh** | Bản đồ lưới Hex cạnh nhọn (`Pointy-topped Axial`), nhiều đơn vị gộp cờ (`TroopStack` 1x–3x), lượt người chơi và AI luân phiên, cơ chế **Seeded RNG** minh bạch trên Combat Preview (100% Deterministic Replay) |
+| **Không gian trận đánh** | Bản đồ lưới Hex cạnh nhọn (`Pointy-topped Axial`), nhiều đơn vị gộp cờ (`TroopStack` 1x–3x), lượt người chơi và AI luân phiên, bảng **`UnitInspector`** hiện thông số thô từng đạo quân, **đánh ngay 1 chạm** và cơ chế **`Seeded RNG`** (`80%–100%` + Crit, 100% Deterministic Replay) |
 | **Vertical Slice đầu tiên (Mốc P2)** | **Slice-01: Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)** — bản đồ `12 × 10` hex, tối đa 10 lượt, Đại Việt đối đầu **Đại Nguyên (Quân Nguyên)**, sự kiện thủy triều rút đầu Vòng 4; ẩn kinh tế (`enable_economy = false`, thuộc P3); gắn nhãn `fixture / gameplay abstraction` |
 | **Phạm vi Release MVP (Mốc P5)** | **Gói Chiến dịch Thời Trần** hoàn chỉnh (6–8 màn lịch sử, 10–12 binh chủng, 8–10 danh tướng, Tutorial theo tình huống & Codex lịch sử) phát hành trên Web + Android + Windows Desktop |
 | **Phạm vi lịch sử dài hạn** | Triển khai cuốn chiếu theo từng *Era Pack* **từ thời dựng nước & Bắc thuộc (Văn Lang – Âu Lạc, Hai Bà Trưng, Bà Triệu, Lý Bí, Ngô Quyền) qua Đinh – Tiền Lê – Lý – Trần – Hồ – Lê Sơ đến thế kỷ XVIII (Tây Sơn)** |

@@ -9,7 +9,7 @@
 - **Lộ trình lịch sử cuốn chiếu theo *Era Pack*:** Tầm nhìn tổng thể của sản phẩm trải dài **từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Triều Tây Sơn)**, nhưng tuyệt đối không sản xuất dàn trải nhiều thời kỳ cùng lúc. Đội ngũ bắt buộc hoàn thành và kiểm chứng **Slice-01: Đại Chiến Bạch Đằng 1288 (Mốc P2)** trước khi mở rộng thành **Gói Chiến dịch Thời Trần hoàn chỉnh (Release MVP — Mốc P5)**, sau đó mới phát triển cuốn chiếu các *Era Pack* tiếp theo.
 - **Đồng nhất nền tảng công nghệ ngay từ đầu (`D-06`, `D-09`, `D-10`):** Phát triển bằng **Thuần GDScript 2.0 (Typed GDScript)** trên **Godot 4.7** với renderer **`gl_compatibility`**, duy trì chuẩn **60 FPS** xuyên suốt từ môi trường kiểm thử **Windows Desktop** sang hai nền tảng phân phối trọng tâm là **Web (HTML5/Wasm) và Android**.
 - **Thứ tự ưu tiên sản xuất bất biến:**  
-  `Cảm giác điều quân đầm tay` ➔ `Độ rõ luật & Combat Preview` ➔ `Ổn định 60 FPS đa nền tảng` ➔ `Khả năng mở rộng kịch bản bằng dữ liệu JSON`.
+  `Cảm giác điều quân đầm tay` ➔ `Thông số rõ trên UnitInspector & Đánh ngay 1 chạm` ➔ `Ổn định 60 FPS đa nền tảng` ➔ `Khả năng biên tập màn chơi trong Editor (.tres + TileMapLayer)`.
 
 ---
 
@@ -28,7 +28,7 @@
 
 ## 14.3. Phạm vi Slice-01 (Mốc P2 — Vertical Slice Bạch Đằng 1288)
 
-Slice-01 tập trung toàn lực vào **duy nhất 01 màn chơi hoàn chỉnh** để chứng minh chất lượng cốt lõi của trò chơi (xem cấu trúc kịch bản JSON tại [scenario_scripting_and_events.md](../level_design/scenario_scripting_and_events.md) và [data_and_save_system.md](../architecture/data_and_save_system.md)):
+Slice-01 tập trung toàn lực vào **duy nhất 01 màn chơi hoàn chỉnh** để chứng minh chất lượng cốt lõi của trò chơi (xem cấu trúc kịch bản `.tres` & `TileMapLayer` tại [scenario_scripting_and_events.md](../level_design/scenario_scripting_and_events.md) và [data_and_save_system.md](../architecture/data_and_save_system.md)):
 
 - **Định danh kịch bản:** `stage_id: 10101` — **Đại Chiến Bạch Đằng 1288**.
 - **Không gian & Thời lượng:** Bản đồ **`12 × 10` hex** (`Pointy-topped Axial`), giới hạn tối đa **10 lượt** (`MaxRounds = 10`).
@@ -37,7 +37,7 @@ Slice-01 tập trung toàn lực vào **duy nhất 01 màn chơi hoàn chỉnh**
   - Phe AI đối phương: **Đại Nguyên (Quân Nguyên)** (Hạm đội rút lui đường thủy do Ô Mã Nhi thống lĩnh).
 - **Biên chế & Tướng lĩnh (`Preset Loadout` — `D-02`):** 4–5 archetype binh chủng đặc trưng (Chiến thuyền chủ lực, Thuyền nhẹ/Mông đồng hỏa công, Bộ binh giữ bến, Cung/Nỏ yểm trợ bờ sông), 1–2 danh tướng gắn `UniqueSkill` (Trần Quốc Tuấn, Ô Mã Nhi), sử dụng cơ chế gộp cờ `TroopStack` (`1x–3x`).
 - **Hệ thống Chiến đấu & Sĩ khí chuẩn:**
-  - **Controlled RNG có Seed tất định (`Seeded RNG`):** Biên độ sát thương `80%–100%` + Bạo kích (`Crit`), công thức giáp chuẩn `100 / (100 + EffectiveDef)`, làm tròn `RoundHalfUp`, lưu `seed/state` bảo đảm **100% Deterministic Replay**, hiển thị minh bạch `[Min, Max]` & `% Crit` trên Combat Preview (không có đánh trượt ngẫu nhiên).
+  - **Controlled RNG có Seed tất định (`Seeded RNG`):** Biên độ sát thương `80%–100%` + Bạo kích (`Crit`), công thức giáp chuẩn `100 / (100 + EffectiveDef)`, làm tròn `RoundHalfUp`, lưu `seed/state` bảo đảm **100% Deterministic Replay** (không có đánh trượt ngẫu nhiên). Bỏ hộp dự báo sát thương `CombatPreview`: người chơi xem thông số từng đạo quân trên **`UnitInspector`** để tự tính và **chạm 1 lần vào địch trong tầm Đỏ để đánh ngay** như `HexCrown`.
   - **Sĩ khí 4 bậc Enum rời rạc:** `HIGH` (Hưng Phấn), `NORMAL` (Ổn Định), `LOW` (Dao Động), `CHAOS` (Hỗn Loạn — khóa di chuyển, tấn công, phản kích và mất ZoC tạm thời theo lượt rồi tự hồi về `LOW`).
 - **Trạng thái Kinh tế / Lương thảo:** **Ẩn hoàn toàn trong Slice-01 (`enable_economy = false`)** — toàn bộ 4 tài nguyên trong trận (`Coin, Food, Tech, Mana`), tiêu hao `MealFood` và `Starvation` được khóa lại cho **Mốc P3 Alpha** ([battlefield_economy.md](../mechanics/battlefield_economy.md)) để người chơi tập trung tuyệt đối vào vị trí, nhịp con nước và bao vây.
 - **Nhãn toàn vẹn lịch sử:** Các thông số tọa độ ô Hex, số lượng đơn vị, chỉ số chiến đấu và lời thoại sự kiện trong Slice-01 hiện được gắn nhãn rõ ràng là **`fixture / gameplay abstraction`** cho đến khi hội đồng cố vấn duyệt xong `Dossier` chính thức theo nguồn `[S12]–[S16]`.
@@ -84,7 +84,7 @@ Khác với Slice-01 chỉ gồm 1 màn kiểm chứng ở mốc `P2`, sản ph�
 Một mốc bàn giao (đặc biệt là Gate `P2` cho Slice-01 và Gate `P5` cho Release MVP) chỉ được công nhận hoàn thành khi thỏa mãn đồng thời toàn bộ các tiêu chí có bằng chứng kiểm chứng sau:
 
 1. **Hoàn chỉnh vòng lặp độc lập:** Người chơi khởi động game, đọc Briefing, điều quân qua đủ các hồi kịch bản và nhận kết quả Thắng (1–3 Sao) hoặc Thua mà không cần bất kỳ sự can thiệp hay giải thích miệng nào từ lập trình viên.
-2. **Minh bạch toán học & Replay tất định:** Hộp **Combat Preview** và **Combat Log** hiển thị khớp 100% với công thức trong `scripts/core/` (khoảng `[Min, Max]`, `% Crit`, phản kích, giáp, sĩ khí); phát lại cùng chuỗi lệnh với cùng `seed` cho kết quả trùng khớp tuyệt đối (kiểm chứng qua headless test).
+2. **Minh bạch thông số & Replay tất định:** Bảng **`UnitInspector`** hiển thị đầy đủ thông số từng đạo quân khớp 100% với `Resource` (`.tres`), và **`CombatLog`** ghi lại kết quả sát thương thực tế khớp 100% với công thức trong `res://sim/`; phát lại cùng chuỗi lệnh với cùng `seed` cho kết quả trùng khớp tuyệt đối (kiểm chứng qua headless test).
 3. **Ổn định AI & Hiệu năng 60 FPS:** AI hoàn tất mọi lượt đi dưới 3 giây mà không xảy ra vòng lặp vô tận hay soft-lock; tốc độ khung hình duy trì `>= 60 FPS` kèm bằng chứng chụp màn hình (screenshot verification) và log đo đạc.
 4. **Chuẩn mực nhãn lịch sử:** 100% văn bản Briefing, thoại sự kiện và Codex đều có `sourceRef` + `Evidence grade` hợp lệ hoặc được gắn nhãn `fixture / gameplay abstraction` minh bạch.
 5. **Nghiệm thu Playtest độc lập (`[D-17]`):** Thực hiện tối thiểu một đợt kiểm thử với **ít nhất 5 người chơi độc lập ngoài đội ngũ phát triển** (có biên bản ghi chép): đạt tỷ lệ **`>= 4/5` người chơi** tự nêu đúng điều kiện thắng/thua, nhận biết được cơ chế thủy triều rút lộ bãi cọc ở Vòng 4 và tự giải thích hợp lý nguyên nhân dẫn đến chiến thắng hoặc thất bại của mình.

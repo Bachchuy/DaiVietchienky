@@ -176,7 +176,7 @@ def build_auto_toc(body_markdown: str) -> str:
         if title in (
             "ĐẠI VIỆT CHIẾN KỲ (DAI VIET CHRONICLES)",
             "TÀI LIỆU THIẾT KẾ TOÀN DIỆN & KẾ HOẠCH TRIỂN KHAI SẢN XUẤT",
-            "MASTER GAME DESIGN DOCUMENT (GDD) & PRODUCTION BLUEPRINT — PHIÊN BẢN 3.4 (BẢN ĐỒNG BỘ HÓA)",
+            "MASTER GAME DESIGN DOCUMENT (GDD) & PRODUCTION BLUEPRINT — PHIÊN BẢN 3.5 (EDITOR-FIRST ARCHITECTURE)",
             "MỤC LỤC TỔNG THỂ (TABLE OF CONTENTS)",
         ):
             continue
@@ -254,9 +254,9 @@ def main() -> None:
 
     consultation_guide = r"""# ĐẠI VIỆT CHIẾN KỲ (DAI VIET CHRONICLES)
 ## TÀI LIỆU THIẾT KẾ TOÀN DIỆN & KẾ HOẠCH TRIỂN KHAI SẢN XUẤT
-### MASTER GAME DESIGN DOCUMENT (GDD) & PRODUCTION BLUEPRINT — PHIÊN BẢN 3.4 (BẢN ĐỒNG BỘ HÓA)
-**Trạng thái tài liệu:** Bản Hợp Nhất Hoàn Chỉnh (Consolidated Master v3.4.1) — Đồng bộ Thiết kế, Công thức Toán học & Kiến trúc Kỹ thuật  
-**Ngày cập nhật:** 18/11/2026 | **Động cơ:** Godot 4.7 (Thuần GDScript 2.0 — Static Typing) | **Renderer:** `gl_compatibility` | **Mục tiêu:** Web (HTML5/Wasm) + Android (60 FPS)
+### MASTER GAME DESIGN DOCUMENT (GDD) & PRODUCTION BLUEPRINT — PHIÊN BẢN 3.5 (EDITOR-FIRST ARCHITECTURE)
+**Trạng thái tài liệu:** Bản Hợp Nhất Hoàn Chỉnh (Consolidated Master v3.5) — Đồng bộ Kiến trúc 4 Tầng Editor-First (`DEC-021..DEC-026`)  
+**Ngày cập nhật:** 21/11/2026 | **Động cơ:** Godot 4.7 (Thuần GDScript 2.0 `<= 400 dòng/script` — `.tres` + `TileMapLayer` + `.tscn`) | **Renderer:** `gl_compatibility` | **Mục tiêu:** Web (HTML5/Wasm) + Android (60 FPS)
 
 ---
 
@@ -269,9 +269,9 @@ def main() -> None:
 - **Logline:** Chỉ huy các đạo quân Đại Việt qua những chiến dịch lịch sử hào hùng, làm chủ địa hình sông ngòi rừng núi, vận dụng thời cơ thủy triều, bẫy cọc ngầm, bọc sườn và sĩ khí để biến quyết định chiến thuật thành chiến thắng có thể giải thích.
 - **Điểm nhấn tạo khác biệt (Unique Selling Points):**
   1. *Bản sắc quân sự Việt Nam:* Tái hiện cơ chế thủy chiến Bạch Đằng (thủy triều rút ở Vòng 4 làm lộ bãi cọc nhọn đâm thủng chiến thuyền quân Nguyên), thế trận cướp lương "Vườn không nhà trống", tượng binh xung kích và phục kích rừng rậm.
-  2. *Controlled RNG Tất Định & Minh Bạch:* Dao động sát thương có kiểm soát (`80%–100%`) kết hợp Bạo kích trên nền `Seeded RandomNumberGenerator` độc lập, đường cong Giáp `100 / (100 + EffectiveDef)`, gộp cờ `TroopStack` (1x–3x) mượt không đứt gãy và `Combat Preview` 2 bước minh bạch.
+  2. *Thông số minh bạch & Tự cân nhắc chiến thuật (`UnitInspector` + `Seeded RNG`):* Bỏ triết lý biết trước kết quả (`CombatPreview`); người chơi đọc thông số từng đạo quân qua `UnitInspector` để tự tính toán và chạm 1 lần vào địch trong tầm Đỏ để đánh ngay như `HexCrown`, còn hệ thống tung `Seeded RandomNumberGenerator` (`80%–100%` + Crit) thực tế khi va chạm cùng đường cong Giáp `100 / (100 + EffectiveDef)` và gộp cờ `TroopStack` (1x–3x).
   3. *Tiến trình Meta & Duyên phận F2P thân thiện:* Hệ thống Duyên phận lịch sử (*Trần Triều Tam Kiệt*, *Hào Khí Mê Linh*, *Hội Thề Lũng Nhai*) cho phép tích lũy Ngọc Bích từ thành tựu/sự kiện để chiêu mộ mọi bậc danh tướng; khóa hồ sơ tướng (`Preset Loadout`) trong *Historical Scenario*.
-  4. *Kiến trúc Thuần GDScript 2.0 tối ưu 60 FPS:* Vận hành trên Godot 4.7 (`gl_compatibility`), xuất bản liền mạch lên trình duyệt Web (Wasm) và thiết bị di động Android với *Strategic Zoom* và Object Pooling.
+  4. *Kiến trúc 4 Tầng Editor-First tối ưu 60 FPS:* Vận hành trên Godot 4.7 (`gl_compatibility`), dữ liệu Custom `Resource` (`.tres`) chỉnh trong Inspector, bản đồ `TileMapLayer` + `unit_view.tscn` + HUD `.tscn` xem được trong View 2D Editor, xuất bản Web (Wasm) và Android với *Strategic Zoom* và `CPUParticles2D` pooling.
 
 ---
 
@@ -368,7 +368,7 @@ def main() -> None:
         "\n\n---\n\n",
         clean_section("11.2.", "Quản trị rủi ro, giả định và danh mục quyết định", risks_decisions),
         "\n\n---\n\n",
-        clean_section("11.3.", "Kế hoạch triển khai, Checkpoints CP1–CP5 & Design Gates", implementation_plan),
+        clean_section("11.3.", "Kế hoạch triển khai, Lộ trình R1–R5 (CP6–CP10), CP1–CP5 & Design Gates", implementation_plan),
         "\n\n---\n\n",
         "# CHƯƠNG XII: PHỤ LỤC & SỔ TAY QUẢN LÝ TÀI NGUYÊN\n\n",
         clean_section("12.1.", "Phụ lục A. Feature Reference Matrix", appendix_a),

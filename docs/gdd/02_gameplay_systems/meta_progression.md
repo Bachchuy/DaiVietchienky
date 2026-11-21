@@ -44,8 +44,8 @@ graph TD
 
 ## 9.3. Hệ thống Duyên phận Lịch sử & 5 Ô Bảo vật Đại Việt
 
-* **Duyên phận Lịch sử (`FetterSettings.json`):** Kích hoạt hiệu ứng cộng hưởng chiến thuật khi các danh tướng đồng thời kỳ/cùng chí hướng sát cánh trên chiến trường (ví dụ: *Trần Triều Tam Kiệt*, *Vua Tôi Đồng Lòng*, *Hội Thề Lũng Nhai*, *Tây Sơn Tam Kiệt*, *Hào Khí Mê Linh*).
-* **Năm Ô Bảo vật Chuẩn Niên đại (`EquipmentSettings.json`):**
+* **Duyên phận Lịch sử (`FetterDef` — `res://data/defs/fetters/*.tres`):** Kích hoạt hiệu ứng cộng hưởng chiến thuật khi các danh tướng đồng thời kỳ/cùng chí hướng sát cánh trên chiến trường (ví dụ: *Trần Triều Tam Kiệt*, *Vua Tôi Đồng Lòng*, *Hội Thề Lũng Nhai*, *Tây Sơn Tam Kiệt*, *Hào Khí Mê Linh*).
+* **Năm Ô Bảo vật Chuẩn Niên đại (`EquipmentDef` — `res://data/defs/equipment/*.tres`):**
   1. **Cận chiến:** *Thuận Thiên Kiếm*, *Gươm Thái A*, *Trường Đao Trần Triều*...
   2. **Tầm xa:** *Nỏ Liên Châu Kim Quy*, *Cung Thần Đại Việt*, *Hỏa Hổ Ống Đồng*...
   3. **Hộ giáp:** *Khôi Giáp Thiết Lĩnh*, *Áo Bào Chiến Trận*, *Hộ Tâm Kính*...

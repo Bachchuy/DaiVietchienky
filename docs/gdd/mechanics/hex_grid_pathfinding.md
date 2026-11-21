@@ -87,7 +87,7 @@ flowchart LR
 
 ### 3.3. Bảng Thuộc tính Không gian Đặc biệt (`snake_case`)
 
-| Thuộc tính JSON / GDScript | Kiểu | Tên tiếng Việt | Tác động Hình học & Định tuyến | Binh chủng / Vai trò tiêu biểu |
+| Thuộc tính `Resource` (`.tres`) / GDScript | Kiểu | Tên tiếng Việt | Tác động Hình học & Định tuyến | Binh chủng / Vai trò tiêu biểu |
 | :--- | :---: | :--- | :--- | :--- |
 | **`ignore_zoc`** | `bool` | **Xuyên ZoC** | Bỏ qua hoàn toàn hiệu ứng dừng bước của `ZoC` quân địch; tự do luồn lách qua khe hở trận tuyến. | *Thám báo / Nội gián*, *Tản binh du kích*, *Khinh kỵ trinh sát*. |
 | **`ignore_coc`** | `bool` | **Xuyên CoC** | Miễn phạt `step_cost * 2` khi áp sát thành trì/cửa quan của địch. | *Công binh phá lũy*, *Đội thang mây tiên phong*. |

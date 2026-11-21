@@ -4,42 +4,46 @@
 *(Chuẩn hóa cho Godot 4.7 — Thuần Typed GDScript 2.0, `gl_compatibility`, Web & Android 60 FPS)*
 
 > **Vị trí tài liệu:** `docs/gdd/ui_ux/battle_ui_and_rendering.md`  
-> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** cho Godot 4.7 (`gl_compatibility`), tối ưu hóa 60 FPS trên nền tảng Web và Android, đồng bộ **16 Lớp Kết Xuất** (có `StrategicTokenLayer`, `MapEffectLayer`, `FogOfWarLayer`), **Input FSM 8 trạng thái** (khép kín luồng `PostMoveAction`), HUD thích ứng cờ `enable_economy`, và `BattleCameraController` dùng nội suy độc lập FPS kèm `Trauma Shake` tách biệt RNG.
+> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** cho Godot 4.7 (`gl_compatibility`) theo chuẩn **Editor-First (`DEC-021..DEC-026`)**: Scene dựng trực quan trong View 2D (`battle.tscn`, `battle_map.tscn` dùng `TileMapLayer`, `unit_view.tscn` ghép Component như `HexCrown`), **HUD tách thành các Scene `.tscn` riêng + `theme.tres` (`<= 400 dòng/script`)**, loại bỏ hoàn toàn `CombatPreviewBox` / xác nhận đánh 2 bước (`AimingTarget`) thay bằng **`UnitInspector` + đánh ngay 1 chạm**, và `BattleCameraController` dùng nội suy độc lập FPS kèm `Trauma Shake` tách biệt RNG.
 
 ---
 
-## 1. Kiến trúc Kết xuất Bản đồ Phân lớp (16-Layer Rendering Pipeline)
+## 1. Kiến trúc Scene Chiến trường & Kết xuất Bản đồ Phân lớp (`TileMapLayer` + `UnitView.tscn`)
 
-Để quản lý hàng trăm ô lục giác, công sự, hiệu ứng hạt, sương mù chiến tranh và các tiểu đội binh sĩ mà không xảy ra xung đột thứ tự vẽ (`Z-fighting`), chiến trường phân tách thành **16 lớp kết xuất chuẩn** (15 lớp không gian bản đồ `Node2D` theo `z_index` cố định và 1 lớp giao diện màn hình `CanvasLayer`):
+Thay vì vẽ bản đồ bằng đa giác bệt `_draw()` hoặc sinh toàn bộ cây UI bằng `Node.new()` lúc chạy game, toàn bộ không gian chiến trường được tổ chức thành cây **Scene `.tscn` mở và chỉnh được trực tiếp trong View 2D của Godot Editor**, phân tách 16 lớp kết xuất chuẩn (15 lớp không gian bản đồ `Node2D` theo `z_index` cố định và 1 lớp giao diện màn hình `CanvasLayer`):
+
+- **`res://game/battle/battle.tscn`**: Scene gốc của một trận đánh, gắn `BattleSession`, `BattleCameraController`, `BattleMap` và `BattleHud`.
+- **`res://game/battle/map/battle_map.tscn` (`TileMapLayer`)**: Sử dụng **`TileMapLayer`** của Godot 4.7 với bộ `TileSet` địa hình thật (kết hợp `stage_<id>_map.tscn` và script `@tool` hiển thị ngay sông ngòi, rừng núi, thành trì, bãi cọc trên View 2D trong Editor).
+- **`res://game/battle/units/unit_view.tscn` (Prefab ghép Component như `HexCrown`)**: Mỗi đạo quân là một instance của Scene `unit_view.tscn` gồm `Sprite2D` (sprite hoạt ảnh + `FactionTint.gdshader`), `AnimationPlayer` (`idle/move/attack/hit/death`), `UnitAnimatorComponent`, `HealthBarComponent` (thanh máu chia nấc theo `troop_stack`), `StatusBadgeComponent` (sĩ khí & CC).
 
 ```mermaid
 graph TD
-    subgraph LayerGroup1["NHÓM 1: ĐỊA HÌNH & LƯỚI NỀN (Node2D Z-Index: 0 – 10)"]
-        L1["1. GroundLayer (z=0: Gạch nền đồng bằng, rừng, đồi, đầm lầy)"]
-        --> L2["2. WaterAndTideLayer (z=2: Mặt sông, sóng cửa biển & bãi cọc StakedWater)"]
+    subgraph LayerGroup1["NHÓM 1: ĐỊA HÌNH & LƯỚI NỀN (TileMapLayer & Node2D Z: 0 – 10)"]
+        L1["1. GroundLayer (TileMapLayer z=0: Đồng bằng, rừng, đồi, đầm lầy)"]
+        --> L2["2. WaterAndTideLayer (TileMapLayer z=2: Mặt sông, sóng cửa biển & bãi cọc StakedWater)"]
         --> L3["3. GridHexLayer (z=4: Đường viền lưới lục giác Pointy-topped)"]
-        --> L4["4. FactionBorderLayer (z=6: Màu phủ & ranh giới kiểm soát cứ điểm SignalDock)"]
+        --> L4["4. FactionBorderLayer (z=6: Đường biên lãnh thổ & cứ điểm SignalDock)"]
     end
 
     subgraph LayerGroup2["NHÓM 2: VÙNG TƯƠNG TÁC TÁC CHIẾN (Node2D Z-Index: 11 – 25)"]
         L4 --> L5["5. ReachableAreaLayer (z=12: Vùng ô di chuyển hợp lệ - Xanh dương)"]
-        --> L6["6. AttackableAreaLayer (z=14: Vùng mục tiêu trong tầm đánh - Đỏ)"]
+        --> L6["6. AttackableAreaLayer (z=14: Vùng mục tiêu trong tầm đánh - Đỏ, chạm là đánh ngay)"]
         --> L7["7. SkillAreaLayer (z=16: Vùng ảnh hưởng mưu lược / AoE - Vàng)"]
-        --> L8["8. SelectionAndAimLayer (z=18: Vòng chọn ô, đường dẫn MP & tâm ngắm)"]
+        --> L8["8. SelectionAndAimLayer (z=18: Vòng chọn ô, đường dẫn MP)"]
     end
 
-    subgraph LayerGroup3["NHÓM 3: THỰC THỂ, HIỆU ỨNG & SƯƠNG MÙ (Node2D Z-Index: 26 – 50)"]
+    subgraph LayerGroup3["NHÓM 3: THỰC THỂ, HIỆU ỨNG & SƯƠNG MÙ (UnitView.tscn & VFX Z: 26 – 50)"]
         L8 --> L9["9. BuildingAndFortLayer (z=28: Bến Hiệu Lệnh, thành trì, lũy tre, cờ cứ điểm)"]
         --> L10["10. UnitBaseAuraLayer (z=32: Vòng chân Tướng & đĩa màu phân phe)"]
-        --> L11["11. UnitModelLayer (z=36: Mô hình tiểu đội 2D hoạt họa khi zoom >= 0.65)"]
+        --> L11["11. UnitModelLayer (z=36: Các instance UnitView.tscn khi zoom >= 0.65)"]
         --> L12["12. StrategicTokenLayer (z=38: Huy hiệu Military Token khi zoom < 0.65)"]
         --> L13["13. MapEffectLayer (z=42: Hiệu ứng CPUParticles2D, lửa cháy, bọt nước, vết chém)"]
         --> L14["14. FogOfWarLayer (z=48: Sương mù chiến tranh 3 cấp Chưa mở / Đã biết / Đang thấy)"]
     end
 
-    subgraph LayerGroup4["NHÓM 4: HUD NỔI & GIAO DIỆN MÀN HÌNH (Z-Index 55+ & CanvasLayer)"]
+    subgraph LayerGroup4["NHÓM 4: HUD NỔI & GIAO DIỆN MÀN HÌNH (.tscn Z-Index 55+ & CanvasLayer)"]
         L14 --> L15["15. WorldSpaceUnitHudAndTextLayer (z=55..70: Thanh HP gộp cờ, Sĩ khí, CC & Số sát thương)"]
-        --> L16["16. ScreenHudCanvasLayer (CanvasLayer layer=10: CombatPreviewBox, TopBar, BottomDock)"]
+        --> L16["16. ScreenHudCanvasLayer (CanvasLayer layer=10: top_bar.tscn, unit_inspector.tscn, command_dock.tscn, Modals)"]
     end
 ```
 
@@ -54,17 +58,17 @@ graph TD
 
 ---
 
-## 2. Máy Trạng thái Tương tác Đầu vào (`BattleInputFSM` — 8 Trạng thái Khép kín)
+## 2. Máy Trạng thái Tương tác Đầu vào (`BattleInputFSM` — 7 Trạng thái Khép kín, Đánh Ngay 1 Chạm)
 
-Quản lý toàn bộ thao tác chuột và cảm ứng qua **8 trạng thái rõ ràng**, trong đó trạng thái trung gian **`PostMoveAction`** giải quyết trọn vẹn cả 4 nhánh hành động sau khi di chuyển (đánh, dùng mưu lược, hoàn tác Undo hoặc chốt đứng đợi), không để xảy ra trạng thái cụt:
+Theo quyết định **`DEC-026`**, hệ thống **bỏ hoàn toàn trạng thái `AimingTarget` và hộp dự báo sát thương `CombatPreviewBox`**. Quản lý toàn bộ thao tác chuột và cảm ứng qua **7 trạng thái rõ ràng**, kết hợp **`UnitInspector`** (hiển thị thông số thô của đạo quân) và **tấn công trực tiếp 1 chạm như `HexCrown`**:
 
 ```mermaid
 stateDiagram-v2
     [*] --> Idle: Bắt đầu lượt người chơi
 
+    Idle --> Idle: Chạm đơn vị địch / đồng minh -> Hiện thông số trên UnitInspector
     Idle --> UnitSelected: Chạm chọn đạo quân ta (!has_acted)
-    UnitSelected --> Idle: Chạm vùng trống / Hủy chọn
-    UnitSelected --> Idle: Bấm [ĐỢI] đứng yên tại chỗ (has_acted = true)
+    UnitSelected --> Idle: Chạm vùng trống / Chuột phải / Bấm [ĐỢI] (has_acted = true)
 
     UnitSelected --> Moving: Chạm ô xanh hợp lệ (MarchCommand)
     Moving --> PostMoveAction: Di chuyển tới ô đích xong
@@ -72,12 +76,9 @@ stateDiagram-v2
     PostMoveAction --> UnitSelected: (c) Bấm [HOÀN TÁC] (thỏa 5 điều kiện Undo)
     PostMoveAction --> Idle: (d) Bấm [ĐỢI / CHỐT VỊ TRÍ] (has_acted = true, Dimmed)
 
-    UnitSelected --> AimingTarget: Chạm lần 1 vào địch trong tầm (đánh tại chỗ)
-    PostMoveAction --> AimingTarget: (a) Chạm lần 1 vào địch trong tầm mới
-    AimingTarget --> UnitSelected: Hủy ngắm (nếu chưa di chuyển)
-    AimingTarget --> PostMoveAction: Hủy ngắm (nếu vừa di chuyển)
-    AimingTarget --> Attacking: Chạm lần 2 vào địch HOẶC bấm [ĐÁNH]
-    Attacking --> Idle: Chạy hoạt cảnh, giải quyết combat (has_acted = true)
+    UnitSelected --> Attacking: Chạm 1 lần vào địch trong vùng Đỏ (đánh ngay tại chỗ)
+    PostMoveAction --> Attacking: (a) Chạm 1 lần vào địch trong vùng Đỏ (đánh ngay sau di chuyển)
+    Attacking --> Idle: Chạy hoạt cảnh, Seeded RNG tính sát thương & phản kích (has_acted = true)
 
     UnitSelected --> SkillTargeting: Bấm [MƯU LƯỢC] (dùng tại chỗ)
     PostMoveAction --> SkillTargeting: (b) Bấm [MƯU LƯỢC] (sau khi di chuyển)
@@ -87,55 +88,57 @@ stateDiagram-v2
     ExecuteSkill --> Idle: Thi triển kỹ năng, trừ Mana & đặt CD (has_acted = true)
 ```
 
-### Quy trình 4 lựa chọn tại `PostMoveAction` & Xác nhận Đòn đánh 2 Bước:
-1. **Nhánh (a) — Tấn công 2 bước (`PostMoveAction -> AimingTarget -> Attacking -> Idle`):**
-   * *Chạm lần 1 vào địch:* Chuyển sang `AimingTarget`, mở **Combat Preview Box** (`Min~Max` sát thương, `%` Chí mạng, dự báo Phản kích, hệ số Khắc chế/Địa hình/Flank) và nhấp nháy phần máu dự kiến mất.
-   * *Chạm lần 2 vào địch hoặc bấm `[ĐÁNH]`:* Chuyển sang `Attacking`, thực thi `AttackCommand`, đặt `unit.has_acted = true` rồi về `Idle`.
-2. **Nhánh (b) — Thi triển Kỹ năng/Mưu lược (`PostMoveAction -> SkillTargeting -> ExecuteSkill -> Idle`):**
+### Quy trình 4 lựa chọn tại `PostMoveAction` & Cơ chế `UnitInspector` + Đánh Ngay 1 Chạm:
+1. **Xem thông số trên `UnitInspector` (Không tính trước sát thương):**
+   * Khi người chơi chạm vào bất kỳ đạo quân nào ở trạng thái `Idle` (hoặc click chuột phải / chạm vào quân địch ngoài vùng tấn công Đỏ), bảng **`UnitInspector`** (`res://ui/battle_hud/unit_inspector.tscn`) chỉ hiển thị **thông số bản thân đạo quân đó**: Tên tướng & binh chủng, HP & số cờ (`1x–3x`), Công (`base_atk` & kiểu công), Thủ (`base_def` & loại giáp), Tầm đi / Tầm đánh, Bậc Sĩ khí, và hiệu ứng Địa hình ô đang đứng.
+   * **Tuyệt đối không tính toán hay hiển thị trước** khoảng sát thương dự kiến `[Min, Max]`, tỷ lệ Crit đối đầu hay sát thương phản kích dự kiến — người chơi tự đọc thông số hai bên để cân nhắc chiến thuật.
+2. **Nhánh (a) — Tấn công Trực tiếp 1 Chạm (`UnitSelected` hoặc `PostMoveAction -> Attacking -> Idle`):**
+   * *Chạm/Click 1 lần vào ô địch đang sáng Đỏ (`AttackableAreaLayer`):* Lập tức chuyển sang `Attacking`, thực thi `AttackCommand`, hệ thống tính công thức và tung số ngẫu nhiên (`Seeded RNG`), hiển thị số sát thương thực tế nảy lên (`FloatingDamageText`), đặt `unit.has_acted = true` rồi về `Idle`.
+3. **Nhánh (b) — Thi triển Kỹ năng/Mưu lược (`PostMoveAction -> SkillTargeting -> ExecuteSkill -> Idle`):**
    * Bấm `[MƯU LƯỢC]` để chọn ô tác động, thực thi `CastSkillCommand`, đặt `unit.has_acted = true` rồi về `Idle`.
-3. **Nhánh (c) — Hoàn tác Di chuyển (`PostMoveAction -> UnitSelected`):**
+4. **Nhánh (c) — Hoàn tác Di chuyển (`PostMoveAction -> UnitSelected`):**
    * Bấm `[HOÀN TÁC]` (chỉ sáng nút khi `march_cmd.can_undo(ctx) == true` thỏa đủ 5 điều kiện tại GDD §11.4): trả quân về `from_hex`, hoàn lại MP, đánh dấu `unit.has_used_undo_this_turn = true` và quay về `UnitSelected`.
-4. **Nhánh (d) — Chốt vị trí / Đợi (`PostMoveAction -> Idle`):**
+5. **Nhánh (d) — Chốt vị trí / Đợi (`PostMoveAction -> Idle`):**
    * Bấm nút `[ĐỢI]` (hoặc chạm xác nhận lần nữa lên chính ô đang đứng): gửi `WaitCommand`, đánh dấu `unit.has_acted = true`, chuyển màu quân sang trạng thái nghỉ (`Dimmed`) và trở về `Idle`.
 
 ---
 
-## 3. Bố cục Giao diện Trận đánh (`form_battle_game`) & Quy tắc Ẩn Kinh tế MVP
+## 3. Bố cục Giao diện Trận đánh (`res://ui/battle_hud/*.tscn` & `theme.tres`)
 
-Tuân thủ triết lý **Map-First** (dành trọn $\ge 80\%$ diện tích màn hình cho sa bàn chiến thuật). Ở **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`, `max_rounds = 10`, `enable_economy = false`)**, cụm tài nguyên `Coin / Food / Tech` trên thanh Top Bar tự động ẩn đi để giao diện gọn sạch đúng phạm vi MVP:
+Tuân thủ triết lý **Map-First** (dành trọn $\ge 80\%$ diện tích màn hình cho sa bàn chiến thuật) và nguyên tắc **Editor-First**: toàn bộ HUD và Modal được dựng bằng các **Scene `.tscn` độc lập** dùng chung **`res://ui/common/theme.tres`** (mỗi script gắn kèm `<= 400` dòng, không sinh node hàng loạt trong `_ready()`). Ở **Slice-01 Bạch Đằng 1288 (`enable_economy = false`)**, cụm tài nguyên `Coin / Food / Tech` trên Top Bar tự động ẩn đi:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ [PAUSE]  VÒNG: 03/10  │ PHE: ĐẠI VIỆT │ 🔮 120 │ MỤC TIÊU: Giữ Bến (2,8) & Hạ Ô Mã Nhi │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│                         [ SA BÀN CHIẾN TRƯỜNG 12×10 HEX ]                    │
-│                                                                              │
-│                         ⚔️ [MỤC TIÊU ĐỊCH: Ô MÃ NHI]                         │
-│                      ┌───────────────────────────────┐                       │
-│                      │ HP: 310/520 (-52 ~ -68)       │                       │
-│                      │ Sát thương dự kiến: 52 ~ 68   │                       │
-│                      │ Chí mạng: 15% (~95)           │                       │
-│                      │ Phản kích dự kiến: 18 ~ 24    │                       │
-│                      │ Địa hình & Flank: +25%        │                       │
-│                      └───────────────────────────────┘                       │
-│                                                                              │
+│ ┌──────────────────────┐                                                     │
+│ │ UNIT INSPECTOR       │        [ SA BÀN CHIẾN TRƯỜNG 12×10 HEX ]             │
+│ │ Ô Mã Nhi - Lâu Thuyền│         (Ô địch trong tầm sáng Đỏ ->                │
+│ │ HP: 520/520 (3x cờ)  │          Chạm 1 lần để ĐÁNH NGAY!)                  │
+│ │ Công: 46 | Thủ: 18   │                                                     │
+│ │ Đi: 8 | Tầm: 1-2     │                                                     │
+│ │ Sĩ khí: Ổn định      │                                                     │
+│ └──────────────────────┘                                                     │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ [AVATAR] TƯỚNG: Trần Khánh Dư   [ĐI]  [ĐÁNH]  [MƯU LƯỢC]  [HOÀN TÁC]  [ĐỢI]  │
-│ [HÌNH QUÂN] Thủy Quân Đại Việt  (MP)  (Range)   (Mana)    (Undo 1x)  (Wait)  │
-│ HP: 320/320 | Sĩ khí: Hưng phấn ──────────────────────────────────────────── │
-│ Địa hình: Mặt nước (+15% Công)        [ KẾT THÚC LƯỢT / END TURN 🔔 ]        │
+│ [AVATAR] TƯỚNG: Trần Khánh Dư      [MƯU LƯỢC]  [HOÀN TÁC]  [ĐỢI]             │
+│ [HÌNH QUÂN] Thủy Quân Đại Việt      (Mana/CD)   (Undo 1x)  (Wait)            │
+│ HP: 320/320 | Công: 36 | Thủ: 12    ──────────────────────────────────────── │
+│ Địa hình: Mặt nước (+15% Công)             [ KẾT THÚC LƯỢT / END TURN 🔔 ]   │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Quy tắc Hiển thị Thích ứng các Thành phần HUD:
-1. **Top Status Bar:**
-   * Khi `enable_economy == false` (như Slice-01): Chỉ hiển thị `[PAUSE]`, `VÒNG: 03/10`, Phe hiện tại, Điểm Mưu lược (`🔮 Mana`) và Mục tiêu chính.
-   * Khi `enable_economy == true` (các màn chiến dịch lớn ở P3+): Tự động bật thêm HBox hiển thị `🪙 Tiền (Coin)`, `🌾 Lương thảo (Food)` và `⚙️ Kỹ nghệ (Tech)`.
-2. **Bottom Command Dock:**
-   * Bên trái: Thẻ thông tin đạo quân đang chọn (Avatar Tướng, tên binh chủng, thanh HP, bậc Sĩ khí, hệ số địa hình ô hiện tại).
-   * Bên phải: Cụm nút thao tác chuẩn cảm ứng gồm `[ĐI]`, `[ĐÁNH]`, `[MƯU LƯỢC]`, `[HOÀN TÁC]` (chỉ bật khi `can_undo() == true`), `[ĐỢI]` (chốt vị trí từ `PostMoveAction` hoặc `UnitSelected`) và `[KẾT THÚC LƯỢT]`.
-3. **Overhead Unit HUD (`WorldSpaceUnitHudAndTextLayer`):**
+### Quy chuẩn Thành phần HUD & Modal An toàn (Không Cắt Nút):
+1. **Top Status Bar (`res://ui/battle_hud/top_bar.tscn`):**
+   * Khi `enable_economy == false` (Slice-01): Hiển thị `[PAUSE]`, `VÒNG: 03/10`, Phe hiện tại, `🔮 Mana` và Mục tiêu chính.
+   * Khi `enable_economy == true` (các màn hậu cần): Tự động hiện thêm `🪙 Tiền (Coin)`, `🌾 Lương thảo (Food)` và `⚙️ Kỹ nghệ (Tech)`.
+2. **`UnitInspector` (`res://ui/battle_hud/unit_inspector.tscn`):**
+   * Chỉ hiển thị thông số thô của 1 đạo quân đang được xem (quân ta hoặc quân địch ngoài tầm / chuột phải), tuyệt đối không hiển thị phép tính dự báo giao tranh.
+3. **Bottom Command Dock (`res://ui/battle_hud/command_dock.tscn`):**
+   * Bên trái: Thẻ tóm tắt đạo quân đang chọn. Bên phải: Cụm nút thao tác `[MƯU LƯỢC]`, `[HOÀN TÁC]`, `[ĐỢI]` và `[KẾT THÚC LƯỢT]`.
+4. **Quy tắc Modal An toàn (`res://ui/common/modal_frame.tscn` — Áp dụng cho Briefing, Dialogue, Pause, Result Summary):**
+   * Mọi modal bắt buộc dùng cấu trúc `PanelContainer > MarginContainer > VBoxContainer`, nội dung văn bản dài nằm trong `ScrollContainer`, và hàng nút hành động chính (`ButtonRow`: `BẮT ĐẦU` / `BỎ QUA` / `TIẾP TỤC` / `ĐÓNG`) **luôn nằm ngoài `ScrollContainer` ở chân modal, luôn nhìn thấy được**.
+   * **Cấm tuyệt đối** đặt cứng `size` cố định kèm `clip_contents = true` làm cắt nội dung hoặc cắt nút, và **cấm** tự viết logic xác định hit-test nút trong `_input()` — phải dùng hệ thống GUI chuẩn của Godot và kiểm chứng bằng `assert_button_reachable()`.
+5. **Overhead Unit HUD (`WorldSpaceUnitHudAndTextLayer` / `unit_view.tscn`):**
    * Thanh máu chia vạch theo số cờ gộp (`troop_stack`: 1, 2, 3 cờ), biểu tượng 4 bậc Sĩ khí và huy hiệu khống chế (`InChaos`, `MarchDisabled`, `AttackDisabled`).
 
 ---

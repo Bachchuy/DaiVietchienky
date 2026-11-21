@@ -53,7 +53,7 @@ graph LR
 
 ## 8.4. Công trình Hậu cần, Cướp lương & Giao thương Khẩn cấp
 
-* **Hệ thống Công trình Chiến lược (`FacilitySettings.json`):**
+* **Hệ thống Công trình Chiến lược (`FacilityDef` — `res://data/defs/facilities/*.tres`):**
   * *Thành trì / Đô thành (`Type 1–5`):* Cứ điểm phát `CoC` (`step_cost * 2`), hồi HP đồn trú, thu thuế `coin`/`food`, chiêu mộ quân và bổ nhiệm Tướng chỉ huy.
   * *Nông điền (`Type 33`):* Cung cấp `80–200 Food/lượt` — huyết mạch nuôi đại quân.
   * *Chợ / Thương điếm (`Type 18`):* Sinh `60–150 Coin/lượt` và mở khóa lệnh Giao thương khẩn cấp (`Trade`).

@@ -26,8 +26,8 @@ Các tựa game tham chiếu dưới đây cung cấp bài học về cấu trú
 
 | Hạng mục đo lường | Chỉ số mục tiêu chuẩn (Target Metric) | Phương pháp kiểm chứng thực tế |
 |---|---|---|
-| **1. Chi phí thao tác mỗi hành động (Input Efficiency)** | **`<= 2 chạm / click`** sau khi đã chọn đơn vị để hoàn tất di chuyển hoặc xác nhận tấn công (`Two-Step Combat Confirmation`). | Đếm trực tiếp số thao tác trên cả chuột (Web/Desktop) và màn hình cảm ứng (Android); không phát sinh menu phụ chồng chéo. |
-| **2. Độ rõ & Minh bạch của Combat Preview** | Hiển thị đầy đủ **100%** các thông tin quyết định trước khi ra đòn: khoảng sát thương `[Min, Max]` (`Seeded RNG` `80%–100%`), tỷ lệ `% Crit`, dự báo sát thương phản kích (`Retaliation`) và các thẻ modifier chính (Địa hình, Sĩ khí, Khắc chế, `Flank`, `TroopStack`). | Screenshot verification hộp Combat Preview + khảo sát người chơi thử xem có hiểu vì sao sát thương tăng/giảm hay không. |
+| **1. Chi phí thao tác mỗi hành động (Input Efficiency)** | **Đánh ngay 1 chạm (`1 chạm` vào địch trong tầm Đỏ sau khi chọn quân)** theo phong cách `HexCrown` (`DEC-026`, bỏ xác nhận 2 bước rườm rà). | Đếm trực tiếp số thao tác trên cả chuột (Web/Desktop) và màn hình cảm ứng (Android); kiểm tra nút bấm được qua `assert_button_reachable()`. |
+| **2. Độ rõ thông số đạo quân (`UnitInspector`)** | Hiển thị đầy đủ **100%** thông số bản thân đạo quân trên `UnitInspector` (HP, số cờ, Công, Thủ, Tầm đi/đánh, Sĩ khí, Địa hình ô đứng) mà **không tính hộ sát thương dự kiến**. | Screenshot verification `UnitInspector` + khảo sát người chơi xem có tự đọc được tương quan lực lượng trước khi đánh hay không. |
 | **3. Hiệu năng khung hình đa nền tảng (Frame Rate)** | Duy trì ổn định **`>= 60 FPS`** (thời gian vẽ khung hình `<= 16.67 ms`), không tụt quá ngưỡng khi thu phóng toàn cảnh nhờ `StrategicZoom` (`Zoom < 0.7x`). | Đo bằng bộ đếm profiler của Godot 4.7 trên trình duyệt Web và máy Android tầm trung trong kịch bản 20–50 đơn vị hoạt động. |
 | **4. Tốc độ phản hồi lượt máy (AI Turn Pacing)** | Toàn bộ lượt đi của phe AI hoàn tất trong **`1.5 – 3.0 giây`** (tính toán ngầm `< 1.5s`, kết hợp lia camera mượt tới điểm giao tranh chính). | Đo log thời gian thực thi AI trong headless simulation 100 trận và ghi hình thực tế trong Slice-01. |
 | **5. Tỷ lệ không gian bản đồ (Map-First Screen Ratio)** | Vùng bản đồ chiến trường chiếm **`>= 80%`** diện tích hiển thị màn hình ở trạng thái bình thường; nhận diện tức thì 4 bậc Sĩ khí (`HIGH/NORMAL/LOW/CHAOS`) và ô bãi cọc `StakedWater`. | Kiểm tra bố cục trên cả tỷ lệ `16:9` (Web/PC) và `19.5:9` – `20:9` (Android) qua ảnh chụp màn hình thực tế. |
@@ -40,7 +40,7 @@ Các tựa game tham chiếu dưới đây cung cấp bài học về cấu trú
 Trước khi đề xuất đưa bất kỳ cơ chế mới nào từ các game benchmark vào backlog sản xuất, người thiết kế bắt buộc trả lời đủ 4 câu hỏi:
 1. **Quyết định:** Tính năng này tạo ra sự đánh đổi chiến thuật mới nào cho người chơi trong lượt đi?
 2. **Bản sắc:** Tính năng này làm nổi bật đặc trưng quân sự / địa hình Việt Nam ở thời kỳ nào?
-3. **Độ rõ UX:** Người chơi nhận biết nó trên bản đồ và trong Combat Preview chỉ trong `<= 2 chạm` bằng cách nào?
+3. **Độ rõ UX:** Người chơi nhận biết nó trên bản đồ (`TileMapLayer` / `UnitView`) và thông số đạo quân trên `UnitInspector` như thế nào?
 4. **Kiểm chứng:** Tính năng này có thể kiểm thử tự động bằng headless test và đánh giá qua playtest trong vòng 15 phút hay không?
 
 > *Nếu không trả lời thuyết phục được cả 4 câu hỏi trên, tính năng đó bắt buộc phải hoãn khỏi phạm vi sản xuất hiện tại.*

@@ -12,7 +12,7 @@
 
 ## 1. Hệ thống Chỉ số & Miền Giá trị Chuẩn hóa (Combat Attributes & Domains)
 
-Mọi biến số tham gia tính toán sát thương đều dùng tên thuộc tính chuẩn GDScript/JSON (`snake_case`) với miền giá trị xác định rõ ràng:
+Mọi biến số tham gia tính toán sát thương đều dùng tên thuộc tính chuẩn GDScript / Custom `Resource` (`snake_case`) với miền giá trị xác định rõ ràng:
 
 | Nhóm | Thuộc tính (`snake_case`) | Kiểu | Miền giá trị | Ý nghĩa & Quy tắc Gameplay |
 | :--- | :--- | :---: | :---: | :--- |
@@ -110,7 +110,7 @@ $$\text{FinalDamage} = \max\Big(1, \ \text{round\_half\_up}(\text{RawDamage})\Bi
    $$\text{GenBonus} = \text{general\_command\_stat} \times 1 \quad (\text{miền } 0..30)$$
    $$M_{\text{hp}} = 0.50 + 0.50 \times \left(\frac{\text{current\_hp}}{\text{max\_hp}}\right)$$
    $$\text{Atk}_{\text{rolled}} = \Big(\text{base\_atk} \times \text{RollFactor} + \text{GenBonus}\Big) \times M_{\text{hp}}$$
-   * **Hiển thị `CombatPreview`:** Tính dải dự báo `[D_min, D_max]` bằng cách thay lần lượt `RollFactor = damage_roll_min / 100.0` và `RollFactor = damage_roll_max / 100.0` (chưa nhân Crit).
+   * **Không biết trước kết quả (`DEC-026`):** `UnitInspector` chỉ hiển thị thông số thô của từng đạo quân (`base_atk`, `base_def`, `max_hp`/`current_hp`, sĩ khí, địa hình); người chơi tự tính toán chiến thuật trước khi chạm 1 lần tấn công ngay, còn `RollFactor` và `Crit` được hệ thống gieo thực tế qua `combat_rng` tại thời điểm va chạm và hiển thị bằng số nhảy sát thương (`FloatingDamageText`). *(Hàm ước lượng nội bộ chỉ dùng cho chấm điểm AI trong `AIDecisionMatrix`, không hiển thị ra UI).*
 
 2. **Đường cong Giáp phi tuyến thống nhất ($\text{DefReduction}$):**
    $$\text{EffectiveDef} = \text{base\_def} \times \text{TerrainDefMult} \times \text{MoraleDefMult}$$

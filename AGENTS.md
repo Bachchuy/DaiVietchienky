@@ -35,3 +35,6 @@
    - Test UI phải khẳng định nút *bấm được*: rect nằm trọn trong mọi tổ tiên `clip_contents` và viewport, click qua `Viewport.push_input` thật — không chỉ kiểm node tồn tại.
    - Phải mở xem từng screenshot với câu hỏi: "Người chơi có thấy nút đi tiếp không? Chữ có bị cắt/tràn không?". Thấy lỗi thì sửa hoặc báo CHƯA XONG.
    - Trước khi báo xong một cổng: mở editor kiểm tra view 2D và Inspector có nội dung, và chạy F5 từ `main_menu.tscn` qua hết luồng mở đầu.
+9. **Cổng Thiết kế Asset & Bỏ Triết lý Biết Trước (`DEC-022`, `DEC-026`)**:
+   - **Cấm tuyệt đối tự ý vẽ hay sinh asset đồ họa mới:** Khi đến bất kỳ nhiệm vụ nào cần thiết kế/tạo asset mới (Chiến thuyền, Bãi cọc Bạch Đằng, Tileset mới, hoặc dựng 2 mẫu so sánh `Pixel Art` vs `2D Cách điệu kiểu EasyTech` ở Cổng `R4`), agent **BẮT BUỘC dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế.
+   - **Không biết trước sát thương (`DEC-026`):** Cấm hiển thị `CombatPreviewBox` tính hộ dải sát thương dự kiến hay xác nhận đánh 2 bước `AimingTarget`; chỉ dùng `UnitInspector` (`res://ui/battle_hud/unit_inspector.tscn`) hiển thị thông số thô của đạo quân để người chơi tự tính toán, và chạm 1 lần vào địch trong tầm đỏ là tấn công ngay như `HexCrown` (hệ thống tự tính + quay `Seeded RNG` khi va chạm).

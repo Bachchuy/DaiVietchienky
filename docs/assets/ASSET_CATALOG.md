@@ -28,12 +28,17 @@ d:\code\VietNamHistoryStrategy\
 │       ├── Gacha/                             # 9 files (.png: luck_draw_*.png, arena_back.png, rogue_stage_back_*.png)
 │       └── Store/                             # 9 files (.webp, .png: purchase_*.webp/.png)
 │
-├── data/                                      # [BIÊN SOẠN MỚI — CHỮ THƯỜNG 100% CHO WEB & ANDROID]
-│   ├── settings/                              # troop_settings.json, stage_settings.json, tactic_settings.json
-│   └── battles/                               # battle_10101.json (Slice-01 Đại Chiến Bạch Đằng 1288), ...
+├── data/                                      # [DỮ LIỆU TĨNH EDITOR-FIRST (.tres + @tool Map Scene)]
+│   ├── defs/                                  # troops/*.tres, generals/*.tres, tactics/*.tres, facilities/*.tres, codex/*.tres
+│   ├── stages/<id>_<slug>/                    # stage_<id>.tres (StageDef) + stage_<id>_map.tscn (TileMapLayer)
+│   └── registry.tres                          # DataRegistry tổng hợp read-only nạp cho res://sim/
 │
-└── shaders/                                   # [VIẾT MỚI THUẦN GODOT 4.7 SHADING LANGUAGE]
-    └── *.gdshader                             # hit_flash.gdshader, water_flow.gdshader, fog_of_war.gdshader, ...
+├── assets_clean/                              # [TÀI NGUYÊN SẠCH ĐƯỢC ĐÓNG GÓI XUẤT BẢN (đăng ký ASSETS.md)]
+│   ├── hexcrown/                              # [CỔNG R3] Kế thừa sạch từ D:\code\HexCrown\assets cho Vertical Slice
+│   ├── audio/, emblems/, icons/, shaders/     # Âm thanh, huy hiệu, shader .gdshader thuần Godot 4.7
+│   └── ...                                    # [CỔNG R4] Hai mẫu so sánh Pixel Art vs 2D Cách điệu EasyTech
+│
+└── shaders/                                   # (Các shader phụ trợ cũ sẽ quy về assets_clean/shaders/)
 ```
 
 > [!IMPORTANT] **Ghi chú Kỹ thuật Trung thực về Khả năng Tương thích với Godot 4.7 (`gl_compatibility`):**
@@ -121,60 +126,21 @@ Cấu trúc thực tế trên ổ đĩa gồm đúng **7 thư mục con** (khôn
 
 ---
 
-## 6. MÃ NGUỒN HELPER ĐƯỜNG DẪN CHUẨN (`res://scripts/core/asset_paths.gd`)
+## 6. KHO TÀI NGUYÊN SẠCH KẾ THỪA TỪ `HEXCROWN` (`R3`) & CỔNG MỸ THUẬT `R4` (`DEC-022`)
 
-Mọi hằng số dưới đây tuân thủ nghiêm ngặt quy tắc:
-1. Nhóm `res://Assets/...` **chỉ trỏ tới các tệp thực sự tồn tại trên ổ đĩa** (ví dụ dùng `sfx_knifestrike1.wav` và `sfx_StrikeIron.wav` cho đao kiếm cận chiến).
-2. Nhóm Shader trỏ tới tệp **`.gdshader`** viết mới cho Godot 4.7 tại `res://shaders/`.
-3. Nhóm Dữ liệu cấu hình trỏ tới tệp **JSON chữ thường** tại `res://data/`.
+Để khắc phục ngay tình trạng bản đồ vẽ đa giác bệt và quân lính không hoạt ảnh trước đó, đồng thời không tự ý sáng tác sai định hướng của người dùng, dự án áp dụng lộ trình tài nguyên sạch 2 bước (`DEC-022`):
 
-```gdscript
-# res://scripts/core/asset_paths.gd
-class_name AssetPaths
-extends RefCounted
+1. **Bước `R3` — Kế thừa Kho Asset Sạch từ `D:\code\HexCrown` (`res://assets_clean/hexcrown/`):**
+   - **Địa hình & Công trình:** Bộ `TileSet` lục giác (`Free/`: 4 files gồm `Tileset1.png`, `spritesheet (1).png`, `Elements.png`, `kare01.png`), cùng `Blue Buildings/` (8 files) và `Red Buildings/` (8 files: `Castle.png`, `Barracks.png`, `Archery.png`, `House1..3.png`, `Monastery.png`, `Tower.png`).
+   - **Đơn vị Hoạt ảnh `32×32` (`Outline/` — 12 sprite sheets):** `MiniArcherMan.png`, `MiniArchMage.png`, `MiniCavalierMan.png`, `MiniCrossBowMan.png`, `MiniHalberdMan.png`, `MiniHorseMan.png`, `MiniKingMan.png`, `MiniMage.png`, `MiniPrinceMan.png`, `MiniShieldMan.png`, `MiniSpearMan.png`, `MiniSwordMan.png` (gắn với `AnimationPlayer` và `UnitAnimatorComponent` trong `unit_view.tscn`).
+   - **Shader & Âm thanh sạch:** 7 shader Godot (`.gdshader`: `FactionTint.gdshader`, `border_line_pulse.gdshader`, `formation_aura.gdshader`, `pulse_highlight.gdshader`, `territory_border.gdshader`, `isometric_tile_highlight.gdshader`, `pulse.gdshader`) và 185 tệp SFX `.ogg/.mp3` trong `audio_effects/`.
+   - **Ràng buộc:** Toàn bộ tệp sao chép sang `res://assets_clean/hexcrown/` phải được đăng ký nguồn gốc đầy đủ trong `ASSETS.md` và chuẩn hóa đường dẫn chữ thường `snake_case`.
+2. **Bước `R4` — 🛑 CỔNG DỪNG BẮT BUỘC HỎI NGƯỜI DÙNG (Art Style Shootout):**
+   - **Chưa chốt Pixel Art làm phong cách cuối cùng.** Khi bước vào Cổng `R4` (và trước bất kỳ thao tác thiết kế Chiến thuyền, Bãi cọc Bạch Đằng hay asset mới nào), agent **BẮT BUỘC dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế.
+   - Theo chỉ định của người dùng, dựng **2 mẫu nhỏ trên cùng cảnh Bạch Đằng**: (**Mẫu A:** Pixel Art đồng bộ `HexCrown` kèm Chiến thuyền & Bãi cọc `StakedWater` vs **Mẫu B:** 2D Cách điệu lịch sử kiểu EasyTech thiết kế riêng) để người dùng chọn phong cách chính thức, sau đó thay thế dần toàn bộ asset kế thừa từ `HexCrown`.
 
-# --- AUDIO SFX PLACEHOLDERS (Xác thực tồn tại 100% trong res://Assets/Audio/) ---
-const SFX_SWORD_STRIKE: String   = "res://Assets/Audio/sfx_StrikeIron.wav"
-const SFX_KNIFE_STRIKE: String   = "res://Assets/Audio/sfx_knifestrike1.wav"
-const SFX_SHIELD_BLOCK: String   = "res://Assets/Audio/sfx_block1.wav"
-const SFX_SPEAR_PIERCE: String   = "res://Assets/Audio/sfx_pierce.wav"
-const SFX_CROSSBOW: String       = "res://Assets/Audio/sfx_crossbow.wav"
-const SFX_ARCHERY_SHOOT: String  = "res://Assets/Audio/sfx_archery.wav"
-const SFX_ARROW_HIT: String      = "res://Assets/Audio/sfx_archery4.wav"
-const SFX_NAVAL_AMBIENCE: String = "res://Assets/Audio/sfx_naval.wav"
-const SFX_WATER_WAVE: String     = "res://Assets/Audio/sfx_wave.wav"
-const SFX_SHIP_CRASH: String     = "res://Assets/Audio/sfx_shiphit.wav"
-const SFX_FIRE_BURN: String      = "res://Assets/Audio/sfx_burn.wav"
-const SFX_ELEPHANT_MOVE: String  = "res://Assets/Audio/sfx_elephant_move.wav"
-const SFX_CAVALRY_MOVE: String   = "res://Assets/Audio/sfx_cavalrymove.wav"
-const SFX_CHAOS: String          = "res://Assets/Audio/sfx_chaos.wav"
-const SFX_WAR_HORN: String       = "res://Assets/Audio/sfx_horn.wav"
-const SFX_UI_CLICK: String       = "res://Assets/Audio/sfx_click.wav"
-const SFX_UI_SELECT: String      = "res://Assets/Audio/sfx_select.wav"
-const SFX_VICTORY: String        = "res://Assets/Audio/victory.wav"
-const SFX_DEFEAT: String         = "res://Assets/Audio/defeat.wav"
-
-# --- SFX HỎA KHÍ (ERA-GATED: Chỉ nạp cho màn chơi Thế kỷ XV+, khóa ở Bạch Đằng 1288) ---
-const SFX_ERA15_NAVAL_GUN: String = "res://Assets/Audio/sfx_naval_gun.wav"
-const SFX_ERA15_GUNFIRE: String   = "res://Assets/Audio/sfx_gunfire.wav"
-
-# --- UI PLACEHOLDERS (Xác thực tồn tại trong res://Assets/UI/) ---
-const TEX_BATTLE_RES_ATLAS: String = "res://Assets/UI/BattleAtlas/battleres_hd.png"
-const TEX_BATTLE_GEN_ATLAS: String = "res://Assets/UI/BattleAtlas/battlegen_hd.png"
-const TEX_ANNO_CAPITAL: String     = "res://Assets/UI/Battle/anno_capital.png"
-
-# --- GODOT 4.7 NATIVE SHADERS (.gdshader viết mới, KHÔNG dùng .fsh của Cocos2d-x) ---
-const SHADER_HIT_FLASH: String   = "res://shaders/hit_flash.gdshader"
-const SHADER_WATER_RIVER: String = "res://shaders/water_river.gdshader"
-const SHADER_WATER_FOAM: String  = "res://shaders/water_foam.gdshader"
-const SHADER_DISSOLVE: String    = "res://shaders/unit_dissolve.gdshader"
-
-# --- STATIC GAME DATA SCHEMAS (Chữ thường 100% chuẩn Web & Android) ---
-const DATA_TROOP_SETTINGS: String  = "res://data/settings/troop_settings.json"
-const DATA_STAGE_SETTINGS: String  = "res://data/settings/stage_settings.json"
-const DATA_TACTIC_SETTINGS: String = "res://data/settings/tactic_settings.json"
-const DATA_BATTLE_10101: String    = "res://data/battles/battle_10101.json"
-```
+### Quy ước hằng số đường dẫn thiết kế & dữ liệu (`res://data/` & `res://assets_clean/`):
+- Mọi chỉ số binh chủng, danh tướng, mưu lược, công trình, màn chơi truy xuất qua `DataRegistry` (`res://data/registry.tres`) và `StageDef` (`res://data/stages/<id>_<slug>/stage_<id>.tres`), không trỏ tĩnh vào các tệp `.json` cũ hay `res://Assets/` (thư mục `Assets/` được cô lập hoàn toàn bởi `.gdignore` & `.gitignore`).
 
 ---
 

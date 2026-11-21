@@ -91,7 +91,7 @@ Sau bước cộng thu nhập và trừ `TotalMealFood` ở `OnBeginRound`, nế
 
 ---
 
-## 4. Danh mục Công trình Hậu cần Chiến lược (`FacilitySettings.json`)
+## 4. Danh mục Công trình Hậu cần Chiến lược (`FacilityDef` `.tres`)
 
 | Mã Loại | Tên Công trình | Cấp độ | Sản lượng / Vòng (`int`) | Hiệu ứng Chiến thuật Đặc biệt |
 | :--- | :--- | :---: | :--- | :--- |

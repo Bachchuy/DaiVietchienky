@@ -10,7 +10,7 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lý do:** Đảm bảo 0% rủi ro dính tài nguyên thương mại ngay từ Cổng 1 và giữ tốc độ khởi động `godot --headless` cực nhanh.
 - **Cách đổi:** Nếu sau này có bộ asset thương mại mua bản quyền hoặc tự vẽ mới, đặt vào `res://assets_clean/`, khai báo nguồn gốc trong `ASSETS.md` và cập nhật đường dẫn cấu hình trong `res://data/`.
 
-## DEC-002 — Đồng bộ kiến trúc 16 Lớp Kết Xuất (15 lớp Bản đồ + 1 lớp HUD) và ngưỡng `StrategicZoom = 0.65`
+## DEC-002 — [SUPERSEDED BY DEC-024] Đồng bộ kiến trúc 16 Lớp Kết Xuất (15 lớp Bản đồ + 1 lớp HUD) và ngưỡng `StrategicZoom = 0.65`
 - **Vấn đề:** `implementation_plan.md` tóm tắt ngắn gọn là "15 Render Layers" và `Zoom < 0.7x`, trong khi đặc tả chi tiết `docs/gdd/ui_ux/battle_ui_and_rendering.md` định nghĩa **16 lớp** (gồm **15 lớp `Node2D` không gian bản đồ** `z_index 0..70` cộng **1 lớp `ScreenHudCanvasLayer`** `layer = 10`) và hằng số mã mẫu `STRATEGIC_TOKEN_THRESHOLD = 0.65` (giữa `Default 1.0x` và `Strategic 0.5x`).
 - **Lựa chọn:** Triển khai đúng đủ 15 lớp `Node2D` bản đồ + 1 lớp `CanvasLayer` HUD (tổng 16 lớp đúng tên trong `battle_ui_and_rendering.md`) và đặt mặc định `@export var strategic_token_threshold: float = 0.65`.
 - **Lý do:** Thống nhất 100% cả số lượng lớp bản đồ (15) lẫn tổng lớp hiển thị (16), đồng thời khớp trực tiếp với mã tham chiếu GDD.
@@ -22,7 +22,7 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lý do:** Bảo toàn tính tất định số nguyên 100% giữa Desktop, WebAssembly và Android, đồng thời giữ đúng tỉ lệ quãng đường đi được mỗi lượt (`3–4 ô đồng bằng`).
 - **Cách đổi:** Chỉnh bảng `BASE_TERRAIN_MP` trong `scripts/core/battle_map_state.gd` và giá trị `mobility` trong `data/settings/troop_settings.json`.
 
-## DEC-004 — Quy đổi Tọa độ Màn hình `Pointy-topped Hex` chuẩn với bán kính ngoài `HEX_SIZE = 48.0 px`
+## DEC-004 — [SUPERSEDED BY DEC-024] Quy đổi Tọa độ Màn hình `Pointy-topped Hex` chuẩn với bán kính ngoài `HEX_SIZE = 48.0 px`
 - **Vấn đề:** GDD quy định lưới `Pointy-topped Axial (q, r)` và khung nhìn mặc định hiển thị rõ khoảng `10–12 hex` trên độ phân giải gốc `1280×720`, nhưng chưa khóa cứng hằng số pixel `hex_size` (bán kính từ tâm đến đỉnh nhọn).
 - **Lựa chọn:** Chọn `DEFAULT_HEX_SIZE = 48.0` pixel (chiều rộng ô `sqrt(3) * 48 ≈ 83.14 px`, bước hàng dọc `1.5 * 48 = 72.0 px` -> bản đồ `12×10` vừa khít `~1040×744 px` ở `Zoom 1.0x`), đồng thời cho phép truyền `hex_size` tùy chỉnh vào các hàm toán học `HexMath`.
 - **Lý do:** Khớp hoàn hảo với viewport `1280×720` Map-First (`>= 80%` diện tích màn hình) và công thức lượng giác chuẩn Red Blob Games cho Pointy-topped Axial.
@@ -58,7 +58,7 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lý do:** Hỗ trợ linh hoạt mọi cấu hình phe trong JSON mà không làm vỡ test cũ.
 - **Cách đổi:** Sửa thuộc tính `team_id` trong danh sách `"factions"` của tệp JSON màn chơi.
 
-## DEC-010 — Mở Rộng Roster Binh Chủng Thủy Chiến Sạch Cho Slice-01
+## DEC-010 — [SUPERSEDED BY DEC-023] Mở Rộng Roster Binh Chủng Thủy Chiến Sạch Cho Slice-01
 - **Vấn đề:** `data/settings/troop_settings.json` hiện có 6 ID (`40101..40104`, `40201`, `40901`), chưa có Thuyền Hỏa Công và Soái Hạm Lâu Thuyền cho Ô Mã Nhi.
 - **Lựa chọn:** Giữ nguyên toàn bộ 6 ID cũ và bổ sung `40202` (*Thuyền Hỏa Công Đại Việt*, `NavalLight`, `attack_mode: "Fire" (6)`, tầm `1–2`) và `40902` (*Soái Hạm Lâu Thuyền Đại Nguyên*, `NavalHeavy`, `strength: 240`, `base_atk: 46`, `base_def: 18`, tầm `1–2`) vào `data/settings/troop_settings.json`.
 - **Lý do:** Bảo toàn 100% tương thích ngược với test C1/C2 đồng thời tái hiện đúng hỏa công & soái hạm Bạch Đằng 1288.
@@ -70,7 +70,7 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lý do:** Bảo toàn tuyệt đối 100% tính tất định cho cả hai chiều: cùng seed thì AI ra quyết định giống hệt nhau, và khi phát lại JSON Replay chỉ chứa `BattleCommands`, `BattleContext.rng.get_state()`, HP và tọa độ khớp 100%.
 - **Cách đổi:** Điều chỉnh công thức băm `turn_seed` hoặc truyền RNG AI chuyên biệt trong `scripts/ai/ai_decision_matrix.gd`.
 
-## DEC-012 — Đồng Bộ Các Trạng Thái Thực Thi (`MOVING`, `ATTACKING`, `EXECUTE_SKILL`) trong `BattleInputFSM`
+## DEC-012 — [SUPERSEDED BY DEC-026] Đồng Bộ Các Trạng Thái Thực Thi (`MOVING`, `ATTACKING`, `EXECUTE_SKILL`) trong `BattleInputFSM`
 - **Vấn đề:** `BattleGameController.submit_command()` thực thi đồng bộ trong `scripts/core/`, trong khi `BattleInputFSM` định nghĩa đủ 8 trạng thái khép kín gồm `MOVING`, `ATTACKING` và `EXECUTE_SKILL` (dùng cho tween/hit-stop ở `C4-T3`).
 - **Lựa chọn:** `BattleInputFSM` luôn chuyển qua trạng thái thực thi tương ứng (phát `state_changed`) trước khi gọi `submit_command()`, kèm cờ `@export var auto_complete_execution: bool = true` mặc định ở `C4-T1` để chuyển tiếp ngay sang `POST_MOVE_ACTION` hoặc `IDLE` (và hỗ trợ tắt sang `false` ở `C4-T3` để gọi `complete_execution()` sau tween). Nếu bước đi làm đơn vị tử trận (ví dụ `STAKED_WATER`) hoặc kết thúc trận, `MOVING` đi thẳng về `IDLE`.
 - **Lý do:** Đảm bảo đồ thị 8 trạng thái quan sát được 100% qua tín hiệu `state_changed` đồng thời giữ kiểm thử headless tất định không phụ thuộc timer.
@@ -88,7 +88,7 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lý do:** Đạt đúng hợp đồng UX giữa thao tác kéo bản đồ mượt mà và thao tác hủy/chọn trên cả chuột máy tính lẫn trackpad.
 - **Cách đổi:** Chỉnh hằng số `DRAG_THRESHOLD_PX` trong `scripts/presentation/battle_camera_controller.gd`.
 
-## DEC-015 — Kiến Trúc `BattleHudController` Map-First (`>= 80%` Bản Đồ), `CombatPreviewBox` Kẹp Biên & Chẩn Đoán 4 Nguyên Nhân Thất Bại
+## DEC-015 — [SUPERSEDED BY DEC-024 & DEC-026] Kiến Trúc `BattleHudController` Map-First (`>= 80%` Bản Đồ), `CombatPreviewBox` Kẹp Biên & Chẩn Đoán 4 Nguyên Nhân Thất Bại
 - **Vấn đề:** (1) `PanelContainer` tự động nới rộng `size` theo tổng `custom_minimum_size` của các nhãn con ở độ phân giải nhỏ (`960×540`), làm thu hẹp tỷ lệ diện tích bản đồ xuống dưới `80%`; (2) cần hiển thị cụ thể nguyên nhân thất bại trong 4 điều kiện (`LoseKeyArea`, `GeneralDefeated`, `AllUnitsEliminated`, `MaxRoundsUnfulfilled`) trên `ResultSummaryModal`.
 - **Lựa chọn:** (1) Dùng `Panel` cố định chiều cao `TOP_BAR_HEIGHT = 40.0 px` và `BOTTOM_DOCK_HEIGHT = 56.0 px` với `clip_contents = true` và đặt `custom_minimum_size = Vector2(0.0, height)` trước khi gán `size = Vector2(vp.x, height)`, giữ tỷ lệ bản đồ thông suốt `82.2%–86.7%` (`>= 80%`) trên cả `16:9` (`1280×720`, `960×540`) lẫn `19.5:9` (`1560×720`) và `20:9` (`1600×720`). (2) `CombatPreviewBox` (`396×152 px`) kẹp tọa độ trong viewport và truyền sát thương dự kiến sang `BattleMapView.set_projected_target_damage()` để vẽ đoạn máu mất nhấp nháy trên thanh HP chia vạch `100 HP`. (3) `BattleHudController._diagnose_defeat_cause()` đối chiếu trực tiếp `ScenarioVictoryEvaluator.defeat_conditions` để báo rõ nguyên nhân thất bại kèm `CombatLogPanel`.
 - **Lý do:** Đảm bảo giao diện Map-First không bị tràn biên ở mọi tỷ lệ khung hình Web/Android và cung cấp phản hồi chiến thuật minh bạch 100%.
@@ -132,3 +132,51 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
 - **Lựa chọn:** (1) `BattleUnit.get_active_banners()` dùng ngưỡng tường minh khi `s_max == 3`, giữ công thức `ceili` cho `s_max` 1–2. (2) `PauseButton.pressed` gọi `open_pause_modal()` (idempotent); đóng modal qua `[TIẾP TỤC]` hoặc phím `Esc` (vẫn dùng `toggle_pause_modal`).
 - **Lý do:** Ngưỡng tường minh là quy tắc cụ thể hơn trong GDD và chỉ ảnh hưởng hiển thị (không đổi sát thương `M_hp`); modal tạm dừng không được tự đóng vì nhấp đúp.
 - **Cách đổi:** Sửa nhánh `s_max == 3` trong `scripts/core/battle_unit.gd` hoặc nối lại `_pause_btn.pressed` trong `scripts/presentation/battle_hud_controller.gd`.
+
+## DEC-021 — Chiến Lược Lộ Trình Tái Kiến Trúc: Làm Chuẩn Chỉnh Vertical Slice `10101` Trước Khi Nhân Rộng (`R1–R5`)
+- **Vấn đề:** Sau khi kiểm thử trực quan đối chiếu với `D:\code\HexCrown`, phiên bản cũ tuy đạt `82/82` unit tests và `256/256` E2E tests nhưng lớp vỏ trải nghiệm không đạt chuẩn (View 2D trong Editor trống, dữ liệu JSON không chỉnh được trong Inspector, nút Briefing/Pause bị cắt do `clip_contents`, đồ họa chỉ là đa giác tô màu bệt). Nếu sửa dàn trải cả 6 màn cùng lúc sẽ kéo dài rủi ro kiến trúc.
+- **Lựa chọn:** Tập trung tái kiến trúc và nâng cấp toàn diện **Vertical Slice (`10101` Bạch Đằng 1288)** đạt/vượt chất lượng `HexCrown` qua 4 cổng đầu (`R1 -> R2 -> R3 -> R4`), nghiệm thu thực tế trong Editor và chơi thử xong mới nhân rộng sang 5 màn Thời Trần còn lại (`10102–10106` ở Cổng `R5`).
+- **Lý do:** Giảm thiểu rủi ro, chứng minh chuẩn kỹ thuật và mỹ thuật trên 1 màn đại diện trước khi nhân bản hàng loạt.
+- **Cách đổi:** Điều chỉnh thứ tự ưu tiên trong `TASKS.md` và `docs/gdd/04_production_roadmap/implementation_plan.md`.
+
+## DEC-022 — Định Hướng Đồ Họa & Cổng Dừng Bắt Buộc Hỏi Người Dùng Khi Tạo Asset (`R3` Kế Thừa `HexCrown`, `R4` So Sánh 2 Mẫu)
+- **Vấn đề:** Cần nhanh chóng có đồ họa game thật (`TileSet`, công trình, sprite đơn vị có hoạt ảnh) cho Vertical Slice `10101` trong khi phong cách mỹ thuật cuối cùng của dự án vẫn chưa chốt cứng giữa Pixel Art và 2D Cách điệu.
+- **Lựa chọn:**
+  1. Ở Cổng `R3`, kế thừa tạm bộ Tileset lục giác, công trình Đỏ/Xanh, 12 sprite sheet lính `32×32`, shader (`FactionTint`, `pulse_highlight`, `territory_border`) và bộ SFX sạch từ `D:\code\HexCrown\assets` vào `res://assets_clean/` để khung game chạy và chỉnh được ngay trong Editor.
+  2. Ở Cổng `R4` (**🛑 CỔNG DỪNG BẮT BUỘC HỎI NGƯỜI DÙNG**), dựng **2 mẫu nhỏ trên cùng cảnh Bạch Đằng**: **Mẫu A (Pixel Art** đồng bộ `HexCrown` kèm Chiến thuyền & Bãi cọc `StakedWater`) vs **Mẫu B (2D Cách điệu lịch sử kiểu EasyTech** thiết kế riêng) để người dùng so sánh trực quan và chọn phong cách chính thức, tiến tới thay thế dần asset của `HexCrown`.
+  3. **Quy tắc cứng:** Khi đến bất kỳ bước thiết kế/tạo asset mới nào, agent **bắt buộc dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế; tuyệt đối không tự ý vẽ hay sinh asset.
+- **Lý do:** Đảm bảo khung kỹ thuật và trải nghiệm chạy mượt ngay ở `R3`, đồng thời trao toàn quyền quyết định mỹ thuật và công cụ thiết kế cho người dùng ở `R4`.
+- **Cách đổi:** Thực hiện tại Cổng `R4` theo quyết định trực tiếp của người dùng.
+
+## DEC-023 — Chuyển Dữ Liệu Tĩnh Sang Custom `Resource` (`.tres`) & Biên Tập Màn Chơi 2 Chiều (`@tool`)
+- **Vấn đề:** GDD v3.4.1 cũ quy định lưu toàn bộ danh mục thiết kế (`troop_settings.json`, `stage_settings.json`, `battle_10101.json`) bằng JSON đọc thành `Dictionary`, khiến designer không thể chỉnh thông số trực tiếp trong Godot Inspector hoặc xem trước màn chơi trên View 2D.
+- **Lựa chọn:**
+  1. Toàn bộ danh mục tĩnh (`TroopDef`, `GeneralDef`, `TacticDef`, `FacilityDef`, `CodexEntryDef`, `DataRegistry`) chuyển sang Custom `Resource` (`.tres`) có `@export` đầy đủ, chỉnh trong Godot Inspector.
+  2. Mỗi màn chơi kết hợp **Scene Bản đồ (`stage_<id>_map.tscn`)** (vẽ địa hình trực tiếp trên `TileMapLayer` và kéo-thả điểm đặt quân / vùng đặc biệt trong View 2D nhờ script `@tool`) với **Resource Kịch bản (`stage_<id>.tres` — `StageDef`)** chứa các Sub-Resource (`ScenarioEventDef`, `DialogueLineDef`, `VictoryConditionDef`) chỉnh trong Inspector.
+  3. Định dạng `.json` chỉ dùng duy nhất cho Save/Load runtime (`user://saves/battle_session.json`, `user://saves/player_profile.json` + `.bak`) và xuất/nhập Replay.
+- **Lý do:** Đạt tiêu chuẩn Editor-First của Godot 4.7 tương tự `HexCrown` (`UnitResource` `.tres` + `level.tscn` `TileMapLayer`), đồng thời giữ an toàn tuyệt đối cho save game người dùng trên Web IndexedDB/Android.
+- **Cách đổi:** Mở rộng thuộc tính `@export` trong các lớp `res://data/defs/*.gd` và chạy lại scene `@tool`.
+
+## DEC-024 — Kiến Trúc 4 Tầng ("Lõi Thuần + Vỏ Dựng Trong Editor"), Xóa 3 Siêu File Presentation & Trần `<= 400 Dòng/Script`
+- **Vấn đề:** Tầng trình diễn cũ phình to với 3 siêu file sinh node và vẽ hình học hoàn toàn bằng code (`battle_hud_controller.gd` 1.556 dòng, `battle_map_view.gd` 880 dòng, `battle_sandbox_cp1.gd` 806 dòng), khiến `battle_sandbox_cp1.tscn` chỉ có 1 node và HUD gặp lỗi cắt nút `clip_contents` + tự hit-test `_input()` sai lệch.
+- **Lựa chọn:**
+  1. Tổ chức cây thư mục 4 tầng chuẩn: `res://data/` (`.tres` + `.tscn`) -> `res://sim/` (`RefCounted` thuần độc lập `SceneTree`) -> `res://game/battle/battle_session.gd` (`Node` duy nhất giữ `BattleState`, nhận `Command`, phát `signal` có kiểu) -> `res://game/battle/` & `res://ui/` (`.tscn` + `theme.tres`), kèm `res://autoload/` chỉ chứa dịch vụ toàn cục không state trận đấu (`Settings`, `SaveService`, `Audio`, `SceneRouter`).
+  2. Giới hạn cứng **mỗi script `<= 400` dòng**; phụ thuộc truyền có kiểu qua `@export var session: BattleSession` (cấm service locator kiểu `var grid: Node` không kiểu của `HexCrown` và cấm `get_node("/root/...")`).
+  3. Xóa bỏ hoàn toàn 3 siêu file presentation cũ, thay bằng `battle.tscn`, `battle_map.tscn` (`TileMapLayer`), `unit_view.tscn` (ghép Component như `HexCrown`), và các scene HUD/Modal tách rời trong `ui/battle_hud/*.tscn` + `ui/common/theme.tres`.
+- **Lý do:** Kết hợp điểm mạnh lõi tất định có unit test của dự án với trải nghiệm trực quan trong Godot Editor của `HexCrown`, loại bỏ lỗi UI tự chế bằng code.
+- **Cách đổi:** Tuân thủ quy trình trong `.agents/skills/project-architecture/SKILL.md`.
+
+## DEC-025 — Đánh Dấu Trạng Thái `CP1–CP5` Cũ & Mở Bộ Cổng Tái Kiến Trúc `R1–R5` (`CP6–CP10`)
+- **Vấn đề:** `TASKS.md` và `STATE.md` đang đánh dấu `18/18` nhiệm vụ cũ (`CP1–CP5`) hoàn tất trong khi lớp vỏ UI/Data/Đồ họa thực tế không đạt chuẩn chơi thử.
+- **Lựa chọn:** Ghi nhận trong `TASKS.md` và `STATE.md` rằng `CP1–CP5` cũ **chỉ đạt phần Lõi Mô phỏng (`Sim`)**, còn **phần UI/Data/Đồ họa cũ bị BÁC BỎ (`REJECTED`)**. Mở 5 Cổng mới **`R1–R5` (`CP6–CP10`)** với tiêu chí nghiệm thu bắt buộc kiểm thử `assert_button_reachable()` (qua `Viewport.push_input` thật, không bị cắt bởi `clip_contents`) và kiểm tra View 2D + Inspector trực tiếp trong Godot Editor.
+- **Lý do:** Phản ánh trung thực chất lượng sản phẩm hiện tại và thiết lập tiêu chuẩn nghiệm thu không cho phép lỗi UI lọt cổng.
+- **Cách đổi:** Theo dõi tiến độ từng nhiệm vụ trong `TASKS.md`.
+
+## DEC-026 — Bỏ Triết Lý Biết Trước (`CombatPreviewBox` & `AimingTarget`), Dùng `UnitInspector` & Đánh Ngay 1 Chạm Như `HexCrown`
+- **Vấn đề:** Cơ chế cũ hiển thị hộp `CombatPreviewBox` tính hộ sẵn khoảng sát thương `[Min, Max]` và phản kích trước khi ra đòn (kèm trạng thái nhắm 2 bước `AimingTarget`), làm mất đi tính phán đoán chiến thuật tự tính của người chơi và rườm rà thao tác so với `HexCrown`.
+- **Lựa chọn:**
+  1. **Loại bỏ hoàn toàn `CombatPreviewBox`** và không hiển thị bất kỳ con số sát thương dự kiến hay phản kích dự kiến nào trước khi giao tranh; xóa hàm `preview_combat()` khỏi luồng HUD người chơi (hàm ước lượng nội bộ cho AI trong `AIDecisionMatrix` vẫn giữ kín bên trong máy).
+  2. Thay bằng **`UnitInspector` (`res://ui/battle_hud/unit_inspector.tscn`)**: chỉ hiển thị **thông số thô của từng đạo quân đang xem/chọn** (tên binh chủng/tướng, HP & số cờ hiện tại, Công `min~max` hoặc `base_atk`, Thủ, Tầm đi/đánh, Sĩ khí, và địa hình ô đang đứng). Người chơi tự đối chiếu thông số để tính toán; khi ra đòn, hệ thống tính công thức và tung số ngẫu nhiên (`Seeded RNG`) thực tế trên va chạm.
+  3. **Rút gọn `BattleInputFSM` từ 8 xuống 7 trạng thái** (`IDLE`, `UNIT_SELECTED`, `MOVING`, `POST_MOVE_ACTION`, `ATTACKING`, `SKILL_TARGETING`, `EXECUTE_SKILL` — **bỏ `AIMING_TARGET`**): khi chưa chọn quân ta (hoặc click chuột phải / chạm vào địch ngoài tầm) thì `UnitInspector` hiện thông số đạo quân đó; khi đã chọn quân ta (`UNIT_SELECTED` hoặc `POST_MOVE_ACTION`) và ô địch sáng Đỏ trong tầm đánh, **click/chạm 1 lần vào địch là chuyển thẳng sang `ATTACKING` ra đòn ngay lập tức như `HexCrown`**.
+- **Lý do:** Trả lại trải nghiệm wargame chiến thuật thuần túy (người chơi tự cân não với thông số và bất định `Seeded RNG`) cùng thao tác điều quân nhanh gọn, tự nhiên như `HexCrown`.
+- **Cách đổi:** Điều chỉnh luồng chuyển trạng thái trong `BattleInputFSM` và scene `ui/battle_hud/unit_inspector.tscn`.

@@ -4,151 +4,108 @@
 *(Chuẩn hóa cho Godot 4.7 — Thuần Typed GDScript 2.0, `gl_compatibility`, Web & Android 60 FPS)*
 
 > **Vị trí tài liệu:** `docs/gdd/architecture/data_and_save_system.md`  
-> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** cho Godot 4.7, chuẩn hóa đường dẫn JSON chữ thường tương thích tuyệt đối với hệ thống tệp phân biệt hoa-thường trên Web/Android, đồng bộ **Vòng lặp Chiến trường 7 Pha**, **Command Pattern (chỉ `MarchCommand` hỗ trợ Undo 5 điều kiện)** và **Save 2 tầng chống Crash / chống Desync RNG & Event**.
+> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** theo **Kiến trúc 4 Tầng Editor-First (`DEC-021..DEC-026`)** cho Godot 4.7 (`data/` Custom `Resource` `.tres` + `@tool` Map Scene `.tscn` → `sim/` `RefCounted` thuần → `BattleSession` → `game/battle/` & `ui/` `.tscn` + `theme.tres`), đồng bộ **Vòng lặp Chiến trường 7 Pha**, **Command Pattern (chỉ `MarchCommand` hỗ trợ Undo 5 điều kiện)** và **Save 2 tầng JSON runtime ở `user://saves/`**.
 
 ---
 
-## 1. Tổng quan Kiến trúc Dữ liệu 3 Tầng (Three-Tier Data Architecture)
+## 1. Tổng quan Kiến trúc 4 Tầng & Dữ liệu Editor-First
 
-Hệ thống quản trị dữ liệu tách biệt rành mạch giữa dữ liệu cấu hình tĩnh (`res://data/` — chỉ đọc), phiên trận đánh đang diễn ra (`user://saves/battle_session.json`), và hồ sơ tiến trình của người chơi (`user://saves/player_profile.json`):
+Hệ thống quản trị mã nguồn và dữ liệu phân tách 4 tầng rành mạch ("Lõi thuần + Vỏ dựng trong Editor") kết hợp tách biệt cấu hình tĩnh (`.tres` + `.tscn` chỉnh được trong Godot Inspector/View 2D) với dữ liệu phiên lưu runtime (`user://saves/*.json`):
 
 ```mermaid
 graph TD
-    subgraph Tier1["TẦNG 1: DỮ LIỆU CẤU HÌNH TĨNH (READ-ONLY STATIC DATA)"]
-        A["res://data/settings/*.json & res://data/battles/*.json\n(troop_settings, stage_settings, tactic_settings, battle_10101)"]
-        -->|DataCenter.load_all()| B["Static Data Cache\n(Autoload Read-Only Dictionaries)"]
+    subgraph Tier1["TẦNG 1: DỮ LIỆU TĨNH EDITOR-FIRST (res://data/)"]
+        A["Custom Resources (.tres)\nTroopDef / GeneralDef / TacticDef / FacilityDef / CodexEntryDef / StageDef\n+ Stage Map Scene (stage_10101_map.tscn với TileMapLayer)"]
+        -->|"DataRegistry (.tres) — @export"| B["Sim (res://sim/ — RefCounted Thuần)\nBattleState, CombatResolver, MoraleEngine, AI"]
     end
 
-    subgraph Tier2["TẦNG 2: PHIÊN TRẬN ĐÁNH (BATTLE SESSION STATE)"]
-        C["user://saves/battle_session.json\n(HexMap, Units, Round, rng_seed, rng_state, triggered_event_ids)"]
-        <-->|Turn Boundary / Pause Auto-Save\nWeb IndexedDB Safe| D["BattleGameController & ScenarioEventManager\n(7-Phase Live Battle Loop)"]
+    subgraph Tier2["TẦNG 2: PHIÊN TRẬN ĐÁNH (BattleSession Node & Save Runtime)"]
+        B <--> C["BattleSession (res://game/battle/battle_session.gd)\nNode duy nhất giữ Sim, nhận submit(Command), phát signal"]
+        C <-->|"Turn Boundary / Pause Auto-Save\nuser://saves/battle_session.json"| D["BattleSaveManager (Dual-Tier JSON Runtime)"]
     end
 
-    subgraph Tier3["TẦNG 3: HỒ SƠ NGƯỜI CHƠI (META-PROGRESSION PROFILE)"]
-        E["user://saves/player_profile.json & player_profile.bak\n(Chiến dịch đã mở, Sao đạt được, Tướng, Cài đặt)"]
-        <-->|BattleSaveManager.save_player_profile()| F["PlayerProfileCache\n(Dual-Backup Persistent Storage)"]
+    subgraph Tier3["TẦNG 3: TRÌNH DIỄN & HỒ SƠ NGƯỜI CHƠI"]
+        C -->|"Typed Signals"| E["Presentation (.tscn)\nbattle.tscn, battle_map.tscn (TileMapLayer), unit_view.tscn,\nui/battle_hud/*.tscn + ui/common/theme.tres (<= 400 dòng/script)"]
+        F["user://saves/player_profile.json & .bak\n(Chiến dịch, Sao, Cài đặt)"] <-->|"BattleSaveManager"| E
     end
 ```
 
-> [!NOTE] **Quy ước Đường dẫn Hệ thống Tệp (Web & Android Case-Sensitivity):**
-> - Toàn bộ tệp dữ liệu thiết kế mới của dự án đặt trong **`res://data/`** và bắt buộc viết **chữ thường `snake_case` 100%** (`res://data/settings/troop_settings.json`, `res://data/battles/battle_10101.json`,...).
-> - Các thư mục tài nguyên đồ họa/âm thanh placeholder sẵn có trên ổ đĩa giữ nguyên đúng phân biệt hoa-thường thực tế là **`res://Assets/...`**.
-> - Dữ liệu lưu của người chơi luôn ghi vào **`user://saves/`** (tuyệt đối không ghi vào `res://` vì `res://` bị khóa chỉ-đọc sau khi xuất bản Web/APK).
+> [!NOTE] **Quy ước Kiến trúc 4 Tầng, `.tres` vs `.json` & Đường dẫn Web/Android:**
+> - **Mọi dữ liệu thiết kế game tĩnh** (binh chủng, danh tướng, mưu lược, công trình, màn chơi, sử ký) đặt tại **`res://data/defs/*.tres`** và **`res://data/stages/<id>_<slug>/`** dưới dạng **Custom `Resource` (`.tres`) có `@export`**, chỉnh trực tiếp trong Godot Inspector và tổng hợp qua `res://data/registry.tres` (`DataRegistry`). Tuyệt đối không dùng JSON tĩnh buộc designer phải sửa tay text.
+> - **Định dạng `.json` chỉ dùng duy nhất cho Save/Load runtime** (`user://saves/battle_session.json`, `user://saves/player_profile.json`) và xuất/nhập Replay ở `user://saves/` (vì `res://` chỉ đọc khi xuất bản Web/APK, đồng thời JSON save không thực thi script khi nạp lại).
+> - **Cây thư mục 4 tầng chuẩn (`<= 400 dòng/script`):** `res://autoload/` (chỉ dịch vụ toàn cục: Settings, SaveService, Audio, SceneRouter — không chứa state trận đấu), `res://data/`, `res://sim/`, `res://game/battle/`, `res://ui/`, `res://tests/`. Phụ thuộc truyền có kiểu qua `@export var session: BattleSession` (cấm service locator biến `Node` không kiểu và `get_node("/root/...")`).
+> - Mọi tên tệp/thư mục mới bắt buộc **chữ thường `snake_case` 100%** để tương thích tuyệt đối hệ tệp phân biệt hoa-thường trên Web/Android.
 
 ---
 
-## 2. Đặc tả Schema Dữ liệu Cấu hình Tĩnh (Static JSON Schemas)
+## 2. Đặc tả Schema Dữ liệu Cấu hình Tĩnh (Custom `Resource` `.tres` — Chỉnh trong Inspector)
 
-### 2.1. Binh chủng (`res://data/settings/troop_settings.json`)
-Bổ sung đầy đủ phân nhánh chỉ huy (`command_branch`), miền di chuyển (`domain`), kiểu công/thủ (`attack_mode`, `defense_mode`), tầm nhìn (`vision_range`), giới hạn gộp cờ (`max_stack`), khẩu phần lương (`meal_food`) và điểm cơ động chuẩn chiến thuật (`3–5 MP`):
+### 2.1. Binh chủng (`TroopDef` — `res://data/defs/troops/*.tres`)
+Thay thế `troop_settings.json` bằng lớp `class_name TroopDef extends Resource` có `@export`, chỉnh trực tiếp trong Godot Inspector kèm xem trước icon/sprite:
 
-```json
-[
-  {
-    "id": 40101,
-    "code": "dai_viet_spear_infantry",
-    "name": "Bộ Binh Trường Giáo",
-    "command_branch": "Infantry",
-    "domain": "Land",
-    "attack_mode": "Piercing",
-    "defense_mode": "MediumArmor",
-    "min_attack": 30,
-    "max_attack": 40,
-    "defence": 12,
-    "strength": 160,
-    "max_stack": 3,
-    "mobility": 4,
-    "vision_range": 3,
-    "min_range": 1,
-    "max_range": 1,
-    "critical_percent": 5,
-    "counter_percent": 100,
-    "fond_terrain": "Forest",
-    "damage_deepen": 0,
-    "damage_resist": 0,
-    "features": ["anti_cavalry_brace", "forest_ambush"],
-    "cost_coin": 40,
-    "cost_food": 50,
-    "meal_food": 10,
-    "unit_scene": "res://scenes/units/dai_viet_spear_infantry.tscn",
-    "attack_sound": "res://Assets/Audio/sfx_pierce.wav"
-  }
-]
+```gdscript
+class_name TroopDef
+extends Resource
+
+@export var troop_id: int = 40101
+@export var code: String = "dai_viet_spear_infantry"
+@export var display_name: String = "Bộ Binh Trường Giáo"
+@export_enum("Land", "Naval") var domain: int = 0
+@export_enum("Infantry", "Archer", "Cavalry", "Siege", "NavalLight", "NavalHeavy") var command_branch: int = 0
+@export_range(1, 6) var attack_mode: int = 1
+@export_range(1, 5) var defense_mode: int = 2
+@export_range(1, 9999) var base_hp: int = 160
+@export_range(1, 3) var max_stack: int = 3
+@export_range(0, 999) var base_atk: int = 40
+@export_range(0, 999) var base_def: int = 12
+@export_range(50, 100) var damage_roll_min: int = 80
+@export_range(80, 100) var damage_roll_max: int = 100
+@export_range(1, 16) var mobility: int = 6
+@export_range(1, 8) var vision_range: int = 3
+@export_range(1, 6) var min_range: int = 1
+@export_range(1, 6) var max_range: int = 1
+@export_range(0, 100) var critical_percent: int = 5
+@export_range(0, 150) var counter_percent: int = 100
+@export var fond_terrain: int = -1
+@export var cost_coin: int = 40
+@export var cost_food: int = 50
+@export var meal_food: int = 10
+@export var features: Array[StringName] = []
+@export var sprite_sheet: Texture2D
+@export var unit_scene: PackedScene
+@export var attack_sound: AudioStream
 ```
 
-### 2.2. Danh mục Màn chơi Chiến dịch (`res://data/settings/stage_settings.json`)
-Đồng bộ đầy đủ thông số chuẩn của **Slice-01 Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)**: `max_rounds = 10`, `enable_economy = false`, phe đối phương `"Đại Nguyên (Quân Nguyên)"` (`"Tran_Nguyen"`), điều kiện Thắng/Thua và thử thách 3 Sao:
+### 2.2. Màn chơi Chiến dịch (`StageDef` — `res://data/stages/<id>_<slug>/stage_<id>.tres` + `stage_<id>_map.tscn`)
+Mỗi màn chơi kết hợp **Scene Bản đồ (`stage_<id>_map.tscn`)** (địa hình vẽ trực tiếp trên `TileMapLayer` + điểm đặt quân kéo-thả trong View 2D nhờ `@tool`) với **`StageDef.tres`** chứa các Sub-Resource chỉnh trong Inspector (`VictoryConditionDef`, `DefeatConditionDef`, `StarConditionDef`, `ScenarioEventDef`, `DialogueLineDef`, `UnitPlacementDef`):
 
-```json
-[
-  {
-    "id": 10101,
-    "code": "bach_dang_1288",
-    "name": "Đại Chiến Bạch Đằng 1288",
-    "chapter_id": 1,
-    "historical_era": "Tran_Nguyen",
-    "modeling_type": "fixture",
-    "difficulty_default": "normal",
-    "ai_profile": "normal",
-    "general_seat": 2,
-    "map_width": 12,
-    "map_height": 10,
-    "max_rounds": 10,
-    "enable_economy": false,
-    "battle_file": "res://data/battles/battle_10101.json",
-    "banned_troop_ids": [],
-    "victory_conditions": [
-      {
-        "type": "DefeatGeneralWhileHoldingArea",
-        "target_general_id": 9001,
-        "required_area_id": "signal_dock",
-        "instant": true,
-        "description": "Hạ gục Ô Mã Nhi trong khi giữ vững Bến Hiệu Lệnh (2, 8) -> Thắng ngay lập tức"
-      },
-      {
-        "type": "HoldAreaAndEnemyCasualtyAtMaxRound",
-        "required_area_id": "signal_dock",
-        "min_enemy_defeated_percent": 75,
-        "at_round": 10,
-        "description": "Giữ vững Bến Hiệu Lệnh (2, 8) khi hết Vòng 10 và tiêu diệt >= 75% quân địch"
-      }
-    ],
-    "defeat_conditions": [
-      { "type": "LoseKeyArea", "area_id": "signal_dock", "description": "Mất Bến Hiệu Lệnh (2, 8) vào tay quân Đại Nguyên" },
-      { "type": "GeneralDefeated", "target_general_id": 1001, "description": "Chủ tướng Trần Quốc Tuấn tử trận" },
-      { "type": "AllUnitsEliminated", "faction_id": 1, "description": "Toàn bộ lực lượng Đại Việt bị loại khỏi vòng chiến" },
-      { "type": "MaxRoundsUnfulfilled", "max_rounds": 10, "description": "Hết Vòng 10 mà chưa đạt điều kiện chiến thắng" }
-    ],
-    "star_conditions": [
-      { "star": 1, "type": "Victory", "description": "Giành chiến thắng màn chơi" },
-      { "star": 2, "type": "MaxRoundLimit", "max_rounds": 8, "description": "Giành chiến thắng trong vòng <= 8 lượt" },
-      { "star": 3, "type": "CasualtyHpPercentLimit", "max_loss_percent": 20, "description": "Tổng HP tổn thất toàn quân ta <= 20%" }
-    ],
-    "reward_coins": 500,
-    "reward_medals": 10
-  }
-]
+```gdscript
+class_name StageDef
+extends Resource
+
+@export var stage_id: int = 10101
+@export var code: String = "bach_dang_1288"
+@export var stage_name: String = "Đại Chiến Bạch Đằng 1288"
+@export var chapter_id: int = 1
+@export var historical_era: String = "Tran_Nguyen"
+@export var modeling_type: String = "fixture"
+@export var map_scene: PackedScene # trỏ tới res://data/stages/10101_bach_dang/stage_10101_map.tscn
+@export_range(6, 60) var map_width: int = 12
+@export_range(6, 60) var map_height: int = 10
+@export_range(1, 50) var max_rounds: int = 10
+@export var enable_economy: bool = false
+@export var general_seat: int = 2
+@export var banned_troop_ids: Array[int] = []
+@export var victory_conditions: Array[VictoryConditionDef] = []
+@export var defeat_conditions: Array[DefeatConditionDef] = []
+@export var star_conditions: Array[StarConditionDef] = []
+@export var placements: Array[UnitPlacementDef] = []
+@export var scripted_events: Array[ScenarioEventDef] = []
+@export var dialogues: Array[DialogueSequenceDef] = []
 ```
 
-### 2.3. Mưu lược & Kỹ năng Tướng (`res://data/settings/tactic_settings.json`)
-Bổ sung bắt buộc trường thời gian hồi chiêu **`cooldown`** (tính theo số vòng):
-
-```json
-[
-  {
-    "id": 10001,
-    "code": "hich_tuong_si",
-    "name": "Hịch Tướng Sĩ",
-    "mana_cost": 80,
-    "cooldown": 3,
-    "buff_ids": [90001],
-    "range": 2,
-    "target_type": "AllyArea",
-    "effect_type": "ClearChaosAndBoostMorale",
-    "icon": "res://Assets/UI/Battle/anno_capital.png"
-  }
-]
-```
+### 2.3. Tướng, Mưu lược, Công trình, Sử ký & `DataRegistry` (`res://data/registry.tres`)
+Các danh mục còn lại (`GeneralDef`, `TacticDef` có `cooldown` & `mana_cost`, `FacilityDef`, `CodexEntryDef`) đều là Custom `Resource` (`.tres`) tương ứng, được tập hợp vào **`res://data/registry.tres` (`DataRegistry`)** để nạp read-only vào tầng `Sim` (giúp unit test có thể truyền `DataRegistry` giả độc lập hoàn toàn với ổ đĩa).
 
 ---
 
@@ -177,9 +134,9 @@ sequenceDiagram
         BC->>Sav: Auto-Save đầu lượt Người chơi (an toàn cho Web IndexedDB)
 
         loop Chu trình Ra Lệnh Đơn Vị
-            Note over Actor,Map: PHA 3: QUAN SÁT & DỰ BÁO (Observation & Preview)
+            Note over Actor,Map: PHA 3: QUAN SÁT & TÍNH TOÁN (Observation & UnitInspector)
             BC->>Map: Cập nhật Fog of War (AIVisibleMapView) của phe đang đi
-            Actor->>BC: Xem tầm đi, ZOC, LOS & Combat Preview 2 bước (hoặc AI gọi plan_turn)
+            Actor->>BC: Đọc thông số thô qua UnitInspector, xem tầm đi/ZOC/LOS (hoặc AI gọi plan_turn) — không biết trước sát thương dự kiến
 
             Note over Actor,Map: PHA 4: GỬI LỆNH (CommandExecution)
             Actor->>BC: Gửi BattleCommand (March / Attack / CastSkill / ApplyTactic / Wait)

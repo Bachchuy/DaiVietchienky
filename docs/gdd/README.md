@@ -1,7 +1,7 @@
 # ĐẠI VIỆT CHIẾN KỲ (DAI VIET CHRONICLES)
-## GAME DESIGN DOCUMENT (GDD) — Phiên bản 3.4.1
-**Trạng thái:** Baseline Candidate (Đồng bộ Kiểm toán 18/11/2026) — Freeze sau CP4 & Gate P2  
-**Công nghệ & Nền tảng:** Godot 4.7 | Thuần GDScript 2.0 (Typed GDScript) | Renderer `gl_compatibility` | Mục tiêu: **Web (HTML5/Wasm) + Android** (Phát triển & kiểm thử trên Windows Desktop) | **60 FPS**  
+## GAME DESIGN DOCUMENT (GDD) — Phiên bản 3.5 (Editor-First 4-Tier Architecture)
+**Trạng thái:** GDD v3.5 — Đồng bộ Tái kiến trúc Editor-First `R1–R5` (`DEC-021..DEC-026`) ngày 21/11/2026  
+**Công nghệ & Nền tảng:** Godot 4.7 | Thuần GDScript 2.0 (`<= 400 dòng/script`, 4 tầng `data/.tres` + `sim/` + `BattleSession` + `.tscn`) | Renderer `gl_compatibility` | Mục tiêu: **Web (HTML5/Wasm) + Android** (Phát triển & kiểm thử trên Windows Desktop) | **60 FPS**  
 **Phạm vi sản phẩm:** Historical Military Turn-Based Strategy (Single-player; khởi đầu với **Slice-01: Đại Chiến Bạch Đằng 1288 — `stage_id: 10101`**; tầm nhìn dài hạn: **Từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII — Triều Tây Sơn** theo từng *Era Pack*)
 
 ---
@@ -39,14 +39,14 @@ docs/
     │
     ├── 03_content_presentation/                   # NỘI DUNG, GIAO DIỆN & TRÌNH BÀY
     │   ├── historical_framework.md                # 10. Tính toàn vẹn lịch sử, Evidence grade, ModelingType, Bạch Đằng
-    │   ├── ui_ux.md                               # 11. Nguyên tắc UI/UX Map-First, camera, Combat Preview, quy tắc Undo
+    │   ├── ui_ux.md                               # 11. Nguyên tắc UI/UX Map-First, camera, UnitInspector + đánh 1 chạm, quy tắc Undo
     │   ├── ai_difficulty.md                       # 12. Triết lý AI công bằng, Scenario Director & 4 mức độ khó
-    │   └── audio_visual_narrative.md              # 13. Mỹ thuật 2D cách điệu, âm thanh & dẫn dắt lịch sử
+    │   └── audio_visual_narrative.md              # 13. Lộ trình mỹ thuật (R3 HexCrown, R4 2 mẫu so sánh), âm thanh & tường thuật
     │
     ├── 04_production_roadmap/                     # SẢN XUẤT, ROADMAP & QUYẾT ĐỊNH MỞ
     │   ├── production_scope_mvp.md                # 14. Tách bạch Slice-01 (P2) & Release MVP Thời Trần (P5), DoD [D-17]
-    │   ├── risks_open_decisions.md                # 15. Rủi ro (IP Risk, Web/Mobile 60FPS), quyết định khóa & mở (D-01..D-17)
-    │   └── implementation_plan.md                 # 16. Checkpoints CP1–CP5, lộ trình W1–W12, Gates P1–P5 & kiểm thử tự động
+    │   ├── risks_open_decisions.md                # 15. Rủi ro (IP Risk, Web/Mobile 60FPS), quyết định khóa & mở (D-01..D-18)
+    │   └── implementation_plan.md                 # 16. Kiến trúc 4 tầng, lộ trình R1–R5 (CP6–CP10), CP1–CP5 & kiểm thử 3 lớp
     │
     ├── mechanics/                                 # [CHUYÊN SÂU] MICRO-MODULES CƠ CHẾ CHIẾN THUẬT
     │   ├── combat_formulas.md                     # Seeded RNG (80%–100% + Crit), Giáp 100/(100+EffectiveDef), TroopStack & Phản kích
@@ -64,10 +64,10 @@ docs/
     │   └── ai_decision_matrix.md                  # Kiến trúc 3 pha: Generators, Evaluators, Utility Scoring & code mẫu GDScript Godot 4.7
     │
     ├── architecture/                              # [CHUYÊN SÂU] KIẾN TRÚC DỮ LIỆU & SAVE/LOAD
-    │   └── data_and_save_system.md                # Phân lớp scripts/core & scripts/presentation, JSON schemas, Command Pattern & Save 2 tầng
+    │   └── data_and_save_system.md                # Kiến trúc 4 tầng (data .tres + @tool scene -> sim/ -> BattleSession -> .tscn), Command Pattern & Save 2 tầng
     │
     ├── ui_ux/                                     # [CHUYÊN SÂU] GIAO DIỆN & KẾT XUẤT ĐỒ HỌA
-    │   └── battle_ui_and_rendering.md             # 15 Render Layers, FSM input 5 trạng thái, Combat Preview 2 bước, StrategicZoom 60 FPS
+    │   └── battle_ui_and_rendering.md             # TileMapLayer, UnitView.tscn, 16 Lớp kết xuất, FSM 7 trạng thái (đánh 1 chạm), UnitInspector & HUD .tscn
     │
     ├── level_design/                              # [CHUYÊN SÂU] THIẾT KẾ MÀN CHƠI & KỊCH BẢN
     │   └── scenario_scripting_and_events.md       # Triggers, Conditions, Actions, mục tiêu 3 sao & Bộ quy chuẩn kịch bản 5 bước
@@ -84,23 +84,23 @@ docs/
 
 | Module | Tệp chi tiết | Nội dung chính |
 |---|---|---|
-| **00. Overview** | [document_control.md](00_overview/document_control.md) | Trạng thái baseline 3.4.1, Tech Stack Godot 4.7 (Thuần GDScript 2.0), bảng LOCKED vs OPEN. |
+| **00. Overview** | [document_control.md](00_overview/document_control.md) | Trạng thái GDD v3.5, Kiến trúc 4 Tầng Godot 4.7 (Thuần GDScript 2.0 `<= 400 dòng/script`), bảng LOCKED vs OPEN. |
 | | [conventions_glossary.md](00_overview/conventions_glossary.md) | Quy ước MUST/SHOULD/MAY/OPEN/Fixture, thuật ngữ nền tảng (ZOC, Morale 4 bậc, Seeded RNG,...). |
 | | [product_summary.md](00_overview/product_summary.md) | Thể loại Hex wargame theo lượt, logline, phạm vi từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Tây Sơn) theo *Era Pack* và Slice-01. |
 | | [CHANGELOG_3.3_to_3.4.md](00_overview/CHANGELOG_3.3_to_3.4.md) | Lịch sử tiến hóa `0.1 → 3.3 → 3.4 → 3.4.1`, giải trình quyết định khóa `D-01..D-03`, `D-06`, `D-09` và bảng ánh xạ tách module. |
-| **Mechanics Modules** | [combat_formulas.md](mechanics/combat_formulas.md) | Công thức sát thương **Controlled RNG có Seed tất định (`Seeded RNG`: `80%–100%` + Bạo kích, 100% Deterministic Replay)**, Giáp chuẩn `100 / (100 + EffectiveDef)`, gộp cờ `TroopStack` (1x–3x), hiển thị minh bạch khoảng Min–Max & `% Crit` trên Combat Preview (không có miss đòn ngẫu nhiên) và Phản kích. |
+| **Mechanics Modules** | [combat_formulas.md](mechanics/combat_formulas.md) | Công thức sát thương **Controlled RNG có Seed tất định (`Seeded RNG`: `80%–100%` + Bạo kích, 100% Deterministic Replay)**, Giáp chuẩn `100 / (100 + EffectiveDef)`, gộp cờ `TroopStack` (1x–3x), bỏ bảng biết trước — người chơi xem thông số `UnitInspector` tự tính (không đánh trượt ngẫu nhiên) và Phản kích. |
 | | [morale_and_status.md](mechanics/morale_and_status.md) | Đặc tả **4 bậc Enum Sĩ khí rời rạc** (`HIGH`, `NORMAL`, `LOW`, `CHAOS` — khóa hành động tạm thời theo lượt rồi tự hồi về `LOW`), bao vây `TrappedLevel` đa cấp, lan truyền `NeighboringDeadMates`. |
 | | [hex_grid_pathfinding.md](mechanics/hex_grid_pathfinding.md) | Hệ tọa độ Hex Pointy-topped Axial, địa hình sở trường (`FondTerrain`), cơ chế ZoC/CoC (`IgnoreZoc`, `DevoidZoc`) & định tuyến A*. |
 | | [battlefield_economy.md](mechanics/battlefield_economy.md) | **(P3 scope — ẩn trong Slice-01 với `enable_economy = false`)** Kinh tế chiến trường: 4 tài nguyên (`Coin`, `Food`, `Tech`, `Mana`), `OnBeginRound`, `MealFood`, Nạn đói (`Starvation`), cướp lương & giao thương. |
 | **Progression & Meta** | [generals_and_meta_economy.md](progression/generals_and_meta_economy.md) | **(P3/P4+ scope)** 4 trục tiến trình Tướng, Duyên phận lịch sử (`Fetters`), chiêu mộ 5 bậc phẩm theo hướng **F2P thân thiện** (tích lũy Ngọc Bích & Lệnh Chiêu Mộ qua thành tựu/3 sao/sự kiện + Pity, không khóa danh tướng lịch sử sau paywall tiền thật) & Shop Quân công. |
-| **VFX, SFX & Polish** | [vfx_sfx_and_polish.md](vfx_sfx/vfx_sfx_and_polish.md) | Phản hồi va chạm đầm tay (Trauma shake, Hit-stop, Squash & Stretch), hệ thống hạt `GPUParticles2D` và Audio Pooling. |
+| **VFX, SFX & Polish** | [vfx_sfx_and_polish.md](vfx_sfx/vfx_sfx_and_polish.md) | Phản hồi va chạm đầm tay (Trauma shake, Hit-stop, Squash & Stretch), hệ thống hạt `CPUParticles2D` và Audio Pooling. |
 | **AI System** | [ai_decision_matrix.md](ai/ai_decision_matrix.md) | Bộ lọc Generators, Evaluators, công thức Utility Scoring và **code mẫu GDScript Godot 4.7**. |
-| **Architecture** | [data_and_save_system.md](architecture/data_and_save_system.md) | Kiến trúc phân lớp GDScript (`scripts/core/` & `scripts/presentation/`), JSON schemas, vòng lặp 7 pha Turn/Phase, Command Pattern (`Seeded RNG` replay) và Save 2 tầng. |
-| **Asset Catalog** | [ASSET_CATALOG.md](../assets/ASSET_CATALOG.md) | Sổ tay quản lý **2,464 files** thực tế trong `Assets/` (Audio SFX/BGM, Shaders, Buildings, Soldiers, SpineEffects, UI/Avatars) và 85 tệp Data JSON tham chiếu (dùng làm placeholder nội bộ). |
-| **UI/UX & Rendering** | [battle_ui_and_rendering.md](ui_ux/battle_ui_and_rendering.md) | 15 Render Layers trên `gl_compatibility`, FSM tương tác 5 trạng thái, Combat Preview 2 bước, `StrategicZoom` duy trì 60 FPS trên Web & Android. |
-| **Level Design** | [scenario_scripting_and_events.md](level_design/scenario_scripting_and_events.md) | Hệ thống Triggers, Conditions, Actions, mục tiêu 3 sao và Bộ quy chuẩn thiết kế kịch bản 5 bước (`stage_id: 10101`). |
+| **Architecture** | [data_and_save_system.md](architecture/data_and_save_system.md) | Kiến trúc 4 Tầng (`data/` `.tres` + `@tool` Map `.tscn` -> `sim/` `RefCounted` -> `BattleSession` -> `.tscn` + `theme.tres`), Vòng lặp 7 pha, Command Pattern & Save 2 tầng JSON runtime. |
+| **Asset Catalog** | [ASSET_CATALOG.md](../assets/ASSET_CATALOG.md) | Kho `Assets/` (2,464 files R&D bị cô lập), kho asset sạch kế thừa `HexCrown` (`R3`), và **Cổng Dừng Bắt Buộc `R4` (Pixel Art vs 2D Cách điệu EasyTech)**. |
+| **UI/UX & Rendering** | [battle_ui_and_rendering.md](ui_ux/battle_ui_and_rendering.md) | `TileMapLayer`, `unit_view.tscn`, 16 Lớp kết xuất `gl_compatibility`, FSM 7 trạng thái (đánh ngay 1 chạm), `UnitInspector` & Modal `.tscn` an toàn. |
+| **Level Design** | [scenario_scripting_and_events.md](level_design/scenario_scripting_and_events.md) | Biên tập màn chơi 2 chiều (`stage_<id>_map.tscn` + `stage_<id>.tres`), Triggers–Conditions–Actions, 3 Sao & `MapPhase_TideFall`. |
 | **01. Vision & Player** | [vision_pillars.md](01_vision_player/vision_pillars.md) | 5 trụ cột thiết kế, phân vai 7 benchmark (*GC2: Shogun*, *EW7*, *Panzer Corps 2*, *UoC II*, *HoI IV*,...), non-goals. |
-| | [player_experience.md](01_vision_player/player_experience.md) | Chân dung người chơi, hành trình nhử giặc vào bãi cọc ngầm trong Slice-01, nhịp độ 10–30p, anti-experience. |
+| | [player_experience.md](01_vision_player/player_experience.md) | Chân dung người chơi, hành trình nhử giặc vào bãi cọc ngầm trong Slice-01, tự cân nhắc qua `UnitInspector`, nhịp độ 10–30p. |
 | **02. Gameplay** | [core_loop.md](02_gameplay_systems/core_loop.md) | Core Loop 5 bước, 7 pha Battle Loop, nguyên tắc ngân sách di chuyển và hành động. |
 | | [game_modes.md](02_gameplay_systems/game_modes.md) | Scenario (khóa hồ sơ tướng `Preset Loadout`), Conquest, Legion, Domination dùng chung luật chiến trường. |
 | | [battlefield_rules.md](02_gameplay_systems/battlefield_rules.md) | Hex map, 8 loại địa hình, ZOC `[D-12]`, combat **Controlled RNG có Seed tất định (`Seeded RNG` — 100% Deterministic Replay, `RoundHalfUp`, giáp `100/(100+EffectiveDef)`, phản kích `[D-11]`)**, flank, **4 bậc Sĩ khí Enum (`HIGH`/`NORMAL`/`LOW`/`CHAOS`) `[D-13]`**, thủy chiến & bãi cọc `StakedWater` `[D-14]`, kỵ binh. |
@@ -108,12 +108,12 @@ docs/
 | | [factions_economy.md](02_gameplay_systems/factions_economy.md) | **(P3 scope)** Thế lực, thành lũy, hậu cần trong trận và thị trường giao thương khẩn cấp. |
 | | [meta_progression.md](02_gameplay_systems/meta_progression.md) | **(P3/P4+ scope)** Nguyên tắc tiến trình không phá hỏng chiến thuật, 4 trục tướng, duyên phận lịch sử và định hướng F2P thân thiện `[D-07]`. |
 | **03. Presentation** | [historical_framework.md](03_content_presentation/historical_framework.md) | `Evidence grade` A/B/C/D, `ModelingType` (fact vs abstraction/What-if), tách biệt hồ sơ Bạch Đằng 938/981/1288. |
-| | [ui_ux.md](03_content_presentation/ui_ux.md) | Nguyên tắc Map-First, camera điều hướng, Combat Preview minh bạch, luật 1 lần Undo/lượt. |
+| | [ui_ux.md](03_content_presentation/ui_ux.md) | Nguyên tắc Map-First, camera điều hướng, `UnitInspector` + đánh ngay 1 chạm, luật 1 lần Undo/lượt & UI `.tscn`. |
 | | [ai_difficulty.md](03_content_presentation/ai_difficulty.md) | AI tuân thủ cùng luật & thông tin như người chơi, Scenario Director, 4 mức độ khó. |
-| | [audio_visual_narrative.md](03_content_presentation/audio_visual_narrative.md) | Art direction bản đồ cổ cách điệu 2D, âm thanh UI dứt khoát, briefing ngắn gọn. |
+| | [audio_visual_narrative.md](03_content_presentation/audio_visual_narrative.md) | Lộ trình mỹ thuật (`R3` kế thừa `HexCrown`, `R4` so sánh 2 mẫu Pixel Art vs 2D Cách điệu EasyTech), âm thanh UI dứt khoát, briefing ngắn gọn. |
 | **04. Production** | [production_scope_mvp.md](04_production_roadmap/production_scope_mvp.md) | Milestone `P0–P5`, tách bạch **Slice-01 (Mốc P2 — Bạch Đằng 1288 `12×10` hex, 10 lượt, `SignalDock`)** và **Release MVP (Mốc P5 — Gói Thời Trần 6–8 màn)**, DoD & tiêu chí playtest `[D-17]`. |
-| | [risks_open_decisions.md](04_production_roadmap/risks_open_decisions.md) | Rủi ro (gồm IP Risk & hiệu năng Web/Android 60 FPS), tổng hợp quyết định đã khóa (`D-01..D-14`) & bảng quyết định mở (`D-04..D-17`). |
-| | [implementation_plan.md](04_production_roadmap/implementation_plan.md) | Checkpoints kỹ thuật `CP1–CP5` ánh xạ `P0–P5`, lộ trình `W1–W12`, Design/Tech Gates `P1–P5` và kiểm thử headless + screenshot. |
+| | [risks_open_decisions.md](04_production_roadmap/risks_open_decisions.md) | Rủi ro (gồm IP Risk & hiệu năng Web/Android 60 FPS), quyết định khóa (`D-01..D-14`) & mở (`D-04..D-18`). |
+| | [implementation_plan.md](04_production_roadmap/implementation_plan.md) | Kiến trúc 4 tầng (`<= 400 dòng/script`), lộ trình tái kiến trúc Editor-First `R1–R5` (`CP6–CP10`), `CP1–CP5`, & kiểm thử 3 lớp. |
 | **Appendices** | [appendix_a_benchmark_matrix.md](appendices/appendix_a_benchmark_matrix.md) | Bảng phân tích học hỏi từ 7 game benchmark (gồm *Hearts of Iron IV* & *European War 7*) và Checklist đo lường định lượng UX/Tactical. |
 | | [appendix_b_sources.md](appendices/appendix_b_sources.md) | Danh mục nguồn sử liệu chính sử, báo cáo khảo cổ học Bạch Đằng và game tham khảo `[S1]`–`[S16]`. |
 | | [appendix_c_extended_glossary.md](appendices/appendix_c_extended_glossary.md) | Giải thích hơn 20 thuật ngữ chuyên sâu (`TroopStack`, `TrappedLevel`, `StakedWater`, `SignalDock`, `StrategicZoom`, `ModelingType`,...). |
@@ -141,11 +141,11 @@ Script sẽ tự động đọc toàn bộ các module trong `docs/gdd/` cùng `
 5. **Tra cứu tiến trình tướng, duyên phận `Fetters` & F2P thân thiện:** Đọc [generals_and_meta_economy.md](progression/generals_and_meta_economy.md) và [meta_progression.md](02_gameplay_systems/meta_progression.md).
 6. **Tra cứu VFX, SFX, rung camera & độ đầm va chạm (Juice):** Đọc [vfx_sfx_and_polish.md](vfx_sfx/vfx_sfx_and_polish.md) và [audio_visual_narrative.md](03_content_presentation/audio_visual_narrative.md).
 7. **Tra cứu kiến trúc thuật toán AI (GDScript Godot 4.7):** Đọc [ai_decision_matrix.md](ai/ai_decision_matrix.md) và [ai_difficulty.md](03_content_presentation/ai_difficulty.md).
-8. **Tra cứu kiến trúc phân lớp GDScript, dữ liệu JSON & Save/Load:** Đọc [data_and_save_system.md](architecture/data_and_save_system.md).
+8. **Tra cứu kiến trúc 4 tầng (`data/` `.tres` + `sim/` + `BattleSession` + `.tscn`) & Save/Load:** Đọc [data_and_save_system.md](architecture/data_and_save_system.md).
 9. **Tra cứu thiết kế Slice-01 (P2) vs Release MVP Thời Trần (P5):** Chỉ cần đọc [production_scope_mvp.md](04_production_roadmap/production_scope_mvp.md).
 10. **Tra cứu quyết định đã khóa / còn mở & quản trị rủi ro:** Đọc [risks_open_decisions.md](04_production_roadmap/risks_open_decisions.md) và [CHANGELOG_3.3_to_3.4.md](00_overview/CHANGELOG_3.3_to_3.4.md).
-11. **Tra cứu lộ trình triển khai `CP1–CP5`, `W1–W12` & kiểm thử headless:** Đọc [implementation_plan.md](04_production_roadmap/implementation_plan.md).
+11. **Tra cứu lộ trình `R1–R5` (`CP6–CP10`), `CP1–CP5` & kiểm thử 3 lớp:** Đọc [implementation_plan.md](04_production_roadmap/implementation_plan.md).
 12. **Tra cứu nguyên tắc lịch sử, thẩm định & nguồn sử liệu `[S1]–[S16]`:** Đọc [historical_framework.md](03_content_presentation/historical_framework.md) và [appendix_b_sources.md](appendices/appendix_b_sources.md).
-13. **Tra cứu UI Map-First, Camera, Render Layers & `StrategicZoom`:** Đọc [ui_ux.md](03_content_presentation/ui_ux.md) và [battle_ui_and_rendering.md](ui_ux/battle_ui_and_rendering.md).
+13. **Tra cứu UI Map-First, `UnitInspector`, đánh 1 chạm, `TileMapLayer` & `StrategicZoom`:** Đọc [ui_ux.md](03_content_presentation/ui_ux.md) và [battle_ui_and_rendering.md](ui_ux/battle_ui_and_rendering.md).
 14. **Tra cứu quy chuẩn kịch bản màn chơi & sự kiện `MapPhase_TideFall`:** Đọc [scenario_scripting_and_events.md](level_design/scenario_scripting_and_events.md).
 15. **Tra cứu danh mục 2,464 tài nguyên tham chiếu (Audio, Shaders, UI, Data JSONs):** Đọc [ASSET_CATALOG.md](../assets/ASSET_CATALOG.md).

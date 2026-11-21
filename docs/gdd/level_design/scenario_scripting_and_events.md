@@ -37,172 +37,45 @@ graph TD
 
 ---
 
-## 2. Chuẩn Schema Kịch bản JSON Toàn diện (`res://data/battles/battle_10101.json`)
+## 2. Chuẩn Biên Tập Màn Chơi 2 Chiều Editor-First (`stage_10101_map.tscn` + `stage_10101.tres`)
 
-Mỗi màn chơi chiến dịch được lưu thành một tệp JSON chữ thường tại `res://data/battles/battle_{stage_id}.json`. Dưới đây là đặc tả chuẩn đã chốt của **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`)**:
+Thay vì chỉnh sửa một tệp JSON khổng lồ bằng text (`battle_10101.json` cũ), mỗi màn chơi chiến dịch được tổ chức trực quan trong thư mục `res://data/stages/<id>_<slug>/` gồm **2 phần đồng bộ hai chiều qua script `@tool`** (`DEC-023`):
+1. **Scene Bản đồ (`stage_10101_map.tscn`):** Dựng bằng `TileMapLayer` (vẽ trực tiếp địa hình sông, rừng, đồi, bãi cọc, Bến Hiệu Lệnh trong View 2D của Godot Editor) và các Node điểm đặt quân (`UnitSpawnMarker2D`) / vùng đặt tên (`NamedArea2D`: `signal_dock`, `area_bai_coc`) kéo-thả trực tiếp trên lưới Hex.
+2. **Resource Kịch bản (`stage_10101.tres` — `StageDef`):** Chứa thông số vòng đấu (`max_rounds = 10`, `enable_economy = false`), phe phái, điều kiện Thắng/Thua/3 Sao, danh sách sự kiện (`ScenarioEventDef`: `evt_10101_tide_fall` đầu Vòng 4) và hội thoại (`DialogueSequenceDef`: `talk_trieu_rut`) dưới dạng các Sub-Resource có `@export`, chỉnh trực tiếp trong Godot Inspector.
 
-```json
-{
-  "stage_id": 10101,
-  "code": "bach_dang_1288",
-  "name": "Đại Chiến Bạch Đằng 1288",
-  "historical_era": "Tran_Nguyen",
-  "modeling_type": "fixture",
-  "grid_orientation": "pointy_top_axial",
-  "map_width": 12,
-  "map_height": 10,
-  "max_rounds": 10,
-  "enable_economy": false,
-  "player_faction_id": 1,
-  "ai_profile": "normal",
-  "factions": [
-    { "id": 1, "name": "Đại Việt", "color": "#1E88E5", "is_player": true },
-    { "id": 2, "name": "Đại Nguyên (Quân Nguyên)", "color": "#E53935", "is_player": false }
-  ],
-  "named_areas": {
-    "signal_dock": [
-      { "q": 2, "r": 8 }
-    ],
-    "area_bai_coc": [
-      { "q": 5, "r": 4 },
-      { "q": 6, "r": 4 },
-      { "q": 6, "r": 5 },
-      { "q": 7, "r": 5 }
-    ]
-  },
-  "terrain_cells": [
-    { "q": 2, "r": 8, "terrain": "SignalDock", "owner_faction_id": 1 },
-    { "q": 5, "r": 4, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 6, "r": 4, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 6, "r": 5, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 7, "r": 5, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 4, "r": 5, "terrain": "Forest", "owner_faction_id": 1 },
-    { "q": 8, "r": 3, "terrain": "Hill", "owner_faction_id": 1 }
-  ],
-  "victory_conditions": [
-    {
-      "type": "DefeatGeneralWhileHoldingArea",
-      "target_general_id": 9001,
-      "required_area_id": "signal_dock",
-      "instant": true,
-      "description": "Hạ gục Ô Mã Nhi trong khi SignalDock (2, 8) thuộc Đại Việt -> Thắng ngay lập tức"
-    },
-    {
-      "type": "HoldAreaAndEnemyCasualtyAtMaxRound",
-      "required_area_id": "signal_dock",
-      "min_enemy_defeated_percent": 75,
-      "at_round": 10,
-      "description": "Giữ vững SignalDock (2, 8) khi hết Vòng 10 và tiêu diệt >= 75% quân địch"
-    }
-  ],
-  "defeat_conditions": [
-    { "type": "LoseKeyArea", "area_id": "signal_dock", "description": "Mất Bến Hiệu Lệnh (2, 8) vào tay quân Đại Nguyên" },
-    { "type": "GeneralDefeated", "target_general_id": 1001, "description": "Chủ tướng Trần Quốc Tuấn tử trận" },
-    { "type": "AllUnitsEliminated", "faction_id": 1, "description": "Mất toàn bộ đạo quân Đại Việt" },
-    { "type": "MaxRoundsUnfulfilled", "max_rounds": 10, "description": "Hết Vòng 10 mà chưa đạt điều kiện chiến thắng" }
-  ],
-  "star_conditions": [
-    { "star": 1, "type": "Victory", "description": "Giành chiến thắng trận đánh" },
-    { "star": 2, "type": "MaxRoundLimit", "max_rounds": 8, "description": "Chiến thắng trong vòng <= 8 lượt" },
-    { "star": 3, "type": "CasualtyHpPercentLimit", "max_loss_percent": 20, "description": "Tổng HP tổn thất toàn quân ta <= 20%" }
-  ],
-  "placements": [
-    {
-      "unit_id": 101,
-      "faction_id": 1,
-      "troop_id": 40501,
-      "general_id": 1001,
-      "modeling_type": "historical_claim",
-      "troop_stack": 3,
-      "hex": { "q": 2, "r": 8 },
-      "current_hp": 480,
-      "initial_morale": 80,
-      "facing": 1
-    },
-    {
-      "unit_id": 102,
-      "faction_id": 1,
-      "troop_id": 40502,
-      "general_id": 1002,
-      "modeling_type": "abstraction",
-      "troop_stack": 2,
-      "hex": { "q": 4, "r": 6 },
-      "current_hp": 320,
-      "initial_morale": 80,
-      "facing": 1
-    },
-    {
-      "unit_id": 201,
-      "faction_id": 2,
-      "troop_id": 40601,
-      "general_id": 9001,
-      "modeling_type": "historical_claim",
-      "troop_stack": 3,
-      "hex": { "q": 9, "r": 2 },
-      "current_hp": 520,
-      "initial_morale": 80,
-      "facing": 4
-    }
-  ],
-  "scripted_events": [
-    {
-      "event_id": "evt_10101_tide_fall",
-      "name": "MapPhase_TideFall",
-      "trigger_type": "OnRoundStart",
-      "logic_operator": "AND",
-      "once": true,
-      "conditions": [
-        { "field": "current_round", "op": "==", "value": 4 }
-      ],
-      "results": [
-        { "action": "CameraFocus", "target_hex": { "q": 6, "r": 5 }, "duration": 1.0 },
-        { "action": "PlayDialogue", "dialogue_id": "talk_trieu_rut" },
-        { "action": "AlterTerrain", "area_id": "area_bai_coc", "new_terrain": "StakedWater" },
-        {
-          "action": "ApplyAreaEffect",
-          "area_id": "area_bai_coc",
-          "target_faction_id": 2,
-          "hp_loss_max_ratio": 0.35,
-          "march_disabled_turns": 2,
-          "chaos_turns": 1
-        },
-        {
-          "action": "SpawnReinforcements",
-          "spawn_policy": "find_nearest_free_hex",
-          "placements": [
-            {
-              "unit_id": 105,
-              "faction_id": 1,
-              "troop_id": 40502,
-              "general_id": 0,
-              "troop_stack": 2,
-              "hex": { "q": 8, "r": 3 },
-              "current_hp": 300,
-              "initial_morale": 90
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "dialogues": [
-    {
-      "id": "talk_trieu_rut",
-      "lines": [
-        {
-          "speaker": "Trần Quốc Tuấn",
-          "avatar": "avatar_tran_quoc_tuan",
-          "text": "Thủy triều đã rút mạnh! Trận địa cọc ngầm đã lộ diện! Toàn quân quay thuyền tổng phản công!"
-        },
-        {
-          "speaker": "Ô Mã Nhi",
-          "avatar": "avatar_o_ma_nhi",
-          "text": "Nguy rồi! Chiến thuyền vướng cọc gỗ vỡ toác đáy thuyền, hàng ngũ đại loạn rồi!"
-        }
-      ]
-    }
-  ]
-}
+Dưới đây là cấu trúc dữ liệu mẫu chuẩn đã chốt của **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`)** trong `StageDef` & `stage_10101_map.tscn`:
+
+```gdscript
+# Cấu trúc Resource StageDef (res://data/stages/10101_bach_dang/stage_10101.tres)
+stage_id = 10101
+code = "bach_dang_1288"
+stage_name = "Đại Chiến Bạch Đằng 1288"
+historical_era = "Tran_Nguyen"
+modeling_type = "fixture"
+coordinate_space = "odd_r" # quy đổi sang Pointy-topped Axial qua HexMath
+map_width = 12
+map_height = 10
+max_rounds = 10
+enable_economy = false
+player_faction_id = 1
+ai_profile = "normal"
+
+# Factions: [{id: 1, "Đại Việt"}, {id: 2, "Đại Nguyên (Quân Nguyên)"}]
+# NamedAreas (đồng bộ từ stage_10101_map.tscn):
+# - "signal_dock": [(2, 8)]
+# - "area_bai_coc": [(5, 4), (6, 4), (6, 5), (7, 5)]
+# VictoryConditions:
+# 1. DefeatGeneralWhileHoldingArea(general=9001 Ô Mã Nhi, area="signal_dock", instant=true)
+# 2. HoldAreaAndEnemyCasualtyAtMaxRound(area="signal_dock", min_enemy_defeated_percent=75, at_round=10)
+# DefeatConditions: LoseKeyArea("signal_dock"), GeneralDefeated(1001 Trần Quốc Tuấn), AllUnitsEliminated(1), MaxRoundsUnfulfilled(10)
+# StarConditions: 1★ Victory | 2★ MaxRoundLimit <= 8 | 3★ CasualtyHpPercentLimit <= 20%
+# ScriptedEvents:
+# - evt_10101_tide_fall ("MapPhase_TideFall"): OnRoundStart (current_round == 4, once=true)
+#   -> CameraFocus((6, 5), 1.0s)
+#   -> PlayDialogue("talk_trieu_rut")
+#   -> AlterTerrain("area_bai_coc", "StakedWater")
+#   -> ApplyAreaEffect("area_bai_coc", faction=2, hp_loss_max_ratio=0.35, march_disabled_turns=2, chaos_turns=1)
+#   -> SpawnReinforcements(policy="find_nearest_free_hex", unit_id=105, troop=40502, hex=(8, 3))
 ```
 
 ---
@@ -231,14 +104,14 @@ flowchart LR
 #### 2. Kiến trúc Sa bàn Phóng đại Chiến thuật (`Tactical Zoom-in Map`):
 > [!IMPORTANT] **Phân tách rõ Tỷ lệ Chiến thuật (Scenario) và Tỷ lệ Chiến lược (Conquest):**  
 > Trên bản đồ chiến lược toàn quốc (chế độ Conquest ở P3+), toàn bộ khu vực cửa sông Bạch Đằng chỉ tương ứng với 1–2 ô lục giác vĩ mô, nên **tuyệt đối không thể cắt thô cửa sổ `12 × 10` ô trực tiếp từ bản đồ toàn quốc để làm màn chơi chiến dịch**.  
-> Thay vào đó, mỗi màn Scenario như `battle_10101.json` là một **Sa bàn Phóng đại Chiến thuật (`Tactical Zoom-in Map`)** được bố cục chuyên biệt theo địa thế cục bộ (lòng sông chính, lạch triều bãi cọc, bãi rừng phục kích hai bên bờ và Bến Hiệu Lệnh), nhưng **tái sử dụng chung 100% Thư viện `TileSet` địa hình và Prefab công trình** của dự án để tiết kiệm chi phí sản xuất mỹ thuật.
+> Thay vào đó, mỗi màn Scenario như `stage_10101.tres` + `stage_10101_map.tscn` là một **Sa bàn Phóng đại Chiến thuật (`Tactical Zoom-in Map`)** được bố cục chuyên biệt theo địa thế cục bộ (lòng sông chính, lạch triều bãi cọc, bãi rừng phục kích hai bên bờ và Bến Hiệu Lệnh), nhưng **tái sử dụng chung 100% Thư viện `TileSet` địa hình và Prefab công trình** của dự án để tiết kiệm chi phí sản xuất mỹ thuật.
 
 #### 3. Phân bố Địa hình & Điểm Nghẽn (`Choke Points`):
 * Mỗi bản đồ phải có ít nhất **1–2 điểm nghẽn tự nhiên** (khúc sông hẹp có cọc ngầm `area_bai_coc`, hẻm núi Chi Lăng, đầm lầy Dạ Trạch) buộc đội hình đông đảo của địch bị bó hẹp, mở cơ hội cho người chơi khóa ZOC, đánh bọc sườn Flank hoặc kích hoạt bẫy địa hình.
 
 ### Bước 2: Bố trí Lực lượng, Quốc hiệu & Minh bạch Nhãn Sử học (`modeling_type`)
 1. **Tương quan lấy ít địch nhiều:** Giữ tỷ lệ lực lượng **Đại Việt (1) vs. Đối phương (1.5 – 2.2)**, bù đắp bằng lợi thế địa hình sở trường (`fond_terrain`), Sĩ khí và cơ chế kịch bản.
-2. **Thẩm định danh xưng & gắn nhãn `modeling_type`:** Tuân thủ nghiêm quy định tại [historical_framework.md](../03_content_presentation/historical_framework.md). Mọi sự điều chuyển tướng hoặc cô đọng không gian – thời gian phục vụ gameplay phải ghi rõ `"modeling_type": "abstraction"` hoặc `"fixture"` trong dữ liệu JSON và mục từ Codex.
+2. **Thẩm định danh xưng & gắn nhãn `modeling_type`:** Tuân thủ nghiêm quy định tại [historical_framework.md](../03_content_presentation/historical_framework.md). Mọi sự điều chuyển tướng hoặc cô đọng không gian – thời gian phục vụ gameplay phải ghi rõ `"modeling_type": "abstraction"` hoặc `"fixture"` trong thuộc tính Resource `.tres` và mục từ Codex.
 
 ### Bước 3: Định nghĩa Điều kiện Thắng / Thua & Thách thức 3 Sao
 1. **Điều kiện Thắng / Thua hai chiều rõ ràng:** Kết hợp mục tiêu tấn công quyết định (hạ Chủ tướng giặc) với mục tiêu bảo vệ cứ điểm then chốt (như `SignalDock`), ngăn người chơi bỏ mặc căn cứ hoặc co cụm tiêu cực.

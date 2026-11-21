@@ -1,8 +1,8 @@
 # ĐẠI VIỆT CHIẾN KỲ (DAI VIET CHRONICLES)
 ## TÀI LIỆU THIẾT KẾ TOÀN DIỆN & KẾ HOẠCH TRIỂN KHAI SẢN XUẤT
-### MASTER GAME DESIGN DOCUMENT (GDD) & PRODUCTION BLUEPRINT — PHIÊN BẢN 3.4 (BẢN ĐỒNG BỘ HÓA)
-**Trạng thái tài liệu:** Bản Hợp Nhất Hoàn Chỉnh (Consolidated Master v3.4.1) — Đồng bộ Thiết kế, Công thức Toán học & Kiến trúc Kỹ thuật  
-**Ngày cập nhật:** 18/11/2026 | **Động cơ:** Godot 4.7 (Thuần GDScript 2.0 — Static Typing) | **Renderer:** `gl_compatibility` | **Mục tiêu:** Web (HTML5/Wasm) + Android (60 FPS)
+### MASTER GAME DESIGN DOCUMENT (GDD) & PRODUCTION BLUEPRINT — PHIÊN BẢN 3.5 (EDITOR-FIRST ARCHITECTURE)
+**Trạng thái tài liệu:** Bản Hợp Nhất Hoàn Chỉnh (Consolidated Master v3.5) — Đồng bộ Kiến trúc 4 Tầng Editor-First (`DEC-021..DEC-026`)  
+**Ngày cập nhật:** 21/11/2026 | **Động cơ:** Godot 4.7 (Thuần GDScript 2.0 `<= 400 dòng/script` — `.tres` + `TileMapLayer` + `.tscn`) | **Renderer:** `gl_compatibility` | **Mục tiêu:** Web (HTML5/Wasm) + Android (60 FPS)
 
 ---
 
@@ -15,9 +15,9 @@
 - **Logline:** Chỉ huy các đạo quân Đại Việt qua những chiến dịch lịch sử hào hùng, làm chủ địa hình sông ngòi rừng núi, vận dụng thời cơ thủy triều, bẫy cọc ngầm, bọc sườn và sĩ khí để biến quyết định chiến thuật thành chiến thắng có thể giải thích.
 - **Điểm nhấn tạo khác biệt (Unique Selling Points):**
   1. *Bản sắc quân sự Việt Nam:* Tái hiện cơ chế thủy chiến Bạch Đằng (thủy triều rút ở Vòng 4 làm lộ bãi cọc nhọn đâm thủng chiến thuyền quân Nguyên), thế trận cướp lương "Vườn không nhà trống", tượng binh xung kích và phục kích rừng rậm.
-  2. *Controlled RNG Tất Định & Minh Bạch:* Dao động sát thương có kiểm soát (`80%–100%`) kết hợp Bạo kích trên nền `Seeded RandomNumberGenerator` độc lập, đường cong Giáp `100 / (100 + EffectiveDef)`, gộp cờ `TroopStack` (1x–3x) mượt không đứt gãy và `Combat Preview` 2 bước minh bạch.
+  2. *Thông số minh bạch & Tự cân nhắc chiến thuật (`UnitInspector` + `Seeded RNG`):* Bỏ triết lý biết trước kết quả (`CombatPreview`); người chơi đọc thông số từng đạo quân qua `UnitInspector` để tự tính toán và chạm 1 lần vào địch trong tầm Đỏ để đánh ngay như `HexCrown`, còn hệ thống tung `Seeded RandomNumberGenerator` (`80%–100%` + Crit) thực tế khi va chạm cùng đường cong Giáp `100 / (100 + EffectiveDef)` và gộp cờ `TroopStack` (1x–3x).
   3. *Tiến trình Meta & Duyên phận F2P thân thiện:* Hệ thống Duyên phận lịch sử (*Trần Triều Tam Kiệt*, *Hào Khí Mê Linh*, *Hội Thề Lũng Nhai*) cho phép tích lũy Ngọc Bích từ thành tựu/sự kiện để chiêu mộ mọi bậc danh tướng; khóa hồ sơ tướng (`Preset Loadout`) trong *Historical Scenario*.
-  4. *Kiến trúc Thuần GDScript 2.0 tối ưu 60 FPS:* Vận hành trên Godot 4.7 (`gl_compatibility`), xuất bản liền mạch lên trình duyệt Web (Wasm) và thiết bị di động Android với *Strategic Zoom* và Object Pooling.
+  4. *Kiến trúc 4 Tầng Editor-First tối ưu 60 FPS:* Vận hành trên Godot 4.7 (`gl_compatibility`), dữ liệu Custom `Resource` (`.tres`) chỉnh trong Inspector, bản đồ `TileMapLayer` + `unit_view.tscn` + HUD `.tscn` xem được trong View 2D Editor, xuất bản Web (Wasm) và Android với *Strategic Zoom* và `CPUParticles2D` pooling.
 
 ---
 
@@ -107,10 +107,10 @@
 |---|---|
 | Tên sản phẩm | Đại Việt Chiến Kỳ (Dai Viet Chronicles) |
 | Tài liệu | Game Design Document (GDD) — Kiến trúc Module hóa |
-| Phiên bản | **3.4.1** (Cập nhật đồng bộ sau kiểm toán thiết kế ngày 18/11/2026) |
-| Trạng thái | **Baseline Candidate — Freeze sau khi đạt cả CP4 (Tech) và Gate P2 (Design)** |
-| Engine & Công nghệ | **Godot 4.7**; ngôn ngữ **Thuần GDScript 2.0 (Typed GDScript)**; Renderer **`gl_compatibility`**; mục tiêu **60 FPS** |
-| Kiến trúc mã nguồn | Phân lớp GDScript sạch: `scripts/core/` (mô phỏng tất định độc lập `SceneTree`) và `scripts/presentation/` (hiển thị, UI, VFX/SFX) |
+| Phiên bản | **3.5** (Cập nhật đồng bộ Tái kiến trúc Editor-First ngày 21/11/2026 — `DEC-021..DEC-026`) |
+| Trạng thái | **GDD v3.5 Active — Chuyển sang Lộ trình Tái kiến trúc `R1–R5` (`CP6–CP10`)** |
+| Engine & Công nghệ | **Godot 4.7**; ngôn ngữ **Thuần GDScript 2.0 (Typed GDScript `<= 400 dòng/script`)**; Renderer **`gl_compatibility`**; mục tiêu **60 FPS** |
+| Kiến trúc mã nguồn | **Kiến trúc 4 Tầng Editor-First:** `res://data/` (`.tres` + `@tool` Map `.tscn`) $\to$ `res://sim/` (`RefCounted` độc lập `SceneTree`) $\to$ `BattleSession` (`Node`) $\to$ `res://game/battle/` & `res://ui/` (`.tscn` + `theme.tres`) |
 | Nền tảng mục tiêu | **Web (HTML5/Wasm) + Android** (`D-06`, `D-09`, `D-10`); phát triển và kiểm thử nguyên mẫu trên **Windows Desktop** (Single-player) |
 | Vertical slice đầu tiên | **Slice-01: Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)**; dữ liệu kịch bản hiện tại gắn nhãn `fixture / gameplay abstraction`, chờ hội đồng thẩm định lịch sử |
 | Phạm vi lịch sử dài hạn | Từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Triều Tây Sơn), triển khai cuốn chiếu theo từng *Era Pack* |
@@ -124,11 +124,11 @@ Baseline Candidate 3.4.1 khóa toàn bộ khung công nghệ, luật cốt lõi 
 
 | **LOCKED** — Đã chốt chuẩn, thay đổi phải qua Design & Tech Lead duyệt | **OPEN** — Sẽ tinh chỉnh và khóa theo từng Milestone Gate |
 |---|---|
-| **Tech Stack & Kiến trúc (`D-01`, `D-06`, `D-09`, `D-10`):** Hex Wargame theo lượt trên **Godot 4.7**, **Thuần GDScript 2.0** (`scripts/core/` độc lập `SceneTree` + `scripts/presentation/`), renderer `gl_compatibility`, ưu tiên **Web + Android** ở **60 FPS** (xem [data_and_save_system.md](gdd/architecture/data_and_save_system.md) & [implementation_plan.md](gdd/04_production_roadmap/implementation_plan.md)). | **Thông số cân bằng `fixture`:** Toàn bộ chỉ số cụ thể `HP/ATK/DEF/MP`, hệ số địa hình và chi phí đơn vị cần tinh chỉnh qua playtest (xem [combat_formulas.md](gdd/mechanics/combat_formulas.md) & [hex_grid_pathfinding.md](gdd/mechanics/hex_grid_pathfinding.md)). |
-| **Combat `Seeded RNG` & Công thức Giáp:** Mô hình **Controlled RNG có Seed tất định** (biên độ dao động `80%–100%` + Bạo kích, không có đánh trượt/`miss` ngẫu nhiên), toán học số nguyên `RoundHalfUp`, công thức giáp chuẩn `100 / (100 + EffectiveDef)`, dùng `RandomNumberGenerator` riêng lưu `seed/state` đảm bảo **100% Deterministic Replay** và hiển thị minh bạch khoảng Min–Max + `% Crit` trên Combat Preview (xem [combat_formulas.md](gdd/mechanics/combat_formulas.md)). | **Thẩm định Dossier Lịch sử (`D-08`):** Đối chiếu chi tiết biên chế, địa danh và lời thoại kịch bản Bạch Đằng 1288 với nguồn chính sử/khảo cổ `[S12]–[S16]` trước khi gỡ nhãn `fixture` (xem [historical_framework.md](gdd/03_content_presentation/historical_framework.md) & [appendix_b_sources.md](gdd/appendices/appendix_b_sources.md)). |
+| **Tech Stack & Kiến trúc 4 Tầng (`D-01`, `D-06`, `D-09`, `D-10`, `DEC-023`, `DEC-024`):** Hex Wargame theo lượt trên **Godot 4.7**, **Thuần GDScript 2.0 (`<= 400 dòng/script`)** theo 4 tầng (`data/.tres` $\to$ `sim/` $\to$ `BattleSession` $\to$ `.tscn` + `theme.tres`), renderer `gl_compatibility`, ưu tiên **Web + Android** ở **60 FPS** (xem [data_and_save_system.md](gdd/architecture/data_and_save_system.md) & [implementation_plan.md](gdd/04_production_roadmap/implementation_plan.md)). | **Thông số cân bằng `fixture`:** Toàn bộ chỉ số cụ thể `HP/ATK/DEF/MP`, hệ số địa hình và chi phí đơn vị được lưu dạng `.tres` chỉnh trong Inspector và tinh chỉnh qua playtest (xem [combat_formulas.md](gdd/mechanics/combat_formulas.md) & [hex_grid_pathfinding.md](gdd/mechanics/hex_grid_pathfinding.md)). |
+| **Combat `Seeded RNG`, Giáp & Bỏ Biết Trước (`DEC-026`):** Mô hình **Controlled RNG có Seed tất định** (`80%–100%` + Bạo kích, không có `miss`), toán học số nguyên `RoundHalfUp`, công thức giáp chuẩn `100 / (100 + EffectiveDef)` đảm bảo **100% Deterministic Replay**; bỏ `CombatPreviewBox` & `AimingTarget`, người chơi xem thông số qua `UnitInspector` tự tính và chạm 1 lần vào địch trong tầm Đỏ để đánh ngay (xem [combat_formulas.md](gdd/mechanics/combat_formulas.md)). | **Thẩm định Dossier Lịch sử (`D-08`):** Đối chiếu chi tiết biên chế, địa danh và lời thoại kịch bản Bạch Đằng 1288 với nguồn chính sử/khảo cổ `[S12]–[S16]` trước khi gỡ nhãn `fixture` (xem [historical_framework.md](gdd/03_content_presentation/historical_framework.md) & [appendix_b_sources.md](gdd/appendices/appendix_b_sources.md)). |
 | **Sĩ khí 4 Bậc & Tương tác Chiến thuật (`D-11..D-13`):** **4 bậc Enum rời rạc** (`HIGH` Hưng Phấn, `NORMAL` Ổn Định, `LOW` Dao Động, `CHAOS` Hỗn Loạn — khóa hành động tạm thời theo lượt rồi tự hồi về `LOW`, không dùng thang điểm liên tục hay trạng thái xóa đơn vị vĩnh viễn); phản kích tối đa 1 lần/lượt; ZoC dừng bước ngay (`MP = 0`) (xem [morale_and_status.md](gdd/mechanics/morale_and_status.md) & [battlefield_rules.md](gdd/02_gameplay_systems/battlefield_rules.md)). | **Trọng số AI & Cân bằng Chống Co cụm (`D-15`, `D-16`):** Tinh chỉnh điểm Utility AI, phạm vi phạt sĩ khí khi tướng rời trận (`D-15`) và nhịp áp lực lên `SignalDock (2, 8)` (`D-16`) (xem [ai_decision_matrix.md](gdd/ai/ai_decision_matrix.md)). |
-| **Đặc tả Slice-01 Bạch Đằng 1288 (`D-03`, `D-14`):** `stage_id: 10101`, bản đồ `12 × 10` hex (`Pointy-topped Axial`), tối đa **10 lượt**, phe địch **Đại Nguyên (Quân Nguyên)**; đầu **Vòng 4** kích hoạt `MapPhase_TideFall` lộ bãi cọc (`-35% MaxHP`, `MarchDisabled` 2 lượt, `CHAOS` 1 lượt) + phục binh; thắng ngay khi hạ Ô Mã Nhi lúc giữ `SignalDock (2, 8)` hoặc giữ hết lượt 10 & diệt `>= 75%` địch; **ẩn kinh tế (`enable_economy = false`, thuộc P3)** (xem [production_scope_mvp.md](gdd/04_production_roadmap/production_scope_mvp.md)). | **Kiến trúc Mở rộng Chiến lược (`D-04`, `D-05`, `D-07` chi tiết):** Cấu trúc bản đồ Conquest, độ sâu ngoại giao ở mốc P3, cấu hình ngưỡng bảo hiểm Pity ở mốc P4+ và nghiệm thu Playtest `>= 4/5` người chơi ngoài dev (`D-17`) (xem [risks_open_decisions.md](gdd/04_production_roadmap/risks_open_decisions.md)). |
-| **Phân tách Chế độ & Thương mại hóa F2P Thân thiện (`D-02`, `D-07`):** Khóa hồ sơ tướng `Preset Loadout` trong Historical Scenario; không có Gacha ở Slice-01/MVP; giai đoạn P4+ áp dụng F2P thân thiện tích lũy Ngọc Bích chiêu mộ được mọi phẩm tướng kể cả bậc Đỏ, không khóa danh tướng lịch sử sau paywall nạp tiền (xem [generals_and_meta_economy.md](gdd/progression/generals_and_meta_economy.md)). | **Hoàn thiện UI, Tutorial & Thay thế Asset Thương mại:** Tinh chỉnh bố cục HUD cảm ứng Mobile, kịch bản hướng dẫn theo ngữ cảnh và thay thế toàn bộ placeholder asset trước phát hành (xem [battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md) & [risks_open_decisions.md](gdd/04_production_roadmap/risks_open_decisions.md)). |
+| **Đặc tả Slice-01 Bạch Đằng 1288 (`D-03`, `D-14`):** `stage_id: 10101`, bản đồ `12 × 10` hex (`Pointy-topped Axial`), tối đa **10 lượt**, phe địch **Đại Nguyên (Quân Nguyên)**; đầu **Vòng 4** kích hoạt `MapPhase_TideFall` lộ bãi cọc (`-35% MaxHP`, `MarchDisabled` 2 lượt, `CHAOS` 1 lượt) + phục binh; thắng ngay khi hạ Ô Mã Nhi lúc giữ `SignalDock (2, 8)` hoặc giữ hết lượt 10 & diệt `>= 75%` địch; **ẩn kinh tế (`enable_economy = false`, thuộc P3)** (xem [production_scope_mvp.md](gdd/04_production_roadmap/production_scope_mvp.md)). | **Kiến trúc Mở rộng Chiến lược (`D-04`, `D-05`, `D-07`, `D-18`):** Cấu trúc bản đồ Conquest, độ sâu ngoại giao ở mốc P3, ngưỡng Pity ở P4+, Playtest `>= 4/5` (`D-17`) và **Cổng Dừng `R4` So sánh Mỹ thuật (`D-18` / `DEC-022`: Pixel Art vs 2D Cách điệu EasyTech)** (xem [risks_open_decisions.md](gdd/04_production_roadmap/risks_open_decisions.md)). |
+| **Phân tách Chế độ & Thương mại hóa F2P Thân thiện (`D-02`, `D-07`):** Khóa hồ sơ tướng `Preset Loadout` trong Historical Scenario; không có Gacha ở Slice-01/MVP; giai đoạn P4+ áp dụng F2P thân thiện tích lũy Ngọc Bích chiêu mộ được mọi phẩm tướng kể cả bậc Đỏ, không khóa danh tướng lịch sử sau paywall nạp tiền (xem [generals_and_meta_economy.md](gdd/progression/generals_and_meta_economy.md)). | **Hoàn thiện UI `.tscn`, `TileMapLayer` & Thay thế Asset (`R1–R5`):** Tái cấu trúc UI/Data/Scene theo chuẩn Editor-First (`R1–R3` với asset kế thừa sạch từ `HexCrown`), sau đó so sánh 2 mẫu và thay thế toàn bộ asset ở `R4–R5` (xem [battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md) & [ASSET_CATALOG.md](assets/ASSET_CATALOG.md)). |
 
 > **Nguyên tắc quản trị dữ liệu `fixture`:** Mọi chỉ số hoặc tình tiết kịch bản gắn nhãn `fixture` chỉ đóng vai trò dữ liệu mồi phục vụ lập trình và kiểm thử lối chơi. Với nội dung lịch sử, `fixture` chỉ được chuyển thành `historical claim` sau khi có hồ sơ `Dossier` kèm `sourceRef` và `Evidence grade` được phê duyệt; với cân bằng gameplay, `fixture` phải trải qua đo đạc playtest định lượng.
 
@@ -141,6 +141,7 @@ Baseline Candidate 3.4.1 khóa toàn bộ khung công nghệ, luật cốt lõi 
 | **3.3** | 13/11/2026 | Đưa đặc tả sơ khởi cho Slice-01 (combat, địa hình, morale, thủy chiến, dữ liệu kịch bản) vào tài liệu đơn khối; vẫn còn tồn tại xung đột giữa định hướng triệt tiêu ngẫu nhiên cũ và bảng chỉ số chi tiết, cùng giả định C# .NET chưa kiểm chứng xuất bản Web. |
 | **3.4** | 13–15/11/2026 | Tái cấu trúc thành hệ thống GDD phân tách theo cây thư mục module dưới `docs/gdd/`; bổ sung các micro-modules kỹ thuật – cơ chế (`mechanics/`, `progression/`, `ai/`, `architecture/`, `ui_ux/`, `vfx_sfx/`, `level_design/`) và danh mục tài nguyên [ASSET_CATALOG.md](assets/ASSET_CATALOG.md); làm rõ quy trình thẩm định lịch sử tách `Evidence grade` khỏi `ModelingType`. |
 | **3.4.1** | 18/11/2026 | **Đồng bộ chuẩn hóa toàn diện sau Kiểm toán GDD:** (1) Chốt `D-06/D-09/D-10` chuyển hoàn toàn sang **Godot 4.7 + Thuần GDScript 2.0 + `gl_compatibility`** hướng tới **Web + Android 60 FPS** (`scripts/core/` & `scripts/presentation/`); (2) Đồng bộ cơ chế **Seeded RNG** (`80%–100%` + Crit, 100% Deterministic Replay), giáp `100/(100+EffectiveDef)` và **4 bậc Enum Sĩ khí** (`HIGH/NORMAL/LOW/CHAOS`); (3) Chuẩn hóa Slice-01 Bạch Đằng 1288 (`stage_id: 10101`, Vòng 4 triều rút, điều kiện thắng tức thì tương thích 2 Sao, `enable_economy = false`); (4) Mở rộng phạm vi lịch sử từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Tây Sơn) và chốt chính sách **F2P thân thiện (`D-07`)**; (5) Xóa sạch toàn bộ tham chiếu tới các tệp ngoài không tồn tại và khôi phục [CHANGELOG_3.3_to_3.4.md](gdd/00_overview/CHANGELOG_3.3_to_3.4.md). |
+| **3.5** | 21/11/2026 | **Tái kiến trúc Editor-First (`DEC-021..DEC-026`) & Lộ trình `R1–R5`:** (1) Chuyển sang **Kiến trúc 4 Tầng (`<= 400 dòng/script`)**: `res://data/` (Custom `Resource` `.tres` + `@tool` Map `.tscn`) $\to$ `res://sim/` (`RefCounted`) $\to$ `BattleSession` $\to$ `res://game/battle/` & `res://ui/` (`TileMapLayer`, `unit_view.tscn`, HUD/Modal `.tscn` + `theme.tres`); (2) **Bỏ triết lý biết trước (`CombatPreviewBox` & `AimingTarget`)**: dùng `UnitInspector` chỉ hiện thông số thô từng đạo quân + **đánh ngay 1 chạm** như `HexCrown`; (3) Làm chuẩn chỉnh Vertical Slice `10101` trước (`R1–R3` kế thừa asset sạch `HexCrown`) rồi dừng ở **Cổng Mỹ thuật `R4`** hỏi người dùng so sánh 2 mẫu (`Pixel Art` vs `2D Cách điệu EasyTech`) trước khi nhân rộng sang `10102–10106` (`R5`); (4) Nâng cấp kiểm thử lên 3 lớp kèm `assert_button_reachable()` và kiểm tra View 2D/Inspector trong Editor. |
 
 > Xem lịch sử tiến hóa đầy đủ từ `v0.1` đến `v3.4.1`, giải trình các quyết định nền tảng `D-01..D-03`, `D-09` và bảng ánh xạ tệp tại: [CHANGELOG_3.3_to_3.4.md](gdd/00_overview/CHANGELOG_3.3_to_3.4.md).
 
@@ -151,8 +152,8 @@ Baseline Candidate 3.4.1 khóa toàn bộ khung công nghệ, luật cốt lõi 
 
 Bộ tài liệu GDD này là nguồn chân lý duy nhất (*Single Source of Truth*) cho cả thiết kế trải nghiệm lẫn đặc tả hệ thống của **Đại Việt Chiến Kỳ**:
 - Tầm nhìn, luật gameplay tổng quát và quy trình thẩm định lịch sử nằm tại các thư mục `00_overview/` đến `03_content_presentation/`.
-- Công thức toán học, cấu trúc dữ liệu JSON, thuật toán AI và pipeline kết xuất nằm trực tiếp trong các micro-modules chuyên sâu: [combat_formulas.md](gdd/mechanics/combat_formulas.md), [morale_and_status.md](gdd/mechanics/morale_and_status.md), [hex_grid_pathfinding.md](gdd/mechanics/hex_grid_pathfinding.md), [data_and_save_system.md](gdd/architecture/data_and_save_system.md), [ai_decision_matrix.md](gdd/ai/ai_decision_matrix.md), [battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md) và [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md).
-- Phạm vi MVP, quản trị rủi ro và lộ trình kỹ thuật `CP1–CP5` / `W1–W12` nằm tại [production_scope_mvp.md](gdd/04_production_roadmap/production_scope_mvp.md), [risks_open_decisions.md](gdd/04_production_roadmap/risks_open_decisions.md) và [implementation_plan.md](gdd/04_production_roadmap/implementation_plan.md).
+- Công thức toán học, cấu trúc dữ liệu `Resource` (`.tres`), thuật toán AI và pipeline kết xuất nằm trực tiếp trong các micro-modules chuyên sâu: [combat_formulas.md](gdd/mechanics/combat_formulas.md), [morale_and_status.md](gdd/mechanics/morale_and_status.md), [hex_grid_pathfinding.md](gdd/mechanics/hex_grid_pathfinding.md), [data_and_save_system.md](gdd/architecture/data_and_save_system.md), [ai_decision_matrix.md](gdd/ai/ai_decision_matrix.md), [battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md) và [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md).
+- Phạm vi MVP, quản trị rủi ro và lộ trình kỹ thuật `R1–R5` (`CP6–CP10`) / `CP1–CP5` nằm tại [production_scope_mvp.md](gdd/04_production_roadmap/production_scope_mvp.md), [risks_open_decisions.md](gdd/04_production_roadmap/risks_open_decisions.md) và [implementation_plan.md](gdd/04_production_roadmap/implementation_plan.md).
 - Lịch sử tiến hóa phiên bản và bảng ánh xạ tách module nằm trong [CHANGELOG_3.3_to_3.4.md](gdd/00_overview/CHANGELOG_3.3_to_3.4.md).
 
 ---
@@ -175,7 +176,7 @@ Bảng dưới đây định nghĩa các khái niệm nền tảng xuất hiện
 | Thuật ngữ | Nghĩa chuẩn dùng trong GDD |
 |---|---|
 | **Action** | Lệnh hành động chính của một đơn vị trong lượt (như tấn công, thi triển kỹ năng hoặc phòng thủ tại chỗ); theo quy tắc chuẩn, sau khi thực hiện Action chính, đơn vị kết thúc lượt của mình. |
-| **Controlled RNG (`Seeded RNG`)** | Cơ chế ngẫu nhiên có kiểm soát và có hạt giống tất định: lực đánh cơ bản dao động trong dải `80%–100%` kèm tỷ lệ Bạo kích (`Crit`), không có đánh trượt (`miss`) ngẫu nhiên, công khai khoảng `[Min, Max]` & `% Crit` trên Combat Preview và lưu `seed/state` trong `RandomNumberGenerator` riêng để đảm bảo **100% Deterministic Replay**. |
+| **Controlled RNG (`Seeded RNG`)** | Cơ chế ngẫu nhiên có kiểm soát và có hạt giống tất định: lực đánh cơ bản dao động trong dải `80%–100%` kèm tỷ lệ Bạo kích (`Crit`), không có đánh trượt (`miss`) ngẫu nhiên; người chơi tự cân nhắc dựa trên thông số từng đạo quân trong `UnitInspector` trước khi chạm 1 lần để ra đòn (không hiện bảng tính sẵn sát thương), còn `seed/state` được lưu trong `RandomNumberGenerator` riêng để đảm bảo **100% Deterministic Replay**. |
 | **Core Loop** | Chuỗi hoạt động cốt lõi lặp lại tạo nên trải nghiệm trung tâm của trò chơi (Đọc tình thế & chuẩn bị $\to$ Điều quân chiến thuật theo lượt $\to$ Xử lý bước ngoặt chiến trường $\to$ Tổng kết & mở khóa lịch sử). |
 | **Era Pack** | Gói nội dung lịch sử phát triển cuốn chiếu theo từng thời kỳ (khởi đầu bằng Gói Thời Trần ở MVP, sau đó mở rộng từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII — Triều Tây Sơn). |
 | **Fixture** | Bộ thông số hoặc kịch bản mẫu phục vụ kiểm thử nguyên mẫu (prototype/playtest) trước khi cân bằng cuối hoặc thẩm định sử học hoàn tất. |
@@ -207,7 +208,7 @@ Bảng dưới đây định nghĩa các khái niệm nền tảng xuất hiện
 |---|---|
 | **Thể loại** | Turn-Based Military Strategy / Historical Hex Wargame (Single-player) |
 | **Công nghệ & Nền tảng** | **Godot 4.7**, ngôn ngữ **Thuần GDScript 2.0 (Typed GDScript)**, Renderer **`gl_compatibility`**, mục tiêu **60 FPS** trên **Web (HTML5/Wasm) + Android** (phát triển & kiểm thử trên **Windows Desktop**) |
-| **Không gian trận đánh** | Bản đồ lưới Hex cạnh nhọn (`Pointy-topped Axial`), nhiều đơn vị gộp cờ (`TroopStack` 1x–3x), lượt người chơi và AI luân phiên, cơ chế **Seeded RNG** minh bạch trên Combat Preview (100% Deterministic Replay) |
+| **Không gian trận đánh** | Bản đồ lưới Hex cạnh nhọn (`Pointy-topped Axial`), nhiều đơn vị gộp cờ (`TroopStack` 1x–3x), lượt người chơi và AI luân phiên, bảng **`UnitInspector`** hiện thông số thô từng đạo quân, **đánh ngay 1 chạm** và cơ chế **`Seeded RNG`** (`80%–100%` + Crit, 100% Deterministic Replay) |
 | **Vertical Slice đầu tiên (Mốc P2)** | **Slice-01: Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)** — bản đồ `12 × 10` hex, tối đa 10 lượt, Đại Việt đối đầu **Đại Nguyên (Quân Nguyên)**, sự kiện thủy triều rút đầu Vòng 4; ẩn kinh tế (`enable_economy = false`, thuộc P3); gắn nhãn `fixture / gameplay abstraction` |
 | **Phạm vi Release MVP (Mốc P5)** | **Gói Chiến dịch Thời Trần** hoàn chỉnh (6–8 màn lịch sử, 10–12 binh chủng, 8–10 danh tướng, Tutorial theo tình huống & Codex lịch sử) phát hành trên Web + Android + Windows Desktop |
 | **Phạm vi lịch sử dài hạn** | Triển khai cuốn chiếu theo từng *Era Pack* **từ thời dựng nước & Bắc thuộc (Văn Lang – Âu Lạc, Hai Bà Trưng, Bà Triệu, Lý Bí, Ngô Quyền) qua Đinh – Tiền Lê – Lý – Trần – Hồ – Lê Sơ đến thế kỷ XVIII (Tây Sơn)** |
@@ -325,10 +326,10 @@ Không có một tựa game tham chiếu đơn lẻ nào bao phủ trọn vẹn 
 | Trụ cột | Nguyên tắc thiết kế | Dấu hiệu kiểm chứng trong Playtest |
 |---|---|---|
 | **1. Lịch sử có căn cứ** | Phân biệt minh bạch giữa dữ kiện lịch sử (`historical claim`), trừu tượng hóa lối chơi (`gameplay abstraction`) và giả định (`What-if`); mọi tuyên bố lịch sử có `sourceRef` và `Evidence grade` (xem [historical_framework.md](gdd/03_content_presentation/historical_framework.md)). | Người chơi nhận biết rõ đâu là sự kiện có nguồn sử liệu/khảo cổ và đâu là cơ chế mô hình hóa của game. |
-| **2. Dễ đọc, khó làm chủ** | Mọi nước đi có nhân quả rõ ràng; cơ chế **Controlled RNG có Seed tất định (`Seeded RNG`)** hiển thị công khai dải sát thương `[Min, Max]`, `% Crit`, phản kích và các hệ số địa hình/sĩ khí trên **Combat Preview** (không có đánh trượt ngẫu nhiên). | Ít nhất `4/5` người chơi thử (`[D-17]`) tự giải thích được nguyên nhân thắng, thua hoặc mất thế trận mà không cần dev giải thích. |
+| **2. Dễ đọc, khó làm chủ** | Mọi nước đi có nhân quả rõ ràng; `UnitInspector` cung cấp đầy đủ thông số thô của từng đạo quân (HP, Công, Thủ, Sĩ khí, Địa hình) để người chơi tự phán đoán và tính toán chiến thuật, còn hệ thống thực thi giao tranh bằng **Controlled RNG có Seed tất định (`Seeded RNG` `80%–100%` + Crit, không có đánh trượt ngẫu nhiên)** ngay khi chạm 1 lần vào mục tiêu (bỏ hộp tính sẵn kết quả `CombatPreview`). | Ít nhất `4/5` người chơi thử (`[D-17]`) tự giải thích được nguyên nhân thắng, thua hoặc mất thế trận mà không cần dev giải thích. |
 | **3. Bản sắc quân sự Việt Nam** | Thủy triều lên xuống, bãi cọc ngầm (`StakedWater`), rừng rậm phục kích, voi chiến phá tuyến và kế cắt lương thảo (`Starvation` ở `P3`) tạo ra lối đánh đặc trưng cho từng thời kỳ. | Trận Bạch Đằng 1288 đòi hỏi tư duy nhử địch theo con nước hoàn toàn khác một trận công thành hay giao chiến đồng bằng. |
 | **4. Quyết định có đánh đổi** | Ngân sách điểm di chuyển (`MP`), 1 hành động chính/lượt, giới hạn 1 phản kích/lượt và áp lực số lượt (`<= 8` lượt cho 2 Sao) buộc người chơi liên tục cân nhắc giữa tiến công, khép vây và giữ cứ điểm. | Mỗi lượt người chơi đứng trước ít nhất 2 phương án khả thi có rủi ro – phần thưởng khác biệt rõ rệt, không có nước đi auto-win. |
-| **5. Mở rộng bền vững đa nền tảng** | Phát triển cuốn chiếu theo từng *Era Pack* trên kiến trúc dữ liệu JSON và **Godot 4.7 GDScript 2.0**, duy trì **60 FPS** ổn định trên cả Web lẫn Android nhờ `gl_compatibility` và `StrategicZoom`. | Bổ sung kịch bản và thời kỳ mới bằng dữ liệu mà không phải viết lại core engine hay làm sụt giảm hiệu năng thiết bị. |
+| **5. Mở rộng bền vững đa nền tảng** | Phát triển cuốn chiếu theo từng *Era Pack* trên kiến trúc Custom `Resource` (`.tres`) + Scene `TileMapLayer` (`.tscn`) và **Godot 4.7 GDScript 2.0**, duy trì **60 FPS** ổn định trên cả Web lẫn Android nhờ `gl_compatibility` và `StrategicZoom`. | Bổ sung kịch bản và thời kỳ mới bằng Inspector & TileMapLayer trong Editor mà không phải viết lại core engine hay làm sụt giảm hiệu năng thiết bị. |
 
 ---
 
@@ -349,9 +350,9 @@ Không có một tựa game tham chiếu đơn lẻ nào bao phủ trọn vẹn 
 
 | Nhóm người chơi | Nhu cầu cốt lõi | Đáp ứng thiết kế trong Đại Việt Chiến Kỳ |
 |---|---|---|
-| **Người chơi chiến thuật phổ thông (Web & Mobile)** | Vào trận nhanh không cần cài đặt nặng, hiểu luật trực quan trong vài phút, hoàn thành ván chơi gọn trong một phiên nghỉ ngắn. | Chạy mượt 60 FPS ngay trên trình duyệt Web & Android; Briefing ngắn gọn, mục tiêu nổi bật, thao tác `<= 2 chạm` với xác nhận 2 bước và hướng dẫn theo ngữ cảnh. |
+| **Người chơi chiến thuật phổ thông (Web & Mobile)** | Vào trận nhanh không cần cài đặt nặng, hiểu luật trực quan trong vài phút, hoàn thành ván chơi gọn trong một phiên nghỉ ngắn. | Chạy mượt 60 FPS ngay trên trình duyệt Web & Android; Briefing ngắn gọn có nút Bắt đầu/Bỏ qua rõ ràng, mục tiêu nổi bật, chạm 1 lần vào địch trong tầm Đỏ để đánh ngay như `HexCrown`. |
 | **Người yêu thích lịch sử Việt Nam** | Được trực tiếp chỉ huy các trận đánh hào hùng từ thời dựng nước & Bắc thuộc đến Tây Sơn với thái độ trân trọng sử liệu. | Hồ sơ Codex trích dẫn nguồn rõ ràng (`[S6]`, `[S12]–[S16]`), phân biệt minh bạch dữ kiện lịch sử (`historical claim`) với mô hình hóa lối chơi (`gameplay abstraction`). |
-| **Người chơi đam mê Wargame theo lượt** | Đòi hỏi chiều sâu vị trí, tương khắc binh chủng, quản trị rủi ro có cơ sở toán học và AI đối thủ công bằng. | Lưới Hex Axial chuẩn xác, ZoC/CoC, bọc sườn (`Flank`), bao vây đa cấp (`TrappedLevel`), 4 bậc Sĩ khí Enum và Combat Preview minh bạch. |
+| **Người chơi đam mê Wargame theo lượt** | Đòi hỏi chiều sâu vị trí, tương khắc binh chủng, quản trị rủi ro tự tính toán và AI đối thủ công bằng. | Lưới Hex Axial chuẩn xác, ZoC/CoC, bọc sườn (`Flank`), bao vây đa cấp (`TrappedLevel`), 4 bậc Sĩ khí Enum và `UnitInspector` cung cấp đầy đủ thông số thô từng đạo quân. |
 
 ---
 
@@ -360,11 +361,11 @@ Không có một tựa game tham chiếu đơn lẻ nào bao phủ trọn vẹn 
 ### Trước trận — Đọc thế đất và lập mưu có chủ đích
 - Người chơi đọc Briefing ngắn gọn, quan sát toàn cảnh bản đồ (hỗ trợ thu phóng mượt qua `StrategicZoom`) để nhận diện luồng sông, bãi cạn, rừng phục kích, cao điểm và vị trí cứ điểm trọng yếu.
 - Trong chế độ **Historical Scenario**, trò chơi áp dụng hồ sơ tướng khóa sẵn (`Preset Loadout` — quyết định `D-02`) đúng bối cảnh trận đánh; người chơi tập trung đọc tương quan binh chủng, kỹ năng tướng (`UniqueSkill`) và địa hình sở trường (`FondTerrain`) để vạch kế hoạch tác chiến.
-- Cảm giác mong muốn: *“Mình đã nhìn ra chỗ hiểm của bản đồ và nhịp con nước — giờ là lúc bày thế trận thực thi.”* Khi thất bại, người chơi truy nguyên được nguyên nhân từ quyết định chọn tuyến, giữ nhịp hoặc phân tán lực lượng của chính mình; trò chơi vận hành bằng **Controlled RNG có Seed tất định (`Seeded RNG`)** công khai toàn bộ dải sát thương `[Min, Max]` và `% Crit`, hoàn toàn không có đòn đánh trượt (`miss`) ngẫu nhiên gây ức chế vô lý.
+- Cảm giác mong muốn: *“Mình đã nhìn ra chỗ hiểm của bản đồ và nhịp con nước — giờ là lúc bày thế trận thực thi.”* Khi thất bại, người chơi truy nguyên được nguyên nhân từ quyết định chọn tuyến, giữ nhịp hoặc phân tán lực lượng của chính mình; trò chơi vận hành bằng **Controlled RNG có Seed tất định (`Seeded RNG`)** sinh dao động thực tế lúc giao tranh (không đánh trượt/`miss` vô lý), đồng thời giữ công khai mọi thông số gốc của từng đạo quân qua **`UnitInspector`** để người chỉ huy tự cân nhắc.
 
 ### Trong trận — Cảm giác cầm quân và nắm bắt thời cơ
 - Ngân sách điểm di chuyển (`MP`) và quy tắc dừng bước khi chạm `ZOC` khiến từng ô tiến hay lùi đều mang tính cam kết vị trí; đơn vị đã thực hiện hành động chính không thể rút lui thêm trong cùng lượt (trừ phi sở hữu đặc tính du kích chuyên biệt).
-- **Combat Preview 2 bước** đóng vai trò công cụ dự tính chiến thuật tức thời: trước khi xác nhận giao tranh, người chơi thấy rõ khoảng sát thương dự kiến `[Min, Max]` (biên độ `80%–100%` + xác suất Bạo kích), lượng sát thương phản kích (`Retaliation`), cùng các hệ số từ Giáp `100 / (100 + EffectiveDef)`, `TroopStack`, Sĩ khí (`HIGH / NORMAL / LOW / CHAOS`) và `Flank`. Nhờ bộ tạo số ngẫu nhiên gắn `seed/state` riêng, mọi pha giao tranh đều bảo đảm **100% Deterministic Replay**.
+- **`UnitInspector` & Đánh ngay 1 chạm (không dùng bảng biết trước `CombatPreview`):** Người chơi chạm/chuột phải vào từng đạo quân để đọc thông số gốc (HP, Công, Thủ, Tầm đi/đánh, Sĩ khí, Địa hình) rồi **tự tính toán tương quan lực lượng**; khi đã chọn quân ta và chạm 1 lần vào địch trong tầm Đỏ là giao chiến ngay lập tức, hệ thống giải quyết công thức Giáp `100 / (100 + EffectiveDef)`, `TroopStack`, `Flank` kèm độ lệch ngẫu nhiên (`Seeded RNG` `80%–100%` + Crit) và nảy số thiệt hại thực tế. Nhờ bộ tạo số ngẫu nhiên gắn `seed/state` riêng, mọi pha giao tranh đều bảo đảm **100% Deterministic Replay**.
 - Người chơi liên tục đứng trước các bài toán đánh đổi chiến thuật sắc nét: **dùng thủy đội nhẹ nhử và khép vây chiến thuyền quân Đại Nguyên lọt vào khu vực bãi cọc ngầm đúng thời điểm thủy triều rút (`MapPhase_TideFall` đầu Vòng 4), hay rút bớt chủ lực về gia cố tuyến phòng thủ quanh Bến Hiệu Lệnh (`SignalDock`) trước sức ép mũi đột kích địch** — không có lựa chọn máy móc nào luôn đúng trong mọi tình huống.
 - Mỗi lượt trôi qua làm dịch chuyển thế trận, bậc Sĩ khí và tiến độ mục tiêu 3 sao; kết thúc trận, người chơi giải thích rành mạch vì sao kế hoạch thành công hay vỡ trận.
 
@@ -374,7 +375,7 @@ Không có một tựa game tham chiếu đơn lẻ nào bao phủ trọn vẹn 
 - Người chơi có động lực rõ ràng để thử lại trận đánh với phương án điều quân tối ưu hơn nhằm chinh phục đủ 3 Sao hoặc thử sức ở bậc độ khó cao hơn.
 
 ### Hành trình trải nghiệm mẫu trong Slice-01 (`stage_id: 10101` — Bạch Đằng 1288)
-Người chơi đọc Briefing trận Bạch Đằng 1288 (gắn nhãn `fixture / gameplay abstraction`), xác định hai trọng tâm sống còn: bảo vệ vững chắc **Bến Hiệu Lệnh (`SignalDock` tại `(2, 8)`)** và tận dụng con nước triều rút ở đầu **Vòng 4** để tiêu diệt hạm đội **Đại Nguyên** do **Ô Mã Nhi** thống lĩnh. Trong 3 vòng đầu, người chơi dùng Combat Preview tính toán dải sát thương để vừa kìm chân tiền quân giặc, vừa khéo léo nhử và ép các chiến thuyền chủ lực của địch tiến sâu vào vùng nước bãi cọc ngầm. Đầu Vòng 4, sự kiện `MapPhase_TideFall` kích hoạt: bãi cọc nhọn nhô lên đâm thủng thuyền giặc đang đứng trên cọc (`-35% MaxHP`, khóa di chuyển `MarchDisabled` 2 lượt và đẩy Sĩ khí địch sụp xuống `CHAOS` 1 lượt), đồng thời phục binh Đại Việt hai bên bờ xuất kích khép gọng kìm (`Flank` / `TrappedLevel`). Người chơi chớp thời cơ dồn hỏa lực hạ gục soái hạm Ô Mã Nhi trong khi vẫn giữ vững `SignalDock (2, 8)` để giành **Chiến thắng tức thì** trước lượt thứ 8 (đạt mốc 2 Sao và hướng tới mốc 3 Sao tổn thất `<= 20%` HP).
+Người chơi đọc Briefing trận Bạch Đằng 1288 (gắn nhãn `fixture / gameplay abstraction`), xác định hai trọng tâm sống còn: bảo vệ vững chắc **Bến Hiệu Lệnh (`SignalDock` tại `(2, 8)`)** và tận dụng con nước triều rút ở đầu **Vòng 4** để tiêu diệt hạm đội **Đại Nguyên** do **Ô Mã Nhi** thống lĩnh. Trong 3 vòng đầu, người chơi xem thông số đội hình địch qua `UnitInspector` để tự cân nhắc thế đánh, vừa kìm chân tiền quân giặc vừa khéo léo nhử và ép các chiến thuyền chủ lực của địch tiến sâu vào vùng nước bãi cọc ngầm. Đầu Vòng 4, sự kiện `MapPhase_TideFall` kích hoạt: bãi cọc nhọn nhô lên đâm thủng thuyền giặc đang đứng trên cọc (`-35% MaxHP`, khóa di chuyển `MarchDisabled` 2 lượt và đẩy Sĩ khí địch sụp xuống `CHAOS` 1 lượt), đồng thời phục binh Đại Việt hai bên bờ xuất kích khép gọng kìm (`Flank` / `TrappedLevel`). Người chơi chớp thời cơ dồn hỏa lực hạ gục soái hạm Ô Mã Nhi trong khi vẫn giữ vững `SignalDock (2, 8)` để giành **Chiến thắng tức thì** trước lượt thứ 8 (đạt mốc 2 Sao và hướng tới mốc 3 Sao tổn thất `<= 20%` HP).
 
 ---
 
@@ -394,7 +395,7 @@ Các ngưỡng trên là mục tiêu thiết kế dùng để đo kiểm trong v
 
 ### 3.4. Anti-experience — Những trải nghiệm tuyệt đối tránh
 
-- **“Tôi thua/thắng chỉ vì một cú đánh trượt may rủi vô lý.”** Trò chơi loại bỏ hoàn toàn cơ chế đánh trượt (`miss`) ngẫu nhiên; **Seeded RNG** chỉ tạo biên độ dao động hẹp (`80%–100%` + `% Crit`) được hiển thị minh bạch ngay trên Combat Preview, đặt quyền quản trị rủi ro vào tay người chỉ huy.
+- **“Tôi thua/thắng chỉ vì một cú đánh trượt may rủi vô lý.”** Trò chơi loại bỏ hoàn toàn cơ chế đánh trượt (`miss`) ngẫu nhiên; **Seeded RNG** chỉ tạo biên độ dao động hợp lý (`80%–100%` + Crit) dựa trên thông số minh bạch của từng đạo quân trên `UnitInspector`, đặt quyền tính toán rủi ro vào tay người chỉ huy.
 - **“Tôi thua vì game giấu luật hoặc bất ngờ bẫy người chơi không báo trước.”** Mọi hệ số địa hình, trạng thái `CHAOS`, `MarchDisabled`, điều kiện thắng tức thì và dấu hiệu thủy triều đều được báo hiệu rõ qua Briefing, cảnh báo đầu vòng, tooltip và Combat Log.
 - **“Tôi phải nạp tiền thật hoặc cày tướng thật mạnh mới qua được ải lịch sử.”** Chế độ Historical Scenario khóa cứng `Preset Loadout` (`D-02`); đồng thời ở giai đoạn mở rộng (`P4+`), chính sách **F2P thân thiện (`D-07`)** cam kết người chơi có thể tích lũy Ngọc Bích và Lệnh Chiêu Mộ miễn phí để sở hữu mọi phẩm tướng kể cả bậc Đỏ, không khóa danh tướng lịch sử sau paywall.
 - **“Tôi phải học hàng chục bảng số liệu mới bắt đầu chơi được.”** Áp dụng nguyên tắc tiết lộ tiệm tiến (*Progressive Disclosure*): Slice-01 ẩn lớp kinh tế (`enable_economy = false`) để người chơi làm chủ không gian Hex, Sĩ khí và địa hình trước khi tiếp cận Hậu cần ở các chương nâng cao (`P3`).
@@ -412,7 +413,7 @@ Các ngưỡng trên là mục tiêu thiết kế dùng để đo kiểm trong v
 
 1. **Chọn chế độ và màn chơi:** Lựa chọn Scenario, Conquest, Legion hoặc Domination.
 2. **Chuẩn bị trước trận (Briefing & Deployment):** Đọc mục tiêu nhiệm vụ, địa hình, điều kiện 3 sao; bố trí đội hình và gắn tối đa **1 Tướng chỉ huy / đạo quân** trong giới hạn ô tướng (`general_seat`) của kịch bản.
-3. **Quan sát và ra lệnh theo lượt:** Đọc thế trận trên lưới Hex, kiểm tra tầm nhìn (LOS), vùng kiểm soát (`ZoC`/`CoC`) và bảng dự báo giao tranh (`CombatPreview`) trước khi xác nhận lệnh.
+3. **Quan sát và ra lệnh theo lượt:** Đọc thế trận trên lưới Hex, kiểm tra tầm nhìn (LOS), vùng kiểm soát (`ZoC`/`CoC`) và thông số đạo quân trên `UnitInspector` để tự tính toán trước khi ra đòn trực tiếp 1 chạm.
 4. **Theo dõi phản ứng chiến trường:** Quan sát đòn phản kích, biến động 4 bậc Sĩ khí, sự kiện kịch bản (`MapPhase` thủy triều, phục binh) và lượt hành động của đối phương.
 5. **Tổng kết và tiến trình:** Nhận kết quả Thắng/Thua, đối chiếu nhật ký chiến đấu (`CombatLog`), nhận thưởng tiến trình và mở khóa màn chơi tiếp theo.
 
@@ -426,7 +427,7 @@ Vòng lặp trận đánh vận hành trên **Godot 4.7 (Typed GDScript 2.0)** t
 |---|---|---|
 | **1. Khởi tạo Vòng** | `OnBeginRound` | Nếu màn chơi bật kinh tế (`enable_economy == true`, phạm vi P3+), thu hoạch tài nguyên từ công trình, khấu trừ `MealFood` và xét `Starvation` (hạ tối đa xuống `LOW`, `-25%` sát thương, khóa hồi HP). Thực thi `ScenarioEvents` đầu vòng và chuyển pha bản đồ `MapPhase` (ví dụ: thủy triều rút lộ bãi cọc). |
 | **2. Khởi tạo Lượt Phe** | `FactionTurnStart` | Phe đến lượt được hồi đầy điểm di chuyển (`current_mp = max_mp`), đặt lại trạng thái hành động (`has_acted = false`), lượt phản kích (`has_retaliated_this_round = false`), quyền hoàn tác (`has_used_undo = false`) và giảm `-1` bộ đếm hồi chiêu kỹ năng tướng (`skill_cooldown`). |
-| **3. Quan sát & Dự báo** | `DecisionAndPreview` | Người chơi (hoặc AI) kiểm tra đơn vị, địa hình, LOS/Fog of War; xem đường đi A* kèm cảnh báo dừng bước `ZoC` / phạt `CoC` và bảng `CombatPreview` (`[D_min, D_max]`, `CritRate`, sát thương phản kích dự kiến). |
+| **3. Quan sát & Cân nhắc** | `ObservationAndDecision` | Người chơi kiểm tra thông số đạo quân trên `UnitInspector`, địa hình, LOS/Fog of War và đường đi A* kèm cảnh báo dừng bước `ZoC` / phạt `CoC` để tự ước lượng thế đánh (bỏ bảng tính sẵn `CombatPreview`); AI gọi `plan_turn` nội bộ. |
 | **4. Thực thi Mệnh lệnh** | `CommandExecution` | Đóng gói và thực thi các lệnh `BattleCommand`: Di chuyển (`March`), Tấn công (`Attack`), Kỹ năng Tướng (`CastSkill`), Mưu lược Quân sư toàn phe (`ApplyTactic`), Chiêu mộ (`Recruit`), Giao thương khẩn cấp (`Trade`). |
 | **5. Giải quyết Tức thì & Xét Thắng/Thua** | `ImmediateResolutionAndVictoryCheck` | Giải quyết hậu quả ngay sau mỗi lệnh: tính sát thương và phản kích, kích hoạt lan truyền tâm lý `NeighboringDeadMates`, xét hợp vây `TrappedLevel 2/3` gây `CHAOS` tức thời, chạy `ScenarioEvents` giữa lượt, **kiểm tra điều kiện Thắng/Thua tức thì** (như hạ Tướng chủ soái, mất cứ điểm sống còn) và ghi Auto-Save Checkpoint. |
 | **6. Kết thúc Lượt Phe** | `FactionTurnEnd` | Khi gửi `EndTurn`: xét `TrappedLevel` cuối lượt cho các đơn vị thuộc phe vừa kết thúc lượt (`TrappedLevel 1` giảm `-1 bậc` Sĩ khí); giảm `-1` các bộ đếm khống chế (`chaos_turns`, `attack_disabled_turns`, `march_disabled_turns`, `skill_disabled_turns`) của phe đó. Khi `chaos_turns == 0` và không bị giam trong `TrappedLevel 3`, đơn vị tự hồi phục `CHAOS → LOW`. Chuyển lượt sang phe kế tiếp. |
@@ -819,7 +820,7 @@ graph LR
 
 ### 8.4. Công trình Hậu cần, Cướp lương & Giao thương Khẩn cấp
 
-* **Hệ thống Công trình Chiến lược (`FacilitySettings.json`):**
+* **Hệ thống Công trình Chiến lược (`FacilityDef` — `res://data/defs/facilities/*.tres`):**
   * *Thành trì / Đô thành (`Type 1–5`):* Cứ điểm phát `CoC` (`step_cost * 2`), hồi HP đồn trú, thu thuế `coin`/`food`, chiêu mộ quân và bổ nhiệm Tướng chỉ huy.
   * *Nông điền (`Type 33`):* Cung cấp `80–200 Food/lượt` — huyết mạch nuôi đại quân.
   * *Chợ / Thương điếm (`Type 18`):* Sinh `60–150 Coin/lượt` và mở khóa lệnh Giao thương khẩn cấp (`Trade`).
@@ -874,8 +875,8 @@ graph TD
 
 ### 9.3. Hệ thống Duyên phận Lịch sử & 5 Ô Bảo vật Đại Việt
 
-* **Duyên phận Lịch sử (`FetterSettings.json`):** Kích hoạt hiệu ứng cộng hưởng chiến thuật khi các danh tướng đồng thời kỳ/cùng chí hướng sát cánh trên chiến trường (ví dụ: *Trần Triều Tam Kiệt*, *Vua Tôi Đồng Lòng*, *Hội Thề Lũng Nhai*, *Tây Sơn Tam Kiệt*, *Hào Khí Mê Linh*).
-* **Năm Ô Bảo vật Chuẩn Niên đại (`EquipmentSettings.json`):**
+* **Duyên phận Lịch sử (`FetterDef` — `res://data/defs/fetters/*.tres`):** Kích hoạt hiệu ứng cộng hưởng chiến thuật khi các danh tướng đồng thời kỳ/cùng chí hướng sát cánh trên chiến trường (ví dụ: *Trần Triều Tam Kiệt*, *Vua Tôi Đồng Lòng*, *Hội Thề Lũng Nhai*, *Tây Sơn Tam Kiệt*, *Hào Khí Mê Linh*).
+* **Năm Ô Bảo vật Chuẩn Niên đại (`EquipmentDef` — `res://data/defs/equipment/*.tres`):**
   1. **Cận chiến:** *Thuận Thiên Kiếm*, *Gươm Thái A*, *Trường Đao Trần Triều*...
   2. **Tầm xa:** *Nỏ Liên Châu Kim Quy*, *Cung Thần Đại Việt*, *Hỏa Hổ Ống Đồng*...
   3. **Hộ giáp:** *Khôi Giáp Thiết Lĩnh*, *Áo Bào Chiến Trận*, *Hộ Tâm Kính*...
@@ -925,7 +926,7 @@ Toàn bộ danh mục tiền tệ Meta được chuẩn hóa tên gọi và mã 
 
 ### 1. Hệ thống Chỉ số & Miền Giá trị Chuẩn hóa (Combat Attributes & Domains)
 
-Mọi biến số tham gia tính toán sát thương đều dùng tên thuộc tính chuẩn GDScript/JSON (`snake_case`) với miền giá trị xác định rõ ràng:
+Mọi biến số tham gia tính toán sát thương đều dùng tên thuộc tính chuẩn GDScript / Custom `Resource` (`snake_case`) với miền giá trị xác định rõ ràng:
 
 | Nhóm | Thuộc tính (`snake_case`) | Kiểu | Miền giá trị | Ý nghĩa & Quy tắc Gameplay |
 | :--- | :--- | :---: | :---: | :--- |
@@ -1023,7 +1024,7 @@ $$\text{FinalDamage} = \max\Big(1, \ \text{round\_half\_up}(\text{RawDamage})\Bi
    $$\text{GenBonus} = \text{general\_command\_stat} \times 1 \quad (\text{miền } 0..30)$$
    $$M_{\text{hp}} = 0.50 + 0.50 \times \left(\frac{\text{current\_hp}}{\text{max\_hp}}\right)$$
    $$\text{Atk}_{\text{rolled}} = \Big(\text{base\_atk} \times \text{RollFactor} + \text{GenBonus}\Big) \times M_{\text{hp}}$$
-   * **Hiển thị `CombatPreview`:** Tính dải dự báo `[D_min, D_max]` bằng cách thay lần lượt `RollFactor = damage_roll_min / 100.0` và `RollFactor = damage_roll_max / 100.0` (chưa nhân Crit).
+   * **Không biết trước kết quả (`DEC-026`):** `UnitInspector` chỉ hiển thị thông số thô của từng đạo quân (`base_atk`, `base_def`, `max_hp`/`current_hp`, sĩ khí, địa hình); người chơi tự tính toán chiến thuật trước khi chạm 1 lần tấn công ngay, còn `RollFactor` và `Crit` được hệ thống gieo thực tế qua `combat_rng` tại thời điểm va chạm và hiển thị bằng số nhảy sát thương (`FloatingDamageText`). *(Hàm ước lượng nội bộ chỉ dùng cho chấm điểm AI trong `AIDecisionMatrix`, không hiển thị ra UI).*
 
 2. **Đường cong Giáp phi tuyến thống nhất ($\text{DefReduction}$):**
    $$\text{EffectiveDef} = \text{base\_def} \times \text{TerrainDefMult} \times \text{MoraleDefMult}$$
@@ -1297,7 +1298,7 @@ Toàn bộ trò chơi sử dụng **4 bậc Enum rời rạc** thay cho điểm 
 
 ### 3. Hệ thống 7 Thuộc tính Trạng thái & Khống chế (Status & CC Properties)
 
-Toàn bộ cờ trạng thái sử dụng tên biến chuẩn GDScript/JSON (`snake_case`):
+Toàn bộ cờ trạng thái sử dụng tên biến chuẩn GDScript / `Resource` (`snake_case`):
 
 ```mermaid
 graph TD
@@ -1562,7 +1563,7 @@ flowchart LR
 
 ### 3.3. Bảng Thuộc tính Không gian Đặc biệt (`snake_case`)
 
-| Thuộc tính JSON / GDScript | Kiểu | Tên tiếng Việt | Tác động Hình học & Định tuyến | Binh chủng / Vai trò tiêu biểu |
+| Thuộc tính `Resource` (`.tres`) / GDScript | Kiểu | Tên tiếng Việt | Tác động Hình học & Định tuyến | Binh chủng / Vai trò tiêu biểu |
 | :--- | :---: | :--- | :--- | :--- |
 | **`ignore_zoc`** | `bool` | **Xuyên ZoC** | Bỏ qua hoàn toàn hiệu ứng dừng bước của `ZoC` quân địch; tự do luồn lách qua khe hở trận tuyến. | *Thám báo / Nội gián*, *Tản binh du kích*, *Khinh kỵ trinh sát*. |
 | **`ignore_coc`** | `bool` | **Xuyên CoC** | Miễn phạt `step_cost * 2` khi áp sát thành trì/cửa quan của địch. | *Công binh phá lũy*, *Đội thang mây tiên phong*. |
@@ -1861,7 +1862,7 @@ Sau bước cộng thu nhập và trừ `TotalMealFood` ở `OnBeginRound`, nế
 
 ---
 
-### 4. Danh mục Công trình Hậu cần Chiến lược (`FacilitySettings.json`)
+### 4. Danh mục Công trình Hậu cần Chiến lược (`FacilityDef` `.tres`)
 
 | Mã Loại | Tên Công trình | Cấp độ | Sản lượng / Vòng (`int`) | Hiệu ứng Chiến thuật Đặc biệt |
 | :--- | :--- | :---: | :--- | :--- |
@@ -2166,172 +2167,45 @@ graph TD
 
 ---
 
-### 2. Chuẩn Schema Kịch bản JSON Toàn diện (`res://data/battles/battle_10101.json`)
+### 2. Chuẩn Biên Tập Màn Chơi 2 Chiều Editor-First (`stage_10101_map.tscn` + `stage_10101.tres`)
 
-Mỗi màn chơi chiến dịch được lưu thành một tệp JSON chữ thường tại `res://data/battles/battle_{stage_id}.json`. Dưới đây là đặc tả chuẩn đã chốt của **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`)**:
+Thay vì chỉnh sửa một tệp JSON khổng lồ bằng text (`battle_10101.json` cũ), mỗi màn chơi chiến dịch được tổ chức trực quan trong thư mục `res://data/stages/<id>_<slug>/` gồm **2 phần đồng bộ hai chiều qua script `@tool`** (`DEC-023`):
+1. **Scene Bản đồ (`stage_10101_map.tscn`):** Dựng bằng `TileMapLayer` (vẽ trực tiếp địa hình sông, rừng, đồi, bãi cọc, Bến Hiệu Lệnh trong View 2D của Godot Editor) và các Node điểm đặt quân (`UnitSpawnMarker2D`) / vùng đặt tên (`NamedArea2D`: `signal_dock`, `area_bai_coc`) kéo-thả trực tiếp trên lưới Hex.
+2. **Resource Kịch bản (`stage_10101.tres` — `StageDef`):** Chứa thông số vòng đấu (`max_rounds = 10`, `enable_economy = false`), phe phái, điều kiện Thắng/Thua/3 Sao, danh sách sự kiện (`ScenarioEventDef`: `evt_10101_tide_fall` đầu Vòng 4) và hội thoại (`DialogueSequenceDef`: `talk_trieu_rut`) dưới dạng các Sub-Resource có `@export`, chỉnh trực tiếp trong Godot Inspector.
 
-```json
-{
-  "stage_id": 10101,
-  "code": "bach_dang_1288",
-  "name": "Đại Chiến Bạch Đằng 1288",
-  "historical_era": "Tran_Nguyen",
-  "modeling_type": "fixture",
-  "grid_orientation": "pointy_top_axial",
-  "map_width": 12,
-  "map_height": 10,
-  "max_rounds": 10,
-  "enable_economy": false,
-  "player_faction_id": 1,
-  "ai_profile": "normal",
-  "factions": [
-    { "id": 1, "name": "Đại Việt", "color": "#1E88E5", "is_player": true },
-    { "id": 2, "name": "Đại Nguyên (Quân Nguyên)", "color": "#E53935", "is_player": false }
-  ],
-  "named_areas": {
-    "signal_dock": [
-      { "q": 2, "r": 8 }
-    ],
-    "area_bai_coc": [
-      { "q": 5, "r": 4 },
-      { "q": 6, "r": 4 },
-      { "q": 6, "r": 5 },
-      { "q": 7, "r": 5 }
-    ]
-  },
-  "terrain_cells": [
-    { "q": 2, "r": 8, "terrain": "SignalDock", "owner_faction_id": 1 },
-    { "q": 5, "r": 4, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 6, "r": 4, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 6, "r": 5, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 7, "r": 5, "terrain": "Water", "owner_faction_id": 0 },
-    { "q": 4, "r": 5, "terrain": "Forest", "owner_faction_id": 1 },
-    { "q": 8, "r": 3, "terrain": "Hill", "owner_faction_id": 1 }
-  ],
-  "victory_conditions": [
-    {
-      "type": "DefeatGeneralWhileHoldingArea",
-      "target_general_id": 9001,
-      "required_area_id": "signal_dock",
-      "instant": true,
-      "description": "Hạ gục Ô Mã Nhi trong khi SignalDock (2, 8) thuộc Đại Việt -> Thắng ngay lập tức"
-    },
-    {
-      "type": "HoldAreaAndEnemyCasualtyAtMaxRound",
-      "required_area_id": "signal_dock",
-      "min_enemy_defeated_percent": 75,
-      "at_round": 10,
-      "description": "Giữ vững SignalDock (2, 8) khi hết Vòng 10 và tiêu diệt >= 75% quân địch"
-    }
-  ],
-  "defeat_conditions": [
-    { "type": "LoseKeyArea", "area_id": "signal_dock", "description": "Mất Bến Hiệu Lệnh (2, 8) vào tay quân Đại Nguyên" },
-    { "type": "GeneralDefeated", "target_general_id": 1001, "description": "Chủ tướng Trần Quốc Tuấn tử trận" },
-    { "type": "AllUnitsEliminated", "faction_id": 1, "description": "Mất toàn bộ đạo quân Đại Việt" },
-    { "type": "MaxRoundsUnfulfilled", "max_rounds": 10, "description": "Hết Vòng 10 mà chưa đạt điều kiện chiến thắng" }
-  ],
-  "star_conditions": [
-    { "star": 1, "type": "Victory", "description": "Giành chiến thắng trận đánh" },
-    { "star": 2, "type": "MaxRoundLimit", "max_rounds": 8, "description": "Chiến thắng trong vòng <= 8 lượt" },
-    { "star": 3, "type": "CasualtyHpPercentLimit", "max_loss_percent": 20, "description": "Tổng HP tổn thất toàn quân ta <= 20%" }
-  ],
-  "placements": [
-    {
-      "unit_id": 101,
-      "faction_id": 1,
-      "troop_id": 40501,
-      "general_id": 1001,
-      "modeling_type": "historical_claim",
-      "troop_stack": 3,
-      "hex": { "q": 2, "r": 8 },
-      "current_hp": 480,
-      "initial_morale": 80,
-      "facing": 1
-    },
-    {
-      "unit_id": 102,
-      "faction_id": 1,
-      "troop_id": 40502,
-      "general_id": 1002,
-      "modeling_type": "abstraction",
-      "troop_stack": 2,
-      "hex": { "q": 4, "r": 6 },
-      "current_hp": 320,
-      "initial_morale": 80,
-      "facing": 1
-    },
-    {
-      "unit_id": 201,
-      "faction_id": 2,
-      "troop_id": 40601,
-      "general_id": 9001,
-      "modeling_type": "historical_claim",
-      "troop_stack": 3,
-      "hex": { "q": 9, "r": 2 },
-      "current_hp": 520,
-      "initial_morale": 80,
-      "facing": 4
-    }
-  ],
-  "scripted_events": [
-    {
-      "event_id": "evt_10101_tide_fall",
-      "name": "MapPhase_TideFall",
-      "trigger_type": "OnRoundStart",
-      "logic_operator": "AND",
-      "once": true,
-      "conditions": [
-        { "field": "current_round", "op": "==", "value": 4 }
-      ],
-      "results": [
-        { "action": "CameraFocus", "target_hex": { "q": 6, "r": 5 }, "duration": 1.0 },
-        { "action": "PlayDialogue", "dialogue_id": "talk_trieu_rut" },
-        { "action": "AlterTerrain", "area_id": "area_bai_coc", "new_terrain": "StakedWater" },
-        {
-          "action": "ApplyAreaEffect",
-          "area_id": "area_bai_coc",
-          "target_faction_id": 2,
-          "hp_loss_max_ratio": 0.35,
-          "march_disabled_turns": 2,
-          "chaos_turns": 1
-        },
-        {
-          "action": "SpawnReinforcements",
-          "spawn_policy": "find_nearest_free_hex",
-          "placements": [
-            {
-              "unit_id": 105,
-              "faction_id": 1,
-              "troop_id": 40502,
-              "general_id": 0,
-              "troop_stack": 2,
-              "hex": { "q": 8, "r": 3 },
-              "current_hp": 300,
-              "initial_morale": 90
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "dialogues": [
-    {
-      "id": "talk_trieu_rut",
-      "lines": [
-        {
-          "speaker": "Trần Quốc Tuấn",
-          "avatar": "avatar_tran_quoc_tuan",
-          "text": "Thủy triều đã rút mạnh! Trận địa cọc ngầm đã lộ diện! Toàn quân quay thuyền tổng phản công!"
-        },
-        {
-          "speaker": "Ô Mã Nhi",
-          "avatar": "avatar_o_ma_nhi",
-          "text": "Nguy rồi! Chiến thuyền vướng cọc gỗ vỡ toác đáy thuyền, hàng ngũ đại loạn rồi!"
-        }
-      ]
-    }
-  ]
-}
+Dưới đây là cấu trúc dữ liệu mẫu chuẩn đã chốt của **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`)** trong `StageDef` & `stage_10101_map.tscn`:
+
+```gdscript
+# Cấu trúc Resource StageDef (res://data/stages/10101_bach_dang/stage_10101.tres)
+stage_id = 10101
+code = "bach_dang_1288"
+stage_name = "Đại Chiến Bạch Đằng 1288"
+historical_era = "Tran_Nguyen"
+modeling_type = "fixture"
+coordinate_space = "odd_r" # quy đổi sang Pointy-topped Axial qua HexMath
+map_width = 12
+map_height = 10
+max_rounds = 10
+enable_economy = false
+player_faction_id = 1
+ai_profile = "normal"
+
+# Factions: [{id: 1, "Đại Việt"}, {id: 2, "Đại Nguyên (Quân Nguyên)"}]
+# NamedAreas (đồng bộ từ stage_10101_map.tscn):
+# - "signal_dock": [(2, 8)]
+# - "area_bai_coc": [(5, 4), (6, 4), (6, 5), (7, 5)]
+# VictoryConditions:
+# 1. DefeatGeneralWhileHoldingArea(general=9001 Ô Mã Nhi, area="signal_dock", instant=true)
+# 2. HoldAreaAndEnemyCasualtyAtMaxRound(area="signal_dock", min_enemy_defeated_percent=75, at_round=10)
+# DefeatConditions: LoseKeyArea("signal_dock"), GeneralDefeated(1001 Trần Quốc Tuấn), AllUnitsEliminated(1), MaxRoundsUnfulfilled(10)
+# StarConditions: 1★ Victory | 2★ MaxRoundLimit <= 8 | 3★ CasualtyHpPercentLimit <= 20%
+# ScriptedEvents:
+# - evt_10101_tide_fall ("MapPhase_TideFall"): OnRoundStart (current_round == 4, once=true)
+#   -> CameraFocus((6, 5), 1.0s)
+#   -> PlayDialogue("talk_trieu_rut")
+#   -> AlterTerrain("area_bai_coc", "StakedWater")
+#   -> ApplyAreaEffect("area_bai_coc", faction=2, hp_loss_max_ratio=0.35, march_disabled_turns=2, chaos_turns=1)
+#   -> SpawnReinforcements(policy="find_nearest_free_hex", unit_id=105, troop=40502, hex=(8, 3))
 ```
 
 ---
@@ -2360,14 +2234,14 @@ flowchart LR
 #### 2. Kiến trúc Sa bàn Phóng đại Chiến thuật (`Tactical Zoom-in Map`):
 > [!IMPORTANT] **Phân tách rõ Tỷ lệ Chiến thuật (Scenario) và Tỷ lệ Chiến lược (Conquest):**  
 > Trên bản đồ chiến lược toàn quốc (chế độ Conquest ở P3+), toàn bộ khu vực cửa sông Bạch Đằng chỉ tương ứng với 1–2 ô lục giác vĩ mô, nên **tuyệt đối không thể cắt thô cửa sổ `12 × 10` ô trực tiếp từ bản đồ toàn quốc để làm màn chơi chiến dịch**.  
-> Thay vào đó, mỗi màn Scenario như `battle_10101.json` là một **Sa bàn Phóng đại Chiến thuật (`Tactical Zoom-in Map`)** được bố cục chuyên biệt theo địa thế cục bộ (lòng sông chính, lạch triều bãi cọc, bãi rừng phục kích hai bên bờ và Bến Hiệu Lệnh), nhưng **tái sử dụng chung 100% Thư viện `TileSet` địa hình và Prefab công trình** của dự án để tiết kiệm chi phí sản xuất mỹ thuật.
+> Thay vào đó, mỗi màn Scenario như `stage_10101.tres` + `stage_10101_map.tscn` là một **Sa bàn Phóng đại Chiến thuật (`Tactical Zoom-in Map`)** được bố cục chuyên biệt theo địa thế cục bộ (lòng sông chính, lạch triều bãi cọc, bãi rừng phục kích hai bên bờ và Bến Hiệu Lệnh), nhưng **tái sử dụng chung 100% Thư viện `TileSet` địa hình và Prefab công trình** của dự án để tiết kiệm chi phí sản xuất mỹ thuật.
 
 #### 3. Phân bố Địa hình & Điểm Nghẽn (`Choke Points`):
 * Mỗi bản đồ phải có ít nhất **1–2 điểm nghẽn tự nhiên** (khúc sông hẹp có cọc ngầm `area_bai_coc`, hẻm núi Chi Lăng, đầm lầy Dạ Trạch) buộc đội hình đông đảo của địch bị bó hẹp, mở cơ hội cho người chơi khóa ZOC, đánh bọc sườn Flank hoặc kích hoạt bẫy địa hình.
 
 ### Bước 2: Bố trí Lực lượng, Quốc hiệu & Minh bạch Nhãn Sử học (`modeling_type`)
 1. **Tương quan lấy ít địch nhiều:** Giữ tỷ lệ lực lượng **Đại Việt (1) vs. Đối phương (1.5 – 2.2)**, bù đắp bằng lợi thế địa hình sở trường (`fond_terrain`), Sĩ khí và cơ chế kịch bản.
-2. **Thẩm định danh xưng & gắn nhãn `modeling_type`:** Tuân thủ nghiêm quy định tại [historical_framework.md](gdd/03_content_presentation/historical_framework.md). Mọi sự điều chuyển tướng hoặc cô đọng không gian – thời gian phục vụ gameplay phải ghi rõ `"modeling_type": "abstraction"` hoặc `"fixture"` trong dữ liệu JSON và mục từ Codex.
+2. **Thẩm định danh xưng & gắn nhãn `modeling_type`:** Tuân thủ nghiêm quy định tại [historical_framework.md](gdd/03_content_presentation/historical_framework.md). Mọi sự điều chuyển tướng hoặc cô đọng không gian – thời gian phục vụ gameplay phải ghi rõ `"modeling_type": "abstraction"` hoặc `"fixture"` trong thuộc tính Resource `.tres` và mục từ Codex.
 
 ### Bước 3: Định nghĩa Điều kiện Thắng / Thua & Thách thức 3 Sao
 1. **Điều kiện Thắng / Thua hai chiều rõ ràng:** Kết hợp mục tiêu tấn công quyết định (hạ Chủ tướng giặc) với mục tiêu bảo vệ cứ điểm then chốt (như `SignalDock`), ngăn người chơi bỏ mặc căn cứ hoặc co cụm tiêu cực.
@@ -2626,7 +2500,7 @@ flowchart TD
 | :--- | :--- | :--- |
 | **`ReachableHexGenerator`** | Quét toàn bộ ô hex trong tầm `current_mp` hợp lệ, dừng bước khi chạm vùng ZOC của đơn vị địch **đang nhìn thấy** hoặc địa hình cấm theo `domain` (`Land` / `Naval`). | Chỉ đọc địa hình hiện hành trên `visible_map_view`; không được biết đơn vị địch đang nấp trong sương mù hay rừng rậm chưa bị phát hiện. |
 | **`AttackTargetGenerator`** | Từ mỗi ô đứng ứng viên, quét các đơn vị đối phương đã lộ diện nằm trong `[min_range, max_range]` và thỏa đường ngắm LOS. | Bị cản tầm nhìn bởi Rừng rậm / Cao điểm theo đúng quy tắc chiến trường. |
-| **`SkillTargetGenerator`** | Quét mục tiêu hợp lệ để thi triển Kỹ năng / Mưu kế chủ động của Tướng (`res://data/settings/tactic_settings.json`). | Kiểm tra `cooldown == 0` và `current_mana >= mana_cost`. |
+| **`SkillTargetGenerator`** | Quét mục tiêu hợp lệ để thi triển Kỹ năng / Mưu kế chủ động của Tướng (`TacticDef` tại `res://data/defs/tactics/*.tres` qua `DataRegistry`). | Kiểm tra `cooldown == 0` và `current_mana >= mana_cost`. |
 
 > [!IMPORTANT] **Quy tắc Cấm Tuyệt Đối AI "Map-Hack" Bãi Cọc Ngầm & Sương Mù:**  
 > Mọi hàm của AI chỉ nhận đối tượng khung nhìn đã lọc **`visible_map_view: AIVisibleMapView`**, tuyệt đối không truy cập trực tiếp `BattleMap` gốc chứa dữ liệu ẩn.  
@@ -2821,151 +2695,108 @@ func plan_turn(
 *(Chuẩn hóa cho Godot 4.7 — Thuần Typed GDScript 2.0, `gl_compatibility`, Web & Android 60 FPS)*
 
 > **Vị trí tài liệu:** `docs/gdd/architecture/data_and_save_system.md`  
-> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** cho Godot 4.7, chuẩn hóa đường dẫn JSON chữ thường tương thích tuyệt đối với hệ thống tệp phân biệt hoa-thường trên Web/Android, đồng bộ **Vòng lặp Chiến trường 7 Pha**, **Command Pattern (chỉ `MarchCommand` hỗ trợ Undo 5 điều kiện)** và **Save 2 tầng chống Crash / chống Desync RNG & Event**.
+> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** theo **Kiến trúc 4 Tầng Editor-First (`DEC-021..DEC-026`)** cho Godot 4.7 (`data/` Custom `Resource` `.tres` + `@tool` Map Scene `.tscn` → `sim/` `RefCounted` thuần → `BattleSession` → `game/battle/` & `ui/` `.tscn` + `theme.tres`), đồng bộ **Vòng lặp Chiến trường 7 Pha**, **Command Pattern (chỉ `MarchCommand` hỗ trợ Undo 5 điều kiện)** và **Save 2 tầng JSON runtime ở `user://saves/`**.
 
 ---
 
-### 1. Tổng quan Kiến trúc Dữ liệu 3 Tầng (Three-Tier Data Architecture)
+### 1. Tổng quan Kiến trúc 4 Tầng & Dữ liệu Editor-First
 
-Hệ thống quản trị dữ liệu tách biệt rành mạch giữa dữ liệu cấu hình tĩnh (`res://data/` — chỉ đọc), phiên trận đánh đang diễn ra (`user://saves/battle_session.json`), và hồ sơ tiến trình của người chơi (`user://saves/player_profile.json`):
+Hệ thống quản trị mã nguồn và dữ liệu phân tách 4 tầng rành mạch ("Lõi thuần + Vỏ dựng trong Editor") kết hợp tách biệt cấu hình tĩnh (`.tres` + `.tscn` chỉnh được trong Godot Inspector/View 2D) với dữ liệu phiên lưu runtime (`user://saves/*.json`):
 
 ```mermaid
 graph TD
-    subgraph Tier1["TẦNG 1: DỮ LIỆU CẤU HÌNH TĨNH (READ-ONLY STATIC DATA)"]
-        A["res://data/settings/*.json & res://data/battles/*.json\n(troop_settings, stage_settings, tactic_settings, battle_10101)"]
-        -->|DataCenter.load_all()| B["Static Data Cache\n(Autoload Read-Only Dictionaries)"]
+    subgraph Tier1["TẦNG 1: DỮ LIỆU TĨNH EDITOR-FIRST (res://data/)"]
+        A["Custom Resources (.tres)\nTroopDef / GeneralDef / TacticDef / FacilityDef / CodexEntryDef / StageDef\n+ Stage Map Scene (stage_10101_map.tscn với TileMapLayer)"]
+        -->|"DataRegistry (.tres) — @export"| B["Sim (res://sim/ — RefCounted Thuần)\nBattleState, CombatResolver, MoraleEngine, AI"]
     end
 
-    subgraph Tier2["TẦNG 2: PHIÊN TRẬN ĐÁNH (BATTLE SESSION STATE)"]
-        C["user://saves/battle_session.json\n(HexMap, Units, Round, rng_seed, rng_state, triggered_event_ids)"]
-        <-->|Turn Boundary / Pause Auto-Save\nWeb IndexedDB Safe| D["BattleGameController & ScenarioEventManager\n(7-Phase Live Battle Loop)"]
+    subgraph Tier2["TẦNG 2: PHIÊN TRẬN ĐÁNH (BattleSession Node & Save Runtime)"]
+        B <--> C["BattleSession (res://game/battle/battle_session.gd)\nNode duy nhất giữ Sim, nhận submit(Command), phát signal"]
+        C <-->|"Turn Boundary / Pause Auto-Save\nuser://saves/battle_session.json"| D["BattleSaveManager (Dual-Tier JSON Runtime)"]
     end
 
-    subgraph Tier3["TẦNG 3: HỒ SƠ NGƯỜI CHƠI (META-PROGRESSION PROFILE)"]
-        E["user://saves/player_profile.json & player_profile.bak\n(Chiến dịch đã mở, Sao đạt được, Tướng, Cài đặt)"]
-        <-->|BattleSaveManager.save_player_profile()| F["PlayerProfileCache\n(Dual-Backup Persistent Storage)"]
+    subgraph Tier3["TẦNG 3: TRÌNH DIỄN & HỒ SƠ NGƯỜI CHƠI"]
+        C -->|"Typed Signals"| E["Presentation (.tscn)\nbattle.tscn, battle_map.tscn (TileMapLayer), unit_view.tscn,\nui/battle_hud/*.tscn + ui/common/theme.tres (<= 400 dòng/script)"]
+        F["user://saves/player_profile.json & .bak\n(Chiến dịch, Sao, Cài đặt)"] <-->|"BattleSaveManager"| E
     end
 ```
 
-> [!NOTE] **Quy ước Đường dẫn Hệ thống Tệp (Web & Android Case-Sensitivity):**
-> - Toàn bộ tệp dữ liệu thiết kế mới của dự án đặt trong **`res://data/`** và bắt buộc viết **chữ thường `snake_case` 100%** (`res://data/settings/troop_settings.json`, `res://data/battles/battle_10101.json`,...).
-> - Các thư mục tài nguyên đồ họa/âm thanh placeholder sẵn có trên ổ đĩa giữ nguyên đúng phân biệt hoa-thường thực tế là **`res://Assets/...`**.
-> - Dữ liệu lưu của người chơi luôn ghi vào **`user://saves/`** (tuyệt đối không ghi vào `res://` vì `res://` bị khóa chỉ-đọc sau khi xuất bản Web/APK).
+> [!NOTE] **Quy ước Kiến trúc 4 Tầng, `.tres` vs `.json` & Đường dẫn Web/Android:**
+> - **Mọi dữ liệu thiết kế game tĩnh** (binh chủng, danh tướng, mưu lược, công trình, màn chơi, sử ký) đặt tại **`res://data/defs/*.tres`** và **`res://data/stages/<id>_<slug>/`** dưới dạng **Custom `Resource` (`.tres`) có `@export`**, chỉnh trực tiếp trong Godot Inspector và tổng hợp qua `res://data/registry.tres` (`DataRegistry`). Tuyệt đối không dùng JSON tĩnh buộc designer phải sửa tay text.
+> - **Định dạng `.json` chỉ dùng duy nhất cho Save/Load runtime** (`user://saves/battle_session.json`, `user://saves/player_profile.json`) và xuất/nhập Replay ở `user://saves/` (vì `res://` chỉ đọc khi xuất bản Web/APK, đồng thời JSON save không thực thi script khi nạp lại).
+> - **Cây thư mục 4 tầng chuẩn (`<= 400 dòng/script`):** `res://autoload/` (chỉ dịch vụ toàn cục: Settings, SaveService, Audio, SceneRouter — không chứa state trận đấu), `res://data/`, `res://sim/`, `res://game/battle/`, `res://ui/`, `res://tests/`. Phụ thuộc truyền có kiểu qua `@export var session: BattleSession` (cấm service locator biến `Node` không kiểu và `get_node("/root/...")`).
+> - Mọi tên tệp/thư mục mới bắt buộc **chữ thường `snake_case` 100%** để tương thích tuyệt đối hệ tệp phân biệt hoa-thường trên Web/Android.
 
 ---
 
-### 2. Đặc tả Schema Dữ liệu Cấu hình Tĩnh (Static JSON Schemas)
+### 2. Đặc tả Schema Dữ liệu Cấu hình Tĩnh (Custom `Resource` `.tres` — Chỉnh trong Inspector)
 
-### 2.1. Binh chủng (`res://data/settings/troop_settings.json`)
-Bổ sung đầy đủ phân nhánh chỉ huy (`command_branch`), miền di chuyển (`domain`), kiểu công/thủ (`attack_mode`, `defense_mode`), tầm nhìn (`vision_range`), giới hạn gộp cờ (`max_stack`), khẩu phần lương (`meal_food`) và điểm cơ động chuẩn chiến thuật (`3–5 MP`):
+### 2.1. Binh chủng (`TroopDef` — `res://data/defs/troops/*.tres`)
+Thay thế `troop_settings.json` bằng lớp `class_name TroopDef extends Resource` có `@export`, chỉnh trực tiếp trong Godot Inspector kèm xem trước icon/sprite:
 
-```json
-[
-  {
-    "id": 40101,
-    "code": "dai_viet_spear_infantry",
-    "name": "Bộ Binh Trường Giáo",
-    "command_branch": "Infantry",
-    "domain": "Land",
-    "attack_mode": "Piercing",
-    "defense_mode": "MediumArmor",
-    "min_attack": 30,
-    "max_attack": 40,
-    "defence": 12,
-    "strength": 160,
-    "max_stack": 3,
-    "mobility": 4,
-    "vision_range": 3,
-    "min_range": 1,
-    "max_range": 1,
-    "critical_percent": 5,
-    "counter_percent": 100,
-    "fond_terrain": "Forest",
-    "damage_deepen": 0,
-    "damage_resist": 0,
-    "features": ["anti_cavalry_brace", "forest_ambush"],
-    "cost_coin": 40,
-    "cost_food": 50,
-    "meal_food": 10,
-    "unit_scene": "res://scenes/units/dai_viet_spear_infantry.tscn",
-    "attack_sound": "res://Assets/Audio/sfx_pierce.wav"
-  }
-]
+```gdscript
+class_name TroopDef
+extends Resource
+
+@export var troop_id: int = 40101
+@export var code: String = "dai_viet_spear_infantry"
+@export var display_name: String = "Bộ Binh Trường Giáo"
+@export_enum("Land", "Naval") var domain: int = 0
+@export_enum("Infantry", "Archer", "Cavalry", "Siege", "NavalLight", "NavalHeavy") var command_branch: int = 0
+@export_range(1, 6) var attack_mode: int = 1
+@export_range(1, 5) var defense_mode: int = 2
+@export_range(1, 9999) var base_hp: int = 160
+@export_range(1, 3) var max_stack: int = 3
+@export_range(0, 999) var base_atk: int = 40
+@export_range(0, 999) var base_def: int = 12
+@export_range(50, 100) var damage_roll_min: int = 80
+@export_range(80, 100) var damage_roll_max: int = 100
+@export_range(1, 16) var mobility: int = 6
+@export_range(1, 8) var vision_range: int = 3
+@export_range(1, 6) var min_range: int = 1
+@export_range(1, 6) var max_range: int = 1
+@export_range(0, 100) var critical_percent: int = 5
+@export_range(0, 150) var counter_percent: int = 100
+@export var fond_terrain: int = -1
+@export var cost_coin: int = 40
+@export var cost_food: int = 50
+@export var meal_food: int = 10
+@export var features: Array[StringName] = []
+@export var sprite_sheet: Texture2D
+@export var unit_scene: PackedScene
+@export var attack_sound: AudioStream
 ```
 
-### 2.2. Danh mục Màn chơi Chiến dịch (`res://data/settings/stage_settings.json`)
-Đồng bộ đầy đủ thông số chuẩn của **Slice-01 Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)**: `max_rounds = 10`, `enable_economy = false`, phe đối phương `"Đại Nguyên (Quân Nguyên)"` (`"Tran_Nguyen"`), điều kiện Thắng/Thua và thử thách 3 Sao:
+### 2.2. Màn chơi Chiến dịch (`StageDef` — `res://data/stages/<id>_<slug>/stage_<id>.tres` + `stage_<id>_map.tscn`)
+Mỗi màn chơi kết hợp **Scene Bản đồ (`stage_<id>_map.tscn`)** (địa hình vẽ trực tiếp trên `TileMapLayer` + điểm đặt quân kéo-thả trong View 2D nhờ `@tool`) với **`StageDef.tres`** chứa các Sub-Resource chỉnh trong Inspector (`VictoryConditionDef`, `DefeatConditionDef`, `StarConditionDef`, `ScenarioEventDef`, `DialogueLineDef`, `UnitPlacementDef`):
 
-```json
-[
-  {
-    "id": 10101,
-    "code": "bach_dang_1288",
-    "name": "Đại Chiến Bạch Đằng 1288",
-    "chapter_id": 1,
-    "historical_era": "Tran_Nguyen",
-    "modeling_type": "fixture",
-    "difficulty_default": "normal",
-    "ai_profile": "normal",
-    "general_seat": 2,
-    "map_width": 12,
-    "map_height": 10,
-    "max_rounds": 10,
-    "enable_economy": false,
-    "battle_file": "res://data/battles/battle_10101.json",
-    "banned_troop_ids": [],
-    "victory_conditions": [
-      {
-        "type": "DefeatGeneralWhileHoldingArea",
-        "target_general_id": 9001,
-        "required_area_id": "signal_dock",
-        "instant": true,
-        "description": "Hạ gục Ô Mã Nhi trong khi giữ vững Bến Hiệu Lệnh (2, 8) -> Thắng ngay lập tức"
-      },
-      {
-        "type": "HoldAreaAndEnemyCasualtyAtMaxRound",
-        "required_area_id": "signal_dock",
-        "min_enemy_defeated_percent": 75,
-        "at_round": 10,
-        "description": "Giữ vững Bến Hiệu Lệnh (2, 8) khi hết Vòng 10 và tiêu diệt >= 75% quân địch"
-      }
-    ],
-    "defeat_conditions": [
-      { "type": "LoseKeyArea", "area_id": "signal_dock", "description": "Mất Bến Hiệu Lệnh (2, 8) vào tay quân Đại Nguyên" },
-      { "type": "GeneralDefeated", "target_general_id": 1001, "description": "Chủ tướng Trần Quốc Tuấn tử trận" },
-      { "type": "AllUnitsEliminated", "faction_id": 1, "description": "Toàn bộ lực lượng Đại Việt bị loại khỏi vòng chiến" },
-      { "type": "MaxRoundsUnfulfilled", "max_rounds": 10, "description": "Hết Vòng 10 mà chưa đạt điều kiện chiến thắng" }
-    ],
-    "star_conditions": [
-      { "star": 1, "type": "Victory", "description": "Giành chiến thắng màn chơi" },
-      { "star": 2, "type": "MaxRoundLimit", "max_rounds": 8, "description": "Giành chiến thắng trong vòng <= 8 lượt" },
-      { "star": 3, "type": "CasualtyHpPercentLimit", "max_loss_percent": 20, "description": "Tổng HP tổn thất toàn quân ta <= 20%" }
-    ],
-    "reward_coins": 500,
-    "reward_medals": 10
-  }
-]
+```gdscript
+class_name StageDef
+extends Resource
+
+@export var stage_id: int = 10101
+@export var code: String = "bach_dang_1288"
+@export var stage_name: String = "Đại Chiến Bạch Đằng 1288"
+@export var chapter_id: int = 1
+@export var historical_era: String = "Tran_Nguyen"
+@export var modeling_type: String = "fixture"
+@export var map_scene: PackedScene # trỏ tới res://data/stages/10101_bach_dang/stage_10101_map.tscn
+@export_range(6, 60) var map_width: int = 12
+@export_range(6, 60) var map_height: int = 10
+@export_range(1, 50) var max_rounds: int = 10
+@export var enable_economy: bool = false
+@export var general_seat: int = 2
+@export var banned_troop_ids: Array[int] = []
+@export var victory_conditions: Array[VictoryConditionDef] = []
+@export var defeat_conditions: Array[DefeatConditionDef] = []
+@export var star_conditions: Array[StarConditionDef] = []
+@export var placements: Array[UnitPlacementDef] = []
+@export var scripted_events: Array[ScenarioEventDef] = []
+@export var dialogues: Array[DialogueSequenceDef] = []
 ```
 
-### 2.3. Mưu lược & Kỹ năng Tướng (`res://data/settings/tactic_settings.json`)
-Bổ sung bắt buộc trường thời gian hồi chiêu **`cooldown`** (tính theo số vòng):
-
-```json
-[
-  {
-    "id": 10001,
-    "code": "hich_tuong_si",
-    "name": "Hịch Tướng Sĩ",
-    "mana_cost": 80,
-    "cooldown": 3,
-    "buff_ids": [90001],
-    "range": 2,
-    "target_type": "AllyArea",
-    "effect_type": "ClearChaosAndBoostMorale",
-    "icon": "res://Assets/UI/Battle/anno_capital.png"
-  }
-]
-```
+### 2.3. Tướng, Mưu lược, Công trình, Sử ký & `DataRegistry` (`res://data/registry.tres`)
+Các danh mục còn lại (`GeneralDef`, `TacticDef` có `cooldown` & `mana_cost`, `FacilityDef`, `CodexEntryDef`) đều là Custom `Resource` (`.tres`) tương ứng, được tập hợp vào **`res://data/registry.tres` (`DataRegistry`)** để nạp read-only vào tầng `Sim` (giúp unit test có thể truyền `DataRegistry` giả độc lập hoàn toàn với ổ đĩa).
 
 ---
 
@@ -2994,9 +2825,9 @@ sequenceDiagram
         BC->>Sav: Auto-Save đầu lượt Người chơi (an toàn cho Web IndexedDB)
 
         loop Chu trình Ra Lệnh Đơn Vị
-            Note over Actor,Map: PHA 3: QUAN SÁT & DỰ BÁO (Observation & Preview)
+            Note over Actor,Map: PHA 3: QUAN SÁT & TÍNH TOÁN (Observation & UnitInspector)
             BC->>Map: Cập nhật Fog of War (AIVisibleMapView) của phe đang đi
-            Actor->>BC: Xem tầm đi, ZOC, LOS & Combat Preview 2 bước (hoặc AI gọi plan_turn)
+            Actor->>BC: Đọc thông số thô qua UnitInspector, xem tầm đi/ZOC/LOS (hoặc AI gọi plan_turn) — không biết trước sát thương dự kiến
 
             Note over Actor,Map: PHA 4: GỬI LỆNH (CommandExecution)
             Actor->>BC: Gửi BattleCommand (March / Attack / CastSkill / ApplyTactic / Wait)
@@ -3345,17 +3176,18 @@ Camera ưu tiên trải nghiệm **map-first**, vận hành mượt ở **60 FPS
 
 ### 11.3. Battle UI và phản hồi
 
-Giao diện chiến trường kế thừa bố cục `form_battle_game` và tinh giản theo phạm vi từng màn chơi:
-- **Top Status Bar (Thanh Trạng thái Động):**
+Giao diện chiến trường xây dựng hoàn toàn bằng các **Scene `.tscn` độc lập + `res://ui/common/theme.tres`** (không sinh UI bằng code cứng, mọi Modal đặt nút hành động chính cố định ở chân ngoài `ScrollContainer` theo `DEC-024`) và tinh giản theo phạm vi từng màn chơi:
+- **Top Status Bar (`top_bar.tscn`):**
   - Luôn hiển thị: Nút Tạm dừng (`[PAUSE]`), Bộ đếm vòng đấu (ví dụ Slice-01: `VÒNG: 03/10`), Phe đang hành động, Điểm Mưu lược (`Mana`) và Tóm tắt mục tiêu chính.
   - **Ẩn/Hiện Kinh tế theo cờ kịch bản (`enable_economy`):** Ở các màn chiến thuật thuần túy như **Slice-01 Bạch Đằng 1288 (`enable_economy == false`)**, cụm tài nguyên `Coin / Food / Tech` được ẩn hoàn toàn để giữ HUD gọn sạch đúng phạm vi MVP; chỉ tự động hiển thị ở các màn P3+ có bật kinh tế chiến trường (`enable_economy == true`).
-- **Overhead Unit Badges:** Nổi trực tiếp phía trên từng đạo quân (Thanh máu chia nấc theo số cờ gộp `TroopStack`, Icon 4 bậc Sĩ khí, Badges hiệu ứng khống chế CC).
-- **Bottom Command Dock:** Khung Avatar Tướng, thông tin binh chủng/địa hình và cụm nút lệnh chuẩn hóa cho thao tác ngón cái: `[ĐI]`, `[ĐÁNH]`, `[MƯU LƯỢC]`, `[HOÀN TÁC]`, `[ĐỢI]` (chốt vị trí sau khi di chuyển) và `[KẾT THÚC LƯỢT]`.
-- **Combat Preview Box (Xác nhận Đòn đánh 2 Bước):**
-  - *Bước 1 (Nhắm mục tiêu):* Chạm lần 1 vào quân địch trong tầm để mở hộp dự báo sát thương (`Min~Max`, tỷ lệ Chí mạng `%`, dự báo Phản kích, hệ số Khắc chế/Địa hình/Flank) kèm hiệu ứng nhấp nháy phần máu dự kiến mất.
-  - *Bước 2 (Thực thi):* Chạm lần 2 vào mục tiêu hoặc bấm nút `[ĐÁNH]` trên Command Dock để tung đòn — triệt tiêu hoàn toàn lỗi chạm nhầm trên màn hình cảm ứng.
+- **Overhead Unit Badges (`unit_view.tscn`):** Nổi trực tiếp phía trên từng đạo quân (Thanh máu chia nấc theo số cờ gộp `TroopStack`, Icon 4 bậc Sĩ khí, Badges hiệu ứng khống chế CC).
+- **Bottom Command Dock (`command_dock.tscn`):** Khung Avatar Tướng, thông tin binh chủng/địa hình và cụm nút lệnh chuẩn hóa cho thao tác ngón cái: `[MƯU LƯỢC]`, `[HOÀN TÁC]`, `[ĐỢI]` (chốt vị trí sau khi di chuyển) và `[KẾT THÚC LƯỢT]`.
+- **`UnitInspector` & Đánh Ngay 1 Chạm (`DEC-026` — Bỏ Triết Lý Biết Trước):**
+  - **Không có hộp dự báo sát thương (`CombatPreviewBox`):** Trò chơi không tính hộ trước dải sát thương `[Min, Max]` hay sát thương phản kích trước khi ra đòn.
+  - Khi chưa chọn quân ta (hoặc click chuột phải / chạm vào đơn vị địch ngoài vùng tấn công Đỏ), bảng **`UnitInspector` (`unit_inspector.tscn`)** chỉ hiển thị **thông số thô của đạo quân đó** (HP, Công, Thủ, Tầm đi/Tầm đánh, Sĩ khí, Địa hình) để người chơi tự đối chiếu và phán đoán chiến thuật.
+  - Khi đã chọn quân ta và ô địch sáng Đỏ trong tầm đánh, **chạm/click 1 lần vào địch là ra đòn tấn công ngay lập tức** như `HexCrown`; kết quả sát thương thực tế được hệ thống tính toán và gieo ngẫu nhiên (`Seeded RNG`) ngay lúc va chạm.
 - Sát thương nảy số động trên đầu quân (`WorldSpaceUnitHudAndTextLayer` — Floating Combat Text).
-- Kiến trúc **16 lớp kết xuất phân tầng** (bao gồm `MapEffectLayer`, `StrategicTokenLayer`, `FogOfWarLayer` và `ScreenHudCanvasLayer`) cùng luồng **Input FSM 8 trạng thái** (`Idle -> UnitSelected -> Moving -> PostMoveAction -> ...`): xem [battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md).
+- Kiến trúc **16 lớp kết xuất phân tầng** (`TileMapLayer` + `unit_view.tscn` + `ScreenHudCanvasLayer`) cùng luồng **Input FSM 7 trạng thái** (`Idle -> UnitSelected -> Moving -> PostMoveAction -> Attacking / SkillTargeting`, bỏ `AimingTarget`): xem [battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md).
 
 ---
 
@@ -3381,42 +3213,46 @@ Chỉ duy nhất lệnh di chuyển (`MarchCommand`) hỗ trợ hoàn tác khi �
 *(Chuẩn hóa cho Godot 4.7 — Thuần Typed GDScript 2.0, `gl_compatibility`, Web & Android 60 FPS)*
 
 > **Vị trí tài liệu:** `docs/gdd/ui_ux/battle_ui_and_rendering.md`  
-> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** cho Godot 4.7 (`gl_compatibility`), tối ưu hóa 60 FPS trên nền tảng Web và Android, đồng bộ **16 Lớp Kết Xuất** (có `StrategicTokenLayer`, `MapEffectLayer`, `FogOfWarLayer`), **Input FSM 8 trạng thái** (khép kín luồng `PostMoveAction`), HUD thích ứng cờ `enable_economy`, và `BattleCameraController` dùng nội suy độc lập FPS kèm `Trauma Shake` tách biệt RNG.
+> **Trạng thái:** Thiết kế thuần **Typed GDScript 2.0** cho Godot 4.7 (`gl_compatibility`) theo chuẩn **Editor-First (`DEC-021..DEC-026`)**: Scene dựng trực quan trong View 2D (`battle.tscn`, `battle_map.tscn` dùng `TileMapLayer`, `unit_view.tscn` ghép Component như `HexCrown`), **HUD tách thành các Scene `.tscn` riêng + `theme.tres` (`<= 400 dòng/script`)**, loại bỏ hoàn toàn `CombatPreviewBox` / xác nhận đánh 2 bước (`AimingTarget`) thay bằng **`UnitInspector` + đánh ngay 1 chạm**, và `BattleCameraController` dùng nội suy độc lập FPS kèm `Trauma Shake` tách biệt RNG.
 
 ---
 
-### 1. Kiến trúc Kết xuất Bản đồ Phân lớp (16-Layer Rendering Pipeline)
+### 1. Kiến trúc Scene Chiến trường & Kết xuất Bản đồ Phân lớp (`TileMapLayer` + `UnitView.tscn`)
 
-Để quản lý hàng trăm ô lục giác, công sự, hiệu ứng hạt, sương mù chiến tranh và các tiểu đội binh sĩ mà không xảy ra xung đột thứ tự vẽ (`Z-fighting`), chiến trường phân tách thành **16 lớp kết xuất chuẩn** (15 lớp không gian bản đồ `Node2D` theo `z_index` cố định và 1 lớp giao diện màn hình `CanvasLayer`):
+Thay vì vẽ bản đồ bằng đa giác bệt `_draw()` hoặc sinh toàn bộ cây UI bằng `Node.new()` lúc chạy game, toàn bộ không gian chiến trường được tổ chức thành cây **Scene `.tscn` mở và chỉnh được trực tiếp trong View 2D của Godot Editor**, phân tách 16 lớp kết xuất chuẩn (15 lớp không gian bản đồ `Node2D` theo `z_index` cố định và 1 lớp giao diện màn hình `CanvasLayer`):
+
+- **`res://game/battle/battle.tscn`**: Scene gốc của một trận đánh, gắn `BattleSession`, `BattleCameraController`, `BattleMap` và `BattleHud`.
+- **`res://game/battle/map/battle_map.tscn` (`TileMapLayer`)**: Sử dụng **`TileMapLayer`** của Godot 4.7 với bộ `TileSet` địa hình thật (kết hợp `stage_<id>_map.tscn` và script `@tool` hiển thị ngay sông ngòi, rừng núi, thành trì, bãi cọc trên View 2D trong Editor).
+- **`res://game/battle/units/unit_view.tscn` (Prefab ghép Component như `HexCrown`)**: Mỗi đạo quân là một instance của Scene `unit_view.tscn` gồm `Sprite2D` (sprite hoạt ảnh + `FactionTint.gdshader`), `AnimationPlayer` (`idle/move/attack/hit/death`), `UnitAnimatorComponent`, `HealthBarComponent` (thanh máu chia nấc theo `troop_stack`), `StatusBadgeComponent` (sĩ khí & CC).
 
 ```mermaid
 graph TD
-    subgraph LayerGroup1["NHÓM 1: ĐỊA HÌNH & LƯỚI NỀN (Node2D Z-Index: 0 – 10)"]
-        L1["1. GroundLayer (z=0: Gạch nền đồng bằng, rừng, đồi, đầm lầy)"]
-        --> L2["2. WaterAndTideLayer (z=2: Mặt sông, sóng cửa biển & bãi cọc StakedWater)"]
+    subgraph LayerGroup1["NHÓM 1: ĐỊA HÌNH & LƯỚI NỀN (TileMapLayer & Node2D Z: 0 – 10)"]
+        L1["1. GroundLayer (TileMapLayer z=0: Đồng bằng, rừng, đồi, đầm lầy)"]
+        --> L2["2. WaterAndTideLayer (TileMapLayer z=2: Mặt sông, sóng cửa biển & bãi cọc StakedWater)"]
         --> L3["3. GridHexLayer (z=4: Đường viền lưới lục giác Pointy-topped)"]
-        --> L4["4. FactionBorderLayer (z=6: Màu phủ & ranh giới kiểm soát cứ điểm SignalDock)"]
+        --> L4["4. FactionBorderLayer (z=6: Đường biên lãnh thổ & cứ điểm SignalDock)"]
     end
 
     subgraph LayerGroup2["NHÓM 2: VÙNG TƯƠNG TÁC TÁC CHIẾN (Node2D Z-Index: 11 – 25)"]
         L4 --> L5["5. ReachableAreaLayer (z=12: Vùng ô di chuyển hợp lệ - Xanh dương)"]
-        --> L6["6. AttackableAreaLayer (z=14: Vùng mục tiêu trong tầm đánh - Đỏ)"]
+        --> L6["6. AttackableAreaLayer (z=14: Vùng mục tiêu trong tầm đánh - Đỏ, chạm là đánh ngay)"]
         --> L7["7. SkillAreaLayer (z=16: Vùng ảnh hưởng mưu lược / AoE - Vàng)"]
-        --> L8["8. SelectionAndAimLayer (z=18: Vòng chọn ô, đường dẫn MP & tâm ngắm)"]
+        --> L8["8. SelectionAndAimLayer (z=18: Vòng chọn ô, đường dẫn MP)"]
     end
 
-    subgraph LayerGroup3["NHÓM 3: THỰC THỂ, HIỆU ỨNG & SƯƠNG MÙ (Node2D Z-Index: 26 – 50)"]
+    subgraph LayerGroup3["NHÓM 3: THỰC THỂ, HIỆU ỨNG & SƯƠNG MÙ (UnitView.tscn & VFX Z: 26 – 50)"]
         L8 --> L9["9. BuildingAndFortLayer (z=28: Bến Hiệu Lệnh, thành trì, lũy tre, cờ cứ điểm)"]
         --> L10["10. UnitBaseAuraLayer (z=32: Vòng chân Tướng & đĩa màu phân phe)"]
-        --> L11["11. UnitModelLayer (z=36: Mô hình tiểu đội 2D hoạt họa khi zoom >= 0.65)"]
+        --> L11["11. UnitModelLayer (z=36: Các instance UnitView.tscn khi zoom >= 0.65)"]
         --> L12["12. StrategicTokenLayer (z=38: Huy hiệu Military Token khi zoom < 0.65)"]
         --> L13["13. MapEffectLayer (z=42: Hiệu ứng CPUParticles2D, lửa cháy, bọt nước, vết chém)"]
         --> L14["14. FogOfWarLayer (z=48: Sương mù chiến tranh 3 cấp Chưa mở / Đã biết / Đang thấy)"]
     end
 
-    subgraph LayerGroup4["NHÓM 4: HUD NỔI & GIAO DIỆN MÀN HÌNH (Z-Index 55+ & CanvasLayer)"]
+    subgraph LayerGroup4["NHÓM 4: HUD NỔI & GIAO DIỆN MÀN HÌNH (.tscn Z-Index 55+ & CanvasLayer)"]
         L14 --> L15["15. WorldSpaceUnitHudAndTextLayer (z=55..70: Thanh HP gộp cờ, Sĩ khí, CC & Số sát thương)"]
-        --> L16["16. ScreenHudCanvasLayer (CanvasLayer layer=10: CombatPreviewBox, TopBar, BottomDock)"]
+        --> L16["16. ScreenHudCanvasLayer (CanvasLayer layer=10: top_bar.tscn, unit_inspector.tscn, command_dock.tscn, Modals)"]
     end
 ```
 
@@ -3431,17 +3267,17 @@ graph TD
 
 ---
 
-### 2. Máy Trạng thái Tương tác Đầu vào (`BattleInputFSM` — 8 Trạng thái Khép kín)
+### 2. Máy Trạng thái Tương tác Đầu vào (`BattleInputFSM` — 7 Trạng thái Khép kín, Đánh Ngay 1 Chạm)
 
-Quản lý toàn bộ thao tác chuột và cảm ứng qua **8 trạng thái rõ ràng**, trong đó trạng thái trung gian **`PostMoveAction`** giải quyết trọn vẹn cả 4 nhánh hành động sau khi di chuyển (đánh, dùng mưu lược, hoàn tác Undo hoặc chốt đứng đợi), không để xảy ra trạng thái cụt:
+Theo quyết định **`DEC-026`**, hệ thống **bỏ hoàn toàn trạng thái `AimingTarget` và hộp dự báo sát thương `CombatPreviewBox`**. Quản lý toàn bộ thao tác chuột và cảm ứng qua **7 trạng thái rõ ràng**, kết hợp **`UnitInspector`** (hiển thị thông số thô của đạo quân) và **tấn công trực tiếp 1 chạm như `HexCrown`**:
 
 ```mermaid
 stateDiagram-v2
     [*] --> Idle: Bắt đầu lượt người chơi
 
+    Idle --> Idle: Chạm đơn vị địch / đồng minh -> Hiện thông số trên UnitInspector
     Idle --> UnitSelected: Chạm chọn đạo quân ta (!has_acted)
-    UnitSelected --> Idle: Chạm vùng trống / Hủy chọn
-    UnitSelected --> Idle: Bấm [ĐỢI] đứng yên tại chỗ (has_acted = true)
+    UnitSelected --> Idle: Chạm vùng trống / Chuột phải / Bấm [ĐỢI] (has_acted = true)
 
     UnitSelected --> Moving: Chạm ô xanh hợp lệ (MarchCommand)
     Moving --> PostMoveAction: Di chuyển tới ô đích xong
@@ -3449,12 +3285,9 @@ stateDiagram-v2
     PostMoveAction --> UnitSelected: (c) Bấm [HOÀN TÁC] (thỏa 5 điều kiện Undo)
     PostMoveAction --> Idle: (d) Bấm [ĐỢI / CHỐT VỊ TRÍ] (has_acted = true, Dimmed)
 
-    UnitSelected --> AimingTarget: Chạm lần 1 vào địch trong tầm (đánh tại chỗ)
-    PostMoveAction --> AimingTarget: (a) Chạm lần 1 vào địch trong tầm mới
-    AimingTarget --> UnitSelected: Hủy ngắm (nếu chưa di chuyển)
-    AimingTarget --> PostMoveAction: Hủy ngắm (nếu vừa di chuyển)
-    AimingTarget --> Attacking: Chạm lần 2 vào địch HOẶC bấm [ĐÁNH]
-    Attacking --> Idle: Chạy hoạt cảnh, giải quyết combat (has_acted = true)
+    UnitSelected --> Attacking: Chạm 1 lần vào địch trong vùng Đỏ (đánh ngay tại chỗ)
+    PostMoveAction --> Attacking: (a) Chạm 1 lần vào địch trong vùng Đỏ (đánh ngay sau di chuyển)
+    Attacking --> Idle: Chạy hoạt cảnh, Seeded RNG tính sát thương & phản kích (has_acted = true)
 
     UnitSelected --> SkillTargeting: Bấm [MƯU LƯỢC] (dùng tại chỗ)
     PostMoveAction --> SkillTargeting: (b) Bấm [MƯU LƯỢC] (sau khi di chuyển)
@@ -3464,55 +3297,57 @@ stateDiagram-v2
     ExecuteSkill --> Idle: Thi triển kỹ năng, trừ Mana & đặt CD (has_acted = true)
 ```
 
-### Quy trình 4 lựa chọn tại `PostMoveAction` & Xác nhận Đòn đánh 2 Bước:
-1. **Nhánh (a) — Tấn công 2 bước (`PostMoveAction -> AimingTarget -> Attacking -> Idle`):**
-   * *Chạm lần 1 vào địch:* Chuyển sang `AimingTarget`, mở **Combat Preview Box** (`Min~Max` sát thương, `%` Chí mạng, dự báo Phản kích, hệ số Khắc chế/Địa hình/Flank) và nhấp nháy phần máu dự kiến mất.
-   * *Chạm lần 2 vào địch hoặc bấm `[ĐÁNH]`:* Chuyển sang `Attacking`, thực thi `AttackCommand`, đặt `unit.has_acted = true` rồi về `Idle`.
-2. **Nhánh (b) — Thi triển Kỹ năng/Mưu lược (`PostMoveAction -> SkillTargeting -> ExecuteSkill -> Idle`):**
+### Quy trình 4 lựa chọn tại `PostMoveAction` & Cơ chế `UnitInspector` + Đánh Ngay 1 Chạm:
+1. **Xem thông số trên `UnitInspector` (Không tính trước sát thương):**
+   * Khi người chơi chạm vào bất kỳ đạo quân nào ở trạng thái `Idle` (hoặc click chuột phải / chạm vào quân địch ngoài vùng tấn công Đỏ), bảng **`UnitInspector`** (`res://ui/battle_hud/unit_inspector.tscn`) chỉ hiển thị **thông số bản thân đạo quân đó**: Tên tướng & binh chủng, HP & số cờ (`1x–3x`), Công (`base_atk` & kiểu công), Thủ (`base_def` & loại giáp), Tầm đi / Tầm đánh, Bậc Sĩ khí, và hiệu ứng Địa hình ô đang đứng.
+   * **Tuyệt đối không tính toán hay hiển thị trước** khoảng sát thương dự kiến `[Min, Max]`, tỷ lệ Crit đối đầu hay sát thương phản kích dự kiến — người chơi tự đọc thông số hai bên để cân nhắc chiến thuật.
+2. **Nhánh (a) — Tấn công Trực tiếp 1 Chạm (`UnitSelected` hoặc `PostMoveAction -> Attacking -> Idle`):**
+   * *Chạm/Click 1 lần vào ô địch đang sáng Đỏ (`AttackableAreaLayer`):* Lập tức chuyển sang `Attacking`, thực thi `AttackCommand`, hệ thống tính công thức và tung số ngẫu nhiên (`Seeded RNG`), hiển thị số sát thương thực tế nảy lên (`FloatingDamageText`), đặt `unit.has_acted = true` rồi về `Idle`.
+3. **Nhánh (b) — Thi triển Kỹ năng/Mưu lược (`PostMoveAction -> SkillTargeting -> ExecuteSkill -> Idle`):**
    * Bấm `[MƯU LƯỢC]` để chọn ô tác động, thực thi `CastSkillCommand`, đặt `unit.has_acted = true` rồi về `Idle`.
-3. **Nhánh (c) — Hoàn tác Di chuyển (`PostMoveAction -> UnitSelected`):**
+4. **Nhánh (c) — Hoàn tác Di chuyển (`PostMoveAction -> UnitSelected`):**
    * Bấm `[HOÀN TÁC]` (chỉ sáng nút khi `march_cmd.can_undo(ctx) == true` thỏa đủ 5 điều kiện tại GDD §11.4): trả quân về `from_hex`, hoàn lại MP, đánh dấu `unit.has_used_undo_this_turn = true` và quay về `UnitSelected`.
-4. **Nhánh (d) — Chốt vị trí / Đợi (`PostMoveAction -> Idle`):**
+5. **Nhánh (d) — Chốt vị trí / Đợi (`PostMoveAction -> Idle`):**
    * Bấm nút `[ĐỢI]` (hoặc chạm xác nhận lần nữa lên chính ô đang đứng): gửi `WaitCommand`, đánh dấu `unit.has_acted = true`, chuyển màu quân sang trạng thái nghỉ (`Dimmed`) và trở về `Idle`.
 
 ---
 
-### 3. Bố cục Giao diện Trận đánh (`form_battle_game`) & Quy tắc Ẩn Kinh tế MVP
+### 3. Bố cục Giao diện Trận đánh (`res://ui/battle_hud/*.tscn` & `theme.tres`)
 
-Tuân thủ triết lý **Map-First** (dành trọn $\ge 80\%$ diện tích màn hình cho sa bàn chiến thuật). Ở **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`, `max_rounds = 10`, `enable_economy = false`)**, cụm tài nguyên `Coin / Food / Tech` trên thanh Top Bar tự động ẩn đi để giao diện gọn sạch đúng phạm vi MVP:
+Tuân thủ triết lý **Map-First** (dành trọn $\ge 80\%$ diện tích màn hình cho sa bàn chiến thuật) và nguyên tắc **Editor-First**: toàn bộ HUD và Modal được dựng bằng các **Scene `.tscn` độc lập** dùng chung **`res://ui/common/theme.tres`** (mỗi script gắn kèm `<= 400` dòng, không sinh node hàng loạt trong `_ready()`). Ở **Slice-01 Bạch Đằng 1288 (`enable_economy = false`)**, cụm tài nguyên `Coin / Food / Tech` trên Top Bar tự động ẩn đi:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ [PAUSE]  VÒNG: 03/10  │ PHE: ĐẠI VIỆT │ 🔮 120 │ MỤC TIÊU: Giữ Bến (2,8) & Hạ Ô Mã Nhi │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│                         [ SA BÀN CHIẾN TRƯỜNG 12×10 HEX ]                    │
-│                                                                              │
-│                         ⚔️ [MỤC TIÊU ĐỊCH: Ô MÃ NHI]                         │
-│                      ┌───────────────────────────────┐                       │
-│                      │ HP: 310/520 (-52 ~ -68)       │                       │
-│                      │ Sát thương dự kiến: 52 ~ 68   │                       │
-│                      │ Chí mạng: 15% (~95)           │                       │
-│                      │ Phản kích dự kiến: 18 ~ 24    │                       │
-│                      │ Địa hình & Flank: +25%        │                       │
-│                      └───────────────────────────────┘                       │
-│                                                                              │
+│ ┌──────────────────────┐                                                     │
+│ │ UNIT INSPECTOR       │        [ SA BÀN CHIẾN TRƯỜNG 12×10 HEX ]             │
+│ │ Ô Mã Nhi - Lâu Thuyền│         (Ô địch trong tầm sáng Đỏ ->                │
+│ │ HP: 520/520 (3x cờ)  │          Chạm 1 lần để ĐÁNH NGAY!)                  │
+│ │ Công: 46 | Thủ: 18   │                                                     │
+│ │ Đi: 8 | Tầm: 1-2     │                                                     │
+│ │ Sĩ khí: Ổn định      │                                                     │
+│ └──────────────────────┘                                                     │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ [AVATAR] TƯỚNG: Trần Khánh Dư   [ĐI]  [ĐÁNH]  [MƯU LƯỢC]  [HOÀN TÁC]  [ĐỢI]  │
-│ [HÌNH QUÂN] Thủy Quân Đại Việt  (MP)  (Range)   (Mana)    (Undo 1x)  (Wait)  │
-│ HP: 320/320 | Sĩ khí: Hưng phấn ──────────────────────────────────────────── │
-│ Địa hình: Mặt nước (+15% Công)        [ KẾT THÚC LƯỢT / END TURN 🔔 ]        │
+│ [AVATAR] TƯỚNG: Trần Khánh Dư      [MƯU LƯỢC]  [HOÀN TÁC]  [ĐỢI]             │
+│ [HÌNH QUÂN] Thủy Quân Đại Việt      (Mana/CD)   (Undo 1x)  (Wait)            │
+│ HP: 320/320 | Công: 36 | Thủ: 12    ──────────────────────────────────────── │
+│ Địa hình: Mặt nước (+15% Công)             [ KẾT THÚC LƯỢT / END TURN 🔔 ]   │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Quy tắc Hiển thị Thích ứng các Thành phần HUD:
-1. **Top Status Bar:**
-   * Khi `enable_economy == false` (như Slice-01): Chỉ hiển thị `[PAUSE]`, `VÒNG: 03/10`, Phe hiện tại, Điểm Mưu lược (`🔮 Mana`) và Mục tiêu chính.
-   * Khi `enable_economy == true` (các màn chiến dịch lớn ở P3+): Tự động bật thêm HBox hiển thị `🪙 Tiền (Coin)`, `🌾 Lương thảo (Food)` và `⚙️ Kỹ nghệ (Tech)`.
-2. **Bottom Command Dock:**
-   * Bên trái: Thẻ thông tin đạo quân đang chọn (Avatar Tướng, tên binh chủng, thanh HP, bậc Sĩ khí, hệ số địa hình ô hiện tại).
-   * Bên phải: Cụm nút thao tác chuẩn cảm ứng gồm `[ĐI]`, `[ĐÁNH]`, `[MƯU LƯỢC]`, `[HOÀN TÁC]` (chỉ bật khi `can_undo() == true`), `[ĐỢI]` (chốt vị trí từ `PostMoveAction` hoặc `UnitSelected`) và `[KẾT THÚC LƯỢT]`.
-3. **Overhead Unit HUD (`WorldSpaceUnitHudAndTextLayer`):**
+### Quy chuẩn Thành phần HUD & Modal An toàn (Không Cắt Nút):
+1. **Top Status Bar (`res://ui/battle_hud/top_bar.tscn`):**
+   * Khi `enable_economy == false` (Slice-01): Hiển thị `[PAUSE]`, `VÒNG: 03/10`, Phe hiện tại, `🔮 Mana` và Mục tiêu chính.
+   * Khi `enable_economy == true` (các màn hậu cần): Tự động hiện thêm `🪙 Tiền (Coin)`, `🌾 Lương thảo (Food)` và `⚙️ Kỹ nghệ (Tech)`.
+2. **`UnitInspector` (`res://ui/battle_hud/unit_inspector.tscn`):**
+   * Chỉ hiển thị thông số thô của 1 đạo quân đang được xem (quân ta hoặc quân địch ngoài tầm / chuột phải), tuyệt đối không hiển thị phép tính dự báo giao tranh.
+3. **Bottom Command Dock (`res://ui/battle_hud/command_dock.tscn`):**
+   * Bên trái: Thẻ tóm tắt đạo quân đang chọn. Bên phải: Cụm nút thao tác `[MƯU LƯỢC]`, `[HOÀN TÁC]`, `[ĐỢI]` và `[KẾT THÚC LƯỢT]`.
+4. **Quy tắc Modal An toàn (`res://ui/common/modal_frame.tscn` — Áp dụng cho Briefing, Dialogue, Pause, Result Summary):**
+   * Mọi modal bắt buộc dùng cấu trúc `PanelContainer > MarginContainer > VBoxContainer`, nội dung văn bản dài nằm trong `ScrollContainer`, và hàng nút hành động chính (`ButtonRow`: `BẮT ĐẦU` / `BỎ QUA` / `TIẾP TỤC` / `ĐÓNG`) **luôn nằm ngoài `ScrollContainer` ở chân modal, luôn nhìn thấy được**.
+   * **Cấm tuyệt đối** đặt cứng `size` cố định kèm `clip_contents = true` làm cắt nội dung hoặc cắt nút, và **cấm** tự viết logic xác định hit-test nút trong `_input()` — phải dùng hệ thống GUI chuẩn của Godot và kiểm chứng bằng `assert_button_reachable()`.
+5. **Overhead Unit HUD (`WorldSpaceUnitHudAndTextLayer` / `unit_view.tscn`):**
    * Thanh máu chia vạch theo số cờ gộp (`troop_stack`: 1, 2, 3 cờ), biểu tượng 4 bậc Sĩ khí và huy hiệu khống chế (`InChaos`, `MarchDisabled`, `AttackDisabled`).
 
 ---
@@ -3650,9 +3485,13 @@ func _clamp_to_map_bounds(pos: Vector2) -> Vector2:
 
 ---
 
-### 13.1. Art Direction (Định hướng mỹ thuật)
+### 13.1. Art Direction (Định hướng mỹ thuật & Lộ trình Đồ họa `DEC-022`)
 
-- **Phong cách:** 2D Stylized Historical Map (Bản đồ quân sự cổ cách điệu hóa), tối ưu hiển thị sắc nét trên renderer **Godot 4.7 `gl_compatibility`** (Web & Android).
+- **Giai đoạn Vertical Slice kỹ thuật (`R3`):** Tạm thời kế thừa bộ `TileSet` lục giác, công trình Đỏ/Xanh, 12 sprite sheet đơn vị `32×32` có hoạt ảnh, shader (`FactionTint`, `pulse_highlight`, `territory_border`) và bộ SFX sạch từ `HexCrown` vào `res://assets_clean/hexcrown/` để đảm bảo bản đồ `TileMapLayer` và `unit_view.tscn` vận hành mượt ở **60 FPS** trên renderer **Godot 4.7 `gl_compatibility`** (Web & Android).
+- **Cổng So sánh Mỹ thuật (`R4` — Chưa khóa cứng phong cách cuối cùng):** Trước khi sản xuất hàng loạt asset riêng, bắt buộc dựng **2 mẫu nhỏ trên cùng cảnh Bạch Đằng** để người dùng đối chiếu trực quan và chốt phong cách chính thức, tiến tới thay thế dần asset kế thừa từ `HexCrown`:
+  1. **Mẫu A — Pixel Art:** Đồng bộ phong cách `HexCrown`, thiết kế bổ sung Sprite Chiến thuyền và Bãi cọc Bạch Đằng (`StakedWater`).
+  2. **Mẫu B — 2D Cách điệu chiến thuật kiểu EasyTech (2D Stylized Historical Map):** Bản đồ quân sự cổ cách điệu hóa, đường nét rõ sắc và trang phục lịch sử Việt Nam tự thiết kế.
+- **Quy tắc cứng quy trình tạo Asset (`DEC-022`):** Khi đến bất kỳ bước thiết kế hoặc tạo asset mới nào, **bắt buộc dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế; tuyệt đối không tự ý vẽ hay sinh asset.
 - **Yêu cầu hiển thị:** Bản đồ dễ đọc địa hình, silhouette binh chủng tách biệt rõ ràng ở cả tầm nhìn gần (`UnitModelLayer`) lẫn khi thu nhỏ sang huy hiệu quân sự (`StrategicTokenLayer` ở `zoom < 0.65`), màu sắc phân phe sắc nét và không lấn át thông tin chiến thuật.
 - **Chân dung tướng:** Là tranh minh họa tái dựng nghệ thuật theo tư liệu trang phục thời đại; khi không có di ảnh lịch sử đương thời xác thực, tuyệt đối không gắn nhãn như chân dung lịch sử nguyên bản.
 - **Tính đồng bộ & Quản trị Placeholder:** Map tiles, icon, chân dung, VFX và thanh trạng thái đơn vị tuân thủ chung hệ thống tỷ lệ và độ tương phản. Mọi tài nguyên placeholder dùng thử nghiệm nội bộ phải được kiểm kê minh bạch và thay thế 100% trước bản phát hành chính thức theo lộ trình tại [ASSET_CATALOG.md](assets/ASSET_CATALOG.md).
@@ -3934,7 +3773,7 @@ Sông Bạch Đằng gắn liền với ba trận đại thủy chiến ở ba t
 ### Hồ sơ thẩm định chuẩn cho Slice-01: Đại Chiến Bạch Đằng 1288 (`stage_id: 10101`)
 
 1. **Chuẩn hóa Quốc hiệu & Mã thời kỳ (`historical_claim` — Grade A, `[S12], [S13], [S14]`):**
-   - Năm 1271, Hốt Tất Liệt đã chính thức đặt quốc hiệu là **Đại Nguyên**. Vì vậy, trong cuộc kháng chiến lần thứ ba (1287–1288), phe đối phương bắt buộc định danh chuẩn là **`"Đại Nguyên (Quân Nguyên)"`** và mã thời kỳ trong dữ liệu JSON là **`"Tran_Nguyen"`** (không gộp chung danh xưng với giai đoạn đế quốc Mông Cổ năm 1258).
+   - Năm 1271, Hốt Tất Liệt đã chính thức đặt quốc hiệu là **Đại Nguyên**. Vì vậy, trong cuộc kháng chiến lần thứ ba (1287–1288), phe đối phương bắt buộc định danh chuẩn là **`"Đại Nguyên (Quân Nguyên)"`** và mã thời kỳ trong dữ liệu `StageDef` (`.tres`) là **`"Tran_Nguyen"`** (không gộp chung danh xưng với giai đoạn đế quốc Mông Cổ năm 1258).
 
 2. **Chỉ huy lịch sử vs. Trừu tượng hóa Phó tướng trong Slice-01 (`abstraction` / `fixture`):**
    - **Dữ kiện chính sử (`[S12]` *Đại Việt Sử Ký Toàn Thư*, `[S13]` *An Nam Chí Lược*, `[S14]` *Nguyên Sử*):** Tại đại chiến sông Bạch Đằng ngày 8 tháng 3 năm Mậu Tý (9/4/1288), lực lượng Đại Việt do **Quốc công Tiết chế Hưng Đạo Vương Trần Quốc Tuấn** tổng chỉ huy cùng **Thượng hoàng Trần Thánh Tông**, **Vua Trần Nhân Tông** và các tướng lĩnh như **Nguyễn Khoái** (chỉ huy quân Thánh Dực), **Phạm Ngũ Lão**, **Trần Nhật Duật**... chặn đánh hạm đội rút lui của **Ô Mã Nhi (Omar)**, **Phàn Tiếp**, **Tích Lệ Cơ Ngọc**. Trong khi đó, **Nhân Huệ Vương Trần Khánh Dư** nổi danh với chiến thắng quyết định tiêu diệt đoàn thuyền lương của Trương Văn Hổ tại **Vân Đồn (cuối năm 1287 – đầu 1288)** tạo tiền đề buộc quân Nguyên phải rút lui đường thủy qua Bạch Đằng.
@@ -3945,7 +3784,7 @@ Sông Bạch Đằng gắn liền với ba trận đại thủy chiến ở ba t
    - Trong Slice-01, lưới bản đồ **`12 × 10` hex (Pointy-topped Axial)** là một **sa bàn phóng đại chiến thuật (`Tactical Zoom-in Map`)**, trong đó vùng cọc `area_bai_coc`, cứ điểm Bến Hiệu Lệnh `SignalDock (2, 8)` và nhịp rút triều cố định ở **đầu Vòng 4 (`MapPhase_TideFall`)** đều được gắn nhãn **`modeling_type: "fixture"`** nhằm phục vụ nhịp độ chiến thuật 10 lượt rõ ràng, có thể đọc hiểu và phản ứng được.
 
 > 📖 **Liên kết đặc tả dữ liệu & nguồn sử liệu:**
-> - Chi tiết cấu trúc JSON kịch bản `res://data/battles/battle_10101.json`, điều kiện Thắng/Thua, 3 Sao và hệ thống sự kiện: xem [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md).
+> - Chi tiết cấu trúc kịch bản `stage_10101.tres` + `stage_10101_map.tscn` (Resource `.tres` + `TileMapLayer`), điều kiện Thắng/Thua, 3 Sao và hệ thống sự kiện: xem [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md).
 > - Danh mục nguồn tham khảo lịch sử, khảo cổ học và benchmark (`[S1]`–`[S16]`): xem [appendix_b_sources.md](gdd/appendices/appendix_b_sources.md).
 
 ---
@@ -3960,7 +3799,7 @@ Sông Bạch Đằng gắn liền với ba trận đại thủy chiến ở ba t
 - **Lộ trình lịch sử cuốn chiếu theo *Era Pack*:** Tầm nhìn tổng thể của sản phẩm trải dài **từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Triều Tây Sơn)**, nhưng tuyệt đối không sản xuất dàn trải nhiều thời kỳ cùng lúc. Đội ngũ bắt buộc hoàn thành và kiểm chứng **Slice-01: Đại Chiến Bạch Đằng 1288 (Mốc P2)** trước khi mở rộng thành **Gói Chiến dịch Thời Trần hoàn chỉnh (Release MVP — Mốc P5)**, sau đó mới phát triển cuốn chiếu các *Era Pack* tiếp theo.
 - **Đồng nhất nền tảng công nghệ ngay từ đầu (`D-06`, `D-09`, `D-10`):** Phát triển bằng **Thuần GDScript 2.0 (Typed GDScript)** trên **Godot 4.7** với renderer **`gl_compatibility`**, duy trì chuẩn **60 FPS** xuyên suốt từ môi trường kiểm thử **Windows Desktop** sang hai nền tảng phân phối trọng tâm là **Web (HTML5/Wasm) và Android**.
 - **Thứ tự ưu tiên sản xuất bất biến:**  
-  `Cảm giác điều quân đầm tay` ➔ `Độ rõ luật & Combat Preview` ➔ `Ổn định 60 FPS đa nền tảng` ➔ `Khả năng mở rộng kịch bản bằng dữ liệu JSON`.
+  `Cảm giác điều quân đầm tay` ➔ `Thông số rõ trên UnitInspector & Đánh ngay 1 chạm` ➔ `Ổn định 60 FPS đa nền tảng` ➔ `Khả năng biên tập màn chơi trong Editor (.tres + TileMapLayer)`.
 
 ---
 
@@ -3979,7 +3818,7 @@ Sông Bạch Đằng gắn liền với ba trận đại thủy chiến ở ba t
 
 ### 14.3. Phạm vi Slice-01 (Mốc P2 — Vertical Slice Bạch Đằng 1288)
 
-Slice-01 tập trung toàn lực vào **duy nhất 01 màn chơi hoàn chỉnh** để chứng minh chất lượng cốt lõi của trò chơi (xem cấu trúc kịch bản JSON tại [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md) và [data_and_save_system.md](gdd/architecture/data_and_save_system.md)):
+Slice-01 tập trung toàn lực vào **duy nhất 01 màn chơi hoàn chỉnh** để chứng minh chất lượng cốt lõi của trò chơi (xem cấu trúc kịch bản `.tres` & `TileMapLayer` tại [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md) và [data_and_save_system.md](gdd/architecture/data_and_save_system.md)):
 
 - **Định danh kịch bản:** `stage_id: 10101` — **Đại Chiến Bạch Đằng 1288**.
 - **Không gian & Thời lượng:** Bản đồ **`12 × 10` hex** (`Pointy-topped Axial`), giới hạn tối đa **10 lượt** (`MaxRounds = 10`).
@@ -3988,7 +3827,7 @@ Slice-01 tập trung toàn lực vào **duy nhất 01 màn chơi hoàn chỉnh**
   - Phe AI đối phương: **Đại Nguyên (Quân Nguyên)** (Hạm đội rút lui đường thủy do Ô Mã Nhi thống lĩnh).
 - **Biên chế & Tướng lĩnh (`Preset Loadout` — `D-02`):** 4–5 archetype binh chủng đặc trưng (Chiến thuyền chủ lực, Thuyền nhẹ/Mông đồng hỏa công, Bộ binh giữ bến, Cung/Nỏ yểm trợ bờ sông), 1–2 danh tướng gắn `UniqueSkill` (Trần Quốc Tuấn, Ô Mã Nhi), sử dụng cơ chế gộp cờ `TroopStack` (`1x–3x`).
 - **Hệ thống Chiến đấu & Sĩ khí chuẩn:**
-  - **Controlled RNG có Seed tất định (`Seeded RNG`):** Biên độ sát thương `80%–100%` + Bạo kích (`Crit`), công thức giáp chuẩn `100 / (100 + EffectiveDef)`, làm tròn `RoundHalfUp`, lưu `seed/state` bảo đảm **100% Deterministic Replay**, hiển thị minh bạch `[Min, Max]` & `% Crit` trên Combat Preview (không có đánh trượt ngẫu nhiên).
+  - **Controlled RNG có Seed tất định (`Seeded RNG`):** Biên độ sát thương `80%–100%` + Bạo kích (`Crit`), công thức giáp chuẩn `100 / (100 + EffectiveDef)`, làm tròn `RoundHalfUp`, lưu `seed/state` bảo đảm **100% Deterministic Replay** (không có đánh trượt ngẫu nhiên). Bỏ hộp dự báo sát thương `CombatPreview`: người chơi xem thông số từng đạo quân trên **`UnitInspector`** để tự tính và **chạm 1 lần vào địch trong tầm Đỏ để đánh ngay** như `HexCrown`.
   - **Sĩ khí 4 bậc Enum rời rạc:** `HIGH` (Hưng Phấn), `NORMAL` (Ổn Định), `LOW` (Dao Động), `CHAOS` (Hỗn Loạn — khóa di chuyển, tấn công, phản kích và mất ZoC tạm thời theo lượt rồi tự hồi về `LOW`).
 - **Trạng thái Kinh tế / Lương thảo:** **Ẩn hoàn toàn trong Slice-01 (`enable_economy = false`)** — toàn bộ 4 tài nguyên trong trận (`Coin, Food, Tech, Mana`), tiêu hao `MealFood` và `Starvation` được khóa lại cho **Mốc P3 Alpha** ([battlefield_economy.md](gdd/mechanics/battlefield_economy.md)) để người chơi tập trung tuyệt đối vào vị trí, nhịp con nước và bao vây.
 - **Nhãn toàn vẹn lịch sử:** Các thông số tọa độ ô Hex, số lượng đơn vị, chỉ số chiến đấu và lời thoại sự kiện trong Slice-01 hiện được gắn nhãn rõ ràng là **`fixture / gameplay abstraction`** cho đến khi hội đồng cố vấn duyệt xong `Dossier` chính thức theo nguồn `[S12]–[S16]`.
@@ -4035,7 +3874,7 @@ Khác với Slice-01 chỉ gồm 1 màn kiểm chứng ở mốc `P2`, sản ph�
 Một mốc bàn giao (đặc biệt là Gate `P2` cho Slice-01 và Gate `P5` cho Release MVP) chỉ được công nhận hoàn thành khi thỏa mãn đồng thời toàn bộ các tiêu chí có bằng chứng kiểm chứng sau:
 
 1. **Hoàn chỉnh vòng lặp độc lập:** Người chơi khởi động game, đọc Briefing, điều quân qua đủ các hồi kịch bản và nhận kết quả Thắng (1–3 Sao) hoặc Thua mà không cần bất kỳ sự can thiệp hay giải thích miệng nào từ lập trình viên.
-2. **Minh bạch toán học & Replay tất định:** Hộp **Combat Preview** và **Combat Log** hiển thị khớp 100% với công thức trong `scripts/core/` (khoảng `[Min, Max]`, `% Crit`, phản kích, giáp, sĩ khí); phát lại cùng chuỗi lệnh với cùng `seed` cho kết quả trùng khớp tuyệt đối (kiểm chứng qua headless test).
+2. **Minh bạch thông số & Replay tất định:** Bảng **`UnitInspector`** hiển thị đầy đủ thông số từng đạo quân khớp 100% với `Resource` (`.tres`), và **`CombatLog`** ghi lại kết quả sát thương thực tế khớp 100% với công thức trong `res://sim/`; phát lại cùng chuỗi lệnh với cùng `seed` cho kết quả trùng khớp tuyệt đối (kiểm chứng qua headless test).
 3. **Ổn định AI & Hiệu năng 60 FPS:** AI hoàn tất mọi lượt đi dưới 3 giây mà không xảy ra vòng lặp vô tận hay soft-lock; tốc độ khung hình duy trì `>= 60 FPS` kèm bằng chứng chụp màn hình (screenshot verification) và log đo đạc.
 4. **Chuẩn mực nhãn lịch sử:** 100% văn bản Briefing, thoại sự kiện và Codex đều có `sourceRef` + `Evidence grade` hợp lệ hoặc được gắn nhãn `fixture / gameplay abstraction` minh bạch.
 5. **Nghiệm thu Playtest độc lập (`[D-17]`):** Thực hiện tối thiểu một đợt kiểm thử với **ít nhất 5 người chơi độc lập ngoài đội ngũ phát triển** (có biên bản ghi chép): đạt tỷ lệ **`>= 4/5` người chơi** tự nêu đúng điều kiện thắng/thua, nhận biết được cơ chế thủy triều rút lộ bãi cọc ở Vòng 4 và tự giải thích hợp lý nguyên nhân dẫn đến chiến thắng hoặc thất bại của mình.
@@ -4054,7 +3893,7 @@ Một mốc bàn giao (đặc biệt là Gate `P2` cho Slice-01 và Gate `P5` ch
 | **3. Quá tải phạm vi lịch sử đa thời kỳ (Scope Creep)** | Phạm vi sản phẩm mở rộng **từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Triều Tây Sơn)** rất đồ sộ; nếu làm nhiều thời kỳ song song sẽ gây đứt gãy nguồn lực mỹ thuật và thẩm định sử liệu. | Áp dụng nghiêm ngặt lộ trình cuốn chiếu (`D-03`): khóa chặt `P2` cho duy nhất 1 màn **Slice-01 Bạch Đằng 1288**, khóa `P5` cho **Gói Chiến dịch Thời Trần (6–8 màn)**, sau đó mới sản xuất từng *Era Pack* độc lập. |
 | **4. Tư liệu lịch sử khuyết thiếu hoặc còn tranh luận học thuật** | Biên chế chi tiết, vị trí chính xác từng bãi cọc hay quân số cụ thể trong các trận cổ – trung đại còn nhiều cách diễn giải khác nhau giữa các nguồn sử liệu. | Không đưa suy diễn chưa duyệt vào Historical Mode như sự thật tuyệt đối; áp dụng bắt buộc hệ thống `sourceRef` (`[S6]–[S7]`, `[S12]–[S16]`), `Evidence grade` (`A–D`) và tách riêng trường `ModelingType` (`historical claim` vs `gameplay abstraction`). |
 | **5. Lối chơi đơn điệu (Spam 1 loại quân hoặc Co cụm chờ hết giờ)** | Người chơi có thể chỉ dồn một loại thuyền mạnh nhất hoặc rút toàn quân co cụm quanh `SignalDock` chờ hết 10 lượt. | Khắc chế bằng ma trận 6 Kiểu công × 5 Loại giáp, địa hình sở trường `FondTerrain`, mốc 2 Sao yêu cầu thắng nhanh `<= 8` lượt (hạ Ô Mã Nhi khi triều rút Vòng 4) và ngưỡng tiêu diệt `>= 75%` quân địch nếu đánh hết 10 lượt. |
-| **6. Người chơi hiểu nhầm `Seeded RNG` hoặc nghi ngờ AI gian lận** | Dao động sát thương nếu không minh bạch dễ tạo cảm giác bị xử ép; AI quá mạnh dễ bị nghi nhìn xuyên bản đồ hoặc cộng ngầm chỉ số. | Loại bỏ hoàn toàn cơ chế đánh trượt (`miss`); công khai dải `[Min, Max]` & `% Crit` trên Combat Preview; AI dùng chung 100% luật tầm nhìn, MP và công thức với người chơi (xem [ai_difficulty.md](gdd/03_content_presentation/ai_difficulty.md)). |
+| **6. Người chơi hiểu nhầm `Seeded RNG` hoặc nghi ngờ AI gian lận** | Dao động sát thương ngẫu nhiên nếu không hiển thị rõ thông số nguồn dễ tạo cảm giác bị xử ép; AI quá mạnh dễ bị nghi nhìn xuyên bản đồ hoặc cộng ngầm chỉ số. | Loại bỏ hoàn toàn cơ chế đánh trượt (`miss`); cung cấp đầy đủ thông số thô của từng đạo quân trên `UnitInspector` để người chơi tự tính toán trước khi đánh 1 chạm; hiển thị rõ số sát thương thực tế + Crit khi va chạm trong `CombatLog`; AI dùng chung 100% luật tầm nhìn, MP và công thức với người chơi (xem [ai_difficulty.md](gdd/03_content_presentation/ai_difficulty.md)). |
 
 ---
 
@@ -4063,8 +3902,8 @@ Một mốc bàn giao (đặc biệt là Gate `P2` cho Slice-01 và Gate `P5` ch
 | Giả định thiết kế & sản xuất | Tác động & Kế hoạch ứng phó nếu giả định sai |
 |---|---|
 | **Single-player là phạm vi cốt lõi xuyên suốt MVP (`P0–P5`); không có PvP thời gian thực.** | Nếu bổ sung đối kháng người – người trong tương lai, cần thiết kế lại luật sương mù chiến tranh đối xứng, đồng hồ giới hạn lượt và cân bằng phe phái; tuy nhiên kiến trúc Command Pattern + `Seeded RNG` hiện tại đã tương thích sẵn cho đồng bộ lượt. |
-| **Giao diện chạm/click 2 bước (`<= 2 chạm/lệnh`) phục vụ tốt đồng thời cả Web PC lẫn màn hình cảm ứng Android.** | Nếu playtest trên điện thoại màn hình nhỏ cho thấy khó chạm chính xác ô Hex hoặc chữ Combat Preview bị nhỏ, cần bổ sung chế độ phóng đại vùng chọn và cấu hình tỷ lệ DPI động cho Mobile trước `P4`. |
-| **Bản đồ `12 × 10` hex và trần 10 lượt đủ truyền tải kịch tính trận Bạch Đằng 1288 trong 8–15 phút.** | Nếu vòng Playtest `[D-17]` cho thấy không gian quá chật khiến thủy đội khó cơ động nhử giặc trước Vòng 4, Level Designer được phép nới biên bản đồ lên `14 × 12` hex bằng dữ liệu JSON mà không cần sửa code core. |
+| **Giao diện đánh ngay 1 chạm như `HexCrown` (bấm địch trong vùng Đỏ để ra đòn, xem thông số qua `UnitInspector`) phục vụ tốt đồng thời cả Web PC lẫn cảm ứng Android.** | Nếu playtest trên điện thoại màn hình nhỏ cho thấy dễ bấm nhầm mục tiêu kề nhau, tăng nhẹ kích thước hitbox ô Hex hoặc thêm tùy chọn xác nhận phụ trong Settings mà không khôi phục bảng tính sẵn sát thương. |
+| **Bản đồ `12 × 10` hex và trần 10 lượt đủ truyền tải kịch tính trận Bạch Đằng 1288 trong 8–15 phút.** | Nếu vòng Playtest `[D-17]` cho thấy không gian quá chật khiến thủy đội khó cơ động nhử giặc trước Vòng 4, Level Designer có thể mở trực tiếp `stage_10101_map.tscn` trong Editor để nới rộng `TileMapLayer` lên `14 × 12` hex mà không cần sửa code lõi `Sim`. |
 | **Mọi con số chỉ số và bố cục quân trong Slice-01 hiện tại là `fixture` thử nghiệm.** | Nếu đội ngũ giữ nguyên số liệu `fixture` không qua hiệu chỉnh playtest để đưa thẳng lên MVP `P5`, độ khó chiến dịch Thời Trần sẽ mất cân bằng nghiêm trọng. |
 
 ---
@@ -4079,9 +3918,9 @@ Các quyết định dưới đây đã được phê duyệt chính thức (chi
 | **`D-02`** | **Phân tách Chế độ chơi** | **Historical Scenario** khóa cứng hồ sơ tướng & biên chế (`Preset Loadout`) để bảo toàn tính lịch sử và thử thách chiến thuật; tách biệt hoàn toàn với tiến trình tự do ở Conquest/Domination. |
 | **`D-03`** | **Chiến lược sản xuất cuốn chiếu** | Hoàn thiện **Vertical Slice Bạch Đằng 1288 (`Slice-01`)** ở `P2` $\to$ **Gói Chiến dịch Thời Trần** ở `P5` $\to$ mở rộng cuốn chiếu các *Era Pack* từ thời dựng nước & Bắc thuộc đến thế kỷ XVIII (Tây Sơn). |
 | **`D-06`** | **Nền tảng mục tiêu ưu tiên** | Chốt ưu tiên phát hành trên **Web (HTML5/Wasm) + Android** ngay sau bản dựng phát triển/kiểm thử trên **Windows Desktop**, cam kết mục tiêu **60 FPS**. |
-| **`D-09`** | **Engine, Ngôn ngữ & Kiến trúc mã nguồn** | Chuyển hoàn toàn từ định hướng C# .NET cũ sang **Thuần GDScript 2.0 (Typed GDScript) trên Godot 4.7** để xuất bản liền mạch Web + Android; tổ chức mã nguồn phân lớp sạch giữa `scripts/core/` (độc lập `SceneTree`) và `scripts/presentation/`. |
-| **`D-10`** | **Pipeline Kết xuất Đồ họa** | Chốt sử dụng **`gl_compatibility` Renderer** trên Godot 4.7 kết hợp kiến trúc 15 Render Layers và cơ chế `StrategicZoom` (`Zoom < 0.7x`) để bảo đảm tương thích WebGL2 và duy trì 60 FPS trên thiết bị di động. |
-| **`D-11`** | **Combat `Seeded RNG`, Giáp & Phản kích** | Áp dụng **Controlled RNG có Seed tất định** (`80%–100%` + Crit, lưu `seed/state` bảo đảm 100% Deterministic Replay, không có `miss`), công thức giáp `100 / (100 + EffectiveDef)`; **Công giải quyết trước – Thủ phản kích sau** (nếu còn sống, hợp lệ tầm & LOS, không bị `CHAOS`), tối đa **1 lần phản kích / lượt đối phương**. |
+| **`D-09`** | **Engine, Ngôn ngữ & Kiến trúc mã nguồn 4 Tầng (`DEC-023`, `DEC-024`)** | Sử dụng **Thuần GDScript 2.0 (Typed GDScript) trên Godot 4.7** theo **Kiến trúc 4 Tầng Editor-First (`<= 400 dòng/script`)**: `data/` (`.tres` Custom `Resource` chỉnh trong Inspector + `@tool` Map `.tscn`) $\to$ `sim/` (`RefCounted` thuần) $\to$ `BattleSession` (`Node` phát signal) $\to$ `game/battle/` & `ui/` (`.tscn` + `theme.tres`). |
+| **`D-10`** | **Pipeline Kết xuất Đồ họa** | Chốt sử dụng **`gl_compatibility` Renderer** trên Godot 4.7 kết hợp `TileMapLayer`, `unit_view.tscn` ghép Component như `HexCrown`, 16 lớp kết xuất và cơ chế `StrategicZoom` (`Zoom < 0.65`) để bảo đảm tương thích WebGL2 và duy trì 60 FPS trên thiết bị di động. |
+| **`D-11`** | **Combat `Seeded RNG`, Giáp, Phản kích & Bỏ Biết Trước (`DEC-026`)** | Áp dụng **Controlled RNG có Seed tất định** (`80%–100%` + Crit, lưu `seed/state` bảo đảm 100% Deterministic Replay, không có `miss`), công thức giáp `100 / (100 + EffectiveDef)`; **Công giải quyết trước – Thủ phản kích sau**, tối đa **1 lần phản kích / lượt đối phương**. **Bỏ `CombatPreviewBox` & `AimingTarget`**: người chơi xem thông số qua `UnitInspector` tự tính và **chạm 1 lần vào địch trong tầm Đỏ để đánh ngay**. |
 | **`D-12`** | **Luật Vùng kiểm soát (`ZOC`) & Bọc sườn (`Flank`)** | Bước vào ô `ZOC` của địch buộc **dừng di chuyển ngay (`RemainingMP = 0`)** nhưng vẫn giữ quyền thực hiện Action chính; **Flank** kích hoạt khi có ít nhất 1 đồng minh khác áp sát mục tiêu ở ô không liền kề với đơn vị tấn công. |
 | **`D-13`** | **Hệ thống Sĩ khí 4 bậc rời rạc** | Chốt **4 bậc Enum rời rạc**: `HIGH` (Hưng Phấn), `NORMAL` (Ổn Định), `LOW` (Dao Động), `CHAOS` (Hỗn Loạn — khóa toàn bộ di chuyển, tấn công, phản kích và mất `ZOC` tạm thời theo lượt rồi tự hồi về `LOW`, không dùng thang điểm phần trăm liên tục hay xóa đơn vị đột ngột). |
 | **`D-14`** | **Cơ chế Bãi cọc Bạch Đằng (`StakedWater`)** | Thuộc thế trận mai phục của Đại Việt trong `stage_id: 10101`: đầu **Vòng 4 (`MapPhase_TideFall`)**, nước triều rút làm lộ bãi cọc đâm thủng thuyền quân Đại Nguyên đang đứng trên bãi cọc (`-35% MaxHP`, `MarchDisabled` 2 lượt, `CHAOS` 1 lượt) đồng thời kích hoạt phục binh Đại Việt xuất kích. |
@@ -4100,7 +3939,8 @@ Mọi quyết định chưa khóa hoàn toàn đều được gán **Owner**, **
 | **`D-08`** | Quy trình hội đồng cố vấn sử học và bộ nguồn chuẩn cho từng *Era Pack*? | Historical Content Lead | Áp dụng bắt buộc khung `Evidence grade` (`A–D`) + `ModelingType` tại [historical_framework.md](gdd/03_content_presentation/historical_framework.md); mọi chi tiết chưa qua cố vấn ký duyệt phải giữ nhãn `fixture / gameplay abstraction`. | Dossier Slice-01 trước Gate `P2`; từng Era trước `P4` | **OPEN** |
 | **`D-15`** | Hệ quả phụ trên chiến trường khi đơn vị Tướng chỉ huy bị loại khỏi vòng chiến (ngoài việc mất `UniqueSkill`)? | Combat Systems Designer | Mất `UniqueSkill` và `CommandAura` của tướng đó trong phần còn lại của trận, **kèm phạt `-1` bậc Sĩ khí cục bộ** cho đồng minh trong bán kính `2 hex` (`3 hex` nếu là Chủ soái) và thưởng `+1` bậc Sĩ khí cho quân tiêu diệt trong bán kính `2 hex`. | Đã thống nhất phương án chuẩn; kiểm chứng số liệu tại Gate `P2` | **LOCKED IN PRINCIPLE** *(Kiểm chứng playtest P2)* |
 | **`D-16`** | Tinh chỉnh bố trí quân khởi đầu và nhịp áp lực của AI lên `SignalDock (2, 8)` để triệt tiêu hoàn toàn chiến thuật co cụm (`Anti-Turtling`)? | Level Designer | Đại Việt nắm giữ `SignalDock (2, 8)` từ đầu trận nhưng buộc phải dâng đội hình nhử quân Nguyên vào vùng cọc trước Vòng 4 để kịp hạ Ô Mã Nhi đạt 2 Sao (`<= 8` lượt) hoặc tiêu diệt `>= 75%` quân địch trước hết lượt 10. | Trước Gate `P2` (sau Playtest Slice-01) | **OPEN** *(Đang cân bằng số liệu)* |
-| **`D-17`** | Nghiệm thu kết quả vòng Playtest độc lập cho Vertical Slice-01 Bạch Đằng 1288? | UX / QA Lead | Tổ chức playtest với **tối thiểu 5 người chơi ngoài đội phát triển**; chỉ đạt Gate `P2` khi **`>= 4/5` người chơi** nêu đúng điều kiện thắng/thua, hiểu vai trò thủy triều Vòng 4 và tự giải thích được nguyên nhân kết quả trận đấu. | Gate `P2` (ngay sau khi hoàn tất `CP4`) | **OPEN** *(Chờ bản dựng CP4)* |
+| **`D-17`** | Nghiệm thu kết quả vòng Playtest độc lập cho Vertical Slice-01 Bạch Đằng 1288? | UX / QA Lead | Tổ chức playtest với **tối thiểu 5 người chơi ngoài đội phát triển**; chỉ đạt Gate `P2` khi **`>= 4/5` người chơi** nêu đúng điều kiện thắng/thua, hiểu vai trò thủy triều Vòng 4 và tự giải thích được nguyên nhân kết quả trận đấu. | Gate `P2` (ngay sau khi hoàn tất `R3–R4`) | **OPEN** *(Chờ bản dựng R3/R4)* |
+| **`D-18`** | Chốt phong cách Mỹ thuật chính thức cho dự án tại Cổng Dừng `R4` (**Pixel Art** đồng bộ `HexCrown` vs **2D Cách điệu lịch sử kiểu EasyTech**)? | User (Final Authority) | Dùng asset sạch kế thừa từ `HexCrown` làm khung ở `R3`; ở `R4` **bắt buộc dừng hỏi người dùng lên phương án & chọn công cụ**, dựng 2 mẫu đối chiếu trên cùng cảnh Bạch Đằng để người dùng chọn phong cách chính thức trước khi sản xuất hàng loạt và thay thế dần asset `HexCrown` (`DEC-022`). | Cổng `R4` (Vertical Slice Art Shootout) | **OPEN** *(Cổng dừng bắt buộc)* |
 
 ---
 
@@ -4111,21 +3951,40 @@ Tài liệu này quy định lộ trình triển khai thực chất kết nối 
 
 ---
 
-### 16.1. Kiến trúc Triển khai Mã nguồn (Godot 4.7 — Pure GDScript 2.0)
+### 16.1. Kiến trúc Triển khai Mã nguồn 4 Tầng (`<= 400 dòng/script` — Editor-First)
 
-Theo quyết định công nghệ đã khóa (`D-06`, `D-09`, `D-10`), toàn bộ dự án được phát triển bằng **100% Thuần GDScript 2.0 (Static Typing)** trên **Godot 4.7** sử dụng **`gl_compatibility` Renderer** để xuất bản liền mạch ra **Web (HTML5/Wasm) + Android** (phát triển và gỡ lỗi hàng ngày trên **Windows Desktop**) với mục tiêu hiệu năng cứng **60 FPS**.
+Theo quyết định công nghệ đã khóa (`D-06`, `D-09`, `D-10`, `DEC-023`, `DEC-024`), toàn bộ dự án được phát triển bằng **100% Thuần GDScript 2.0 (Static Typing)** trên **Godot 4.7** sử dụng **`gl_compatibility` Renderer** cho **Web (HTML5/Wasm) + Android** (phát triển và kiểm thử trên **Windows Desktop**) với mục tiêu **60 FPS**.
 
-Để bảo đảm tính tất định tuyệt đối và khả năng kiểm thử tự động không cần giao diện đồ họa, mã nguồn được phân tách nghiêm ngặt thành **2 phân lớp độc lập** (chi tiết cấu trúc lưu trữ xem tại [data_and_save_system.md](gdd/architecture/data_and_save_system.md)):
+Để kết hợp sức mạnh **Editor-First** của Godot (scene `.tscn` chỉnh được trong View 2D, dữ liệu `.tres` chỉnh trong Inspector) với **lõi mô phỏng tất định có unit test**, mã nguồn được tổ chức theo **Kiến trúc 4 Tầng ("Lõi thuần + Vỏ dựng trong Editor")** với giới hạn cứng **`<= 400` dòng mỗi script**:
 
-1. **Tầng Lõi Mô phỏng (`res://scripts/core/` — SceneTree-Independent):**
-   - Chỉ sử dụng các lớp dữ liệu thuần túy (`RefCounted`, `Resource`), **tuyệt đối không `extends Node`, không gọi trực tiếp `SceneTree`, `Tween` hay `RenderingServer`**.
-   - Đảm nhiệm: Toán học lưới Hex `Pointy-topped Axial`, định tuyến A* + `ZOC`/`CoC` ([hex_grid_pathfinding.md](gdd/mechanics/hex_grid_pathfinding.md)), `CombatResolver` tích hợp bộ sinh số `RandomNumberGenerator` riêng có lưu `seed/state` (`Seeded RNG`, giáp `100/(100+EffectiveDef)`, `RoundHalfUp` — [combat_formulas.md](gdd/mechanics/combat_formulas.md)), `MoraleEngine` 4 bậc Enum (`HIGH/NORMAL/LOW/CHAOS` — [morale_and_status.md](gdd/mechanics/morale_and_status.md)), `CommandQueue` hỗ trợ Undo 1 bước & **100% Deterministic Replay**, bộ giải mã sự kiện kịch bản JSON và bộ chấm điểm Utility AI ([ai_decision_matrix.md](gdd/ai/ai_decision_matrix.md)).
-2. **Tầng Trình diễn & Tương tác (`res://scripts/presentation/` — SceneTree-Bound):**
-   - Quản lý cây cảnh Godot: 15 Render Layers, điều khiển Camera 2D + `StrategicZoom` (`Zoom < 0.7x`), máy trạng thái đầu vào 5 bước (`Two-Step Combat Confirmation`), HUD Map-First, hộp `Combat Preview` ([battle_ui_and_rendering.md](gdd/ui_ux/battle_ui_and_rendering.md)), cùng hiệu ứng rung chấn camera, Hit-stop, `GPUParticles2D` và Audio Pooling ([vfx_sfx_and_polish.md](gdd/vfx_sfx/vfx_sfx_and_polish.md)).
+1. **Tầng Dữ liệu Tĩnh (`res://data/` — Custom `Resource` `.tres` + `@tool` Map Scenes `.tscn`):**
+   - Chứa `TroopDef`, `GeneralDef`, `TacticDef`, `FacilityDef`, `CodexEntryDef`, `StageDef` và `res://data/registry.tres` (`DataRegistry`), cùng bản đồ từng màn (`res://data/stages/<id>_<slug>/stage_<id>_map.tscn` dùng `TileMapLayer`).
+2. **Tầng Lõi Mô phỏng (`res://sim/` — `RefCounted` Thuần, Độc lập `SceneTree`):**
+   - Gồm `sim/state/`, `sim/commands/`, `sim/rules/`, `sim/ai/`. **Tuyệt đối không `extends Node`, không gọi trực tiếp `SceneTree`, `Tween` hay `RenderingServer`.**
+   - Đảm nhiệm: Toán học lưới Hex, A* + `ZOC`/`CoC`, `CombatResolver` (`Seeded RNG` và giáp `100/(100+EffectiveDef)`), `MoraleEngine` 4 bậc Enum, `BattleEconomy`, `CommandHistory` (Undo 1 bước & 100% Deterministic Replay), `ScenarioEventManager` và `AIDecisionMatrix`.
+3. **Tầng Phiên Trận Đánh (`res://game/battle/battle_session.gd`):**
+   - `BattleSession` là Node duy nhất giữ `BattleGameController` / `BattleState`, tiếp nhận `Command` từ UI/AI (`submit(cmd)`) và phát các `signal` có kiểu ra tầng trình diễn.
+4. **Tầng Trình diễn & Giao diện (`res://game/battle/`, `res://ui/` — Scene `.tscn` + `theme.tres`):**
+   - Các Scene mở được trong View 2D: `battle.tscn`, `battle_map.tscn` (`TileMapLayer`), `unit_view.tscn` (ghép Component `Sprite2D` + `AnimationPlayer` + `UnitAnimatorComponent` + `HealthBarComponent` + `StatusBadgeComponent`), `BattleCameraController`, `BattleInputFSM` (**7 trạng thái, đánh ngay 1 chạm**, bỏ `AimingTarget`), cùng các scene HUD/Modal tách rời trong `ui/battle_hud/*.tscn` (`top_bar.tscn`, `unit_inspector.tscn`, `command_dock.tscn`, `briefing_modal.tscn`, `pause_modal.tscn`,...) dùng chung `ui/common/theme.tres`.
+   - `res://autoload/` chỉ dành cho dịch vụ toàn cục không chứa state trận (`Settings`, `SaveService`, `Audio`, `SceneRouter`). Phụ thuộc truyền có kiểu qua `@export var session: BattleSession`.
 
 ---
 
-### 16.2. Bảng Checkpoints Kỹ thuật (`CP1–CP5`) ánh xạ sang Milestones (`P0–P5`)
+### 16.2. Checkpoints Nền tảng (`CP1–CP5`) & Lộ trình Tái Kiến Trúc Editor-First (`R1–R5` / `CP6–CP10`)
+
+> [!IMPORTANT] **Trạng thái Kiểm toán `CP1–CP5` (21/11/2026 — `DEC-025`):**  
+> - Kết quả chạy thực tế cho thấy **`CP1–CP5` cũ chỉ đạt phần Lõi Mô phỏng (`Sim` + `82/82` unit tests)**, còn **lớp vỏ trình diễn (UI sinh bằng code bị cắt nút `clip_contents`, Scene `1-node` trống View 2D, dữ liệu JSON không chỉnh được trong Inspector, và `CombatPreviewBox`) đã bị BÁC BỎ (`DEC-021..DEC-026`)**.  
+> - Do đó dự án triển khai **Bộ Cổng Tái Kiến Trúc & Nâng cấp Đồ họa `R1–R5` (`CP6–CP10`)**, làm chuẩn chỉnh **Vertical Slice `10101` Bạch Đằng 1288** trước (`R1–R4`) rồi mới nhân rộng ra 5 màn còn lại (`R5`).
+
+| Cổng Mới (`R1–R5`) | Hạng mục Bàn giao Trọng tâm | Tiêu chí Vượt cổng Bắt buộc (Tech & Player DoD) |
+|---|---|---|
+| **`R1` (`CP6`): Cấu trúc 4 Tầng, FSM 7 Trạng Thái & UI `.tscn`** | Di chuyển lõi sang `res://sim/`, tạo `BattleSession`, rút gọn `BattleInputFSM` xuống **7 trạng thái (đánh ngay 1 chạm)**; dựng `theme.tres`, `modal_frame.tscn` & bộ `ui/battle_hud/*.tscn` (gồm **`unit_inspector.tscn`**, xóa bỏ `CombatPreviewBox` và `battle_hud_controller.gd` 1.556 dòng). | Mọi script `<= 400` dòng; `82/82` unit tests xanh; bộ E2E chạy `assert_button_reachable()` qua `Viewport.push_input` thật; ảnh chụp mọi modal không bị cắt nút/chữ ở `16:9` & `19.5:9`. |
+| **`R2` (`CP7`): Dữ liệu Custom `Resource` (`.tres`) trong Inspector** | Định nghĩa `TroopDef`, `GeneralDef`, `TacticDef`, `FacilityDef`, `CodexEntryDef`, `StageDef` + Sub-Resources (`@export`) và `DataRegistry` (`res://data/registry.tres`); chuyển dữ liệu từ JSON sang `.tres` và đọc trực tiếp vào `Sim`. | Chỉnh được toàn bộ thông số binh chủng, tướng, sự kiện Bạch Đằng ngay trong Godot Inspector; test đối chiếu khớp 100% thông số gốc. |
+| **`R3` (`CP8`): `TileMapLayer`, `UnitView.tscn` & Asset Sạch `HexCrown` (Màn `10101`)** | Kế thừa bộ `TileSet`, công trình Đỏ/Xanh, 12 sprite sheet `32×32`, shader & SFX sạch từ `HexCrown` vào `res://assets_clean/hexcrown/`; dựng `unit_view.tscn` ghép Component, `stage_10101_map.tscn` (`TileMapLayer` + `@tool`) và `battle.tscn`; xóa `battle_map_view.gd` & `battle_sandbox_cp1.gd`. | Mở Godot Editor thấy ngay bản đồ sông Bạch Đằng & quân trên View 2D; Inspector hiện đầy đủ thuộc tính; chạy `F5` từ `main_menu.tscn` qua trọn vẹn màn `10101` ở **60 FPS**. |
+| **`R4` (`CP9` — 🛑 CỔNG DỪNG HỎI NGƯỜI DÙNG): So sánh 2 Mẫu Mỹ thuật** | **Dừng lại hỏi người dùng lên phương án & chọn công cụ** trước khi tạo asset mới. Dựng 2 mẫu nhỏ trên cùng cảnh Bạch Đằng: **Pixel Art** (đồng bộ `HexCrown` kèm Chiến thuyền + Bãi cọc) vs **2D Cách điệu lịch sử kiểu EasyTech** thiết kế riêng. | Người dùng xem trực quan 2 mẫu, chốt phong cách mỹ thuật chính thức và lộ trình thay thế dần asset `HexCrown`. |
+| **`R5` (`CP10`): Nhân rộng 5 Màn Thời Trần (`10102–10106`) & Release QA** | Dựng `stage_<id>_map.tscn` (`TileMapLayer`) và `stage_<id>.tres` cho 5 màn `10102–10106` (gồm Vân Đồn bật kinh tế); nâng cấp `main_menu.tscn` & `codex_panel.tscn` theo `theme.tres`; tối ưu xuất bản Web & Android. | Toàn bộ 6 màn mở được trong View 2D Editor; `0` lỗi P0/P1; vượt qua trọn vẹn Unit + E2E (`assert_button_reachable`) + đạt 60 FPS Web/Android. |
+
+### Bảng Checkpoints Giai đoạn 1 (`CP1–CP5` cũ — Giữ tham chiếu lịch sử phần Lõi Sim):
 
 > **Nguyên tắc quản trị:** Hoàn thành một Checkpoint kỹ thuật (`CP`) chứng minh hệ thống chạy đúng và đủ hiệu năng, nhưng **không tự động thay thế** cổng duyệt thiết kế (`Design Gate P1–P5`). Đặc biệt, bản dựng `CP4` phải vượt qua vòng Playtest độc lập `[D-17]` và rà soát nhãn lịch sử mới được công nhận hoàn tất mốc `P2`.
 
@@ -4134,7 +3993,7 @@ Theo quyết định công nghệ đã khóa (`D-06`, `D-09`, `D-10`), toàn b�
 | **`CP1: Hex Grid & Camera 60FPS`** | `P0` $\to$ Khởi đầu `P1` | Hệ tọa độ Hex `Pointy-topped Axial` (`12 × 10` cho Slice-01, stress-test tới `30 × 30`); định tuyến A* có chi phí địa hình, `FondTerrain`, `ZOC`/`CoC`, `IgnoreZoc`/`DevoidZoc`; Camera kéo/phóng mượt + chuyển đổi tự động `StrategicZoom` trên 15 Render Layers (`gl_compatibility`). | Đạt cứng **60 FPS** (`<= 16.67ms/frame`) khi hiển thị đồng thời 40+ đơn vị thử nghiệm; chọn ô, hiển thị vùng đi xanh / vùng bắn đỏ chính xác 100% trong headless test. |
 | **`CP2: Turn Loop & Combat/Morale Core`** | **`P1` (Core Prototype)** | Vòng lặp 7 pha Turn/Phase; kiến trúc `Command` + Undo 1 bước/lượt + lưu/phát lại Replay; `CombatResolver` với `Seeded RNG` (`80%–100%` + Crit), giáp `100/(100+EffectiveDef)`, `TroopStack` (1x–3x), Phản kích tối đa 1 lần/lượt; `MoraleEngine` 4 bậc Enum (`HIGH/NORMAL/LOW/CHAOS`), bao vây `TrappedLevel` & lan truyền tâm lý. | 100% unit test `scripts/core/` vượt qua ở chế độ `--headless`; chạy lại cùng file replay `seed` qua 50 lượt không lệch 1 điểm HP hay trạng thái nào. |
 | **`CP3: AI & Scenario Event Scripting`** | Nền tảng chức năng của **`P2`** | Bộ não AI 3 pha bằng GDScript (Generators $\to$ Evaluators $\to$ Utility Scoring); trình đọc kịch bản JSON (`stage_id: 10101`); hệ thống Trigger-Condition-Action chạy trọn vẹn sự kiện **`MapPhase_TideFall` đầu Vòng 4** (`StakedWater`: `-35% MaxHP`, `MarchDisabled` 2 lượt, `CHAOS` 1 lượt + Spawn phục binh Đại Việt); kiểm tra thắng tức thì khi hạ Ô Mã Nhi lúc giữ `SignalDock (2, 8)`. | Mô phỏng tự động AI-vs-AI 100 trận liên tiếp không crash, không treo lượt (soft-lock); thời gian tính toán mỗi lượt AI `< 1.5s`; kiểm chứng đủ cả 2 nhánh Thắng và 3 mốc Sao. |
-| **`CP4: Playable Slice-01 Complete + UI/Audio Polish`** | **`P2` (Vertical Slice)** | Hoàn thiện HUD Map-First (`>= 80%` diện tích bản đồ), `Combat Preview` xác nhận 2 bước (hiển thị `[Min, Max]`, `% Crit`, phản kích & các thẻ modifier), Briefing, Hội thoại kịch bản, Tổng kết 3 Sao, Combat Log; tích hợp Trauma Shake, Hit-Stop, hiệu ứng sóng nước/cọc ngầm & Audio Pooling; khóa ẩn kinh tế (`enable_economy = false`). | Trọn vẹn Slice-01 chơi mượt từ màn hình tiêu đề đến kết thúc trận ở **60 FPS** trên Windows Desktop & bản xuất thử Web/Android; sẵn sàng bàn giao cho vòng Playtest độc lập `[D-17]`. |
+| **`CP4: Playable Slice-01 Complete + UI/Audio Polish`** | **`P2` (Vertical Slice)** | Hoàn thiện HUD Map-First (`>= 80%` diện tích bản đồ), `UnitInspector` (chỉ thông số đạo quân, đánh ngay 1 chạm), Briefing, Hội thoại kịch bản, Tổng kết 3 Sao, Combat Log; tích hợp Trauma Shake, Hit-Stop, hiệu ứng sóng nước/cọc ngầm & Audio Pooling; khóa ẩn kinh tế (`enable_economy = false`). | Trọn vẹn Slice-01 chơi mượt từ màn hình tiêu đề đến kết thúc trận ở **60 FPS** trên Windows Desktop & bản xuất thử Web/Android; sẵn sàng bàn giao cho vòng Playtest độc lập `[D-17]`. |
 | **`CP5: Web & Android Export Optimization + Release QA`** | `P3` $\to$ `P4` $\to$ **`P5` (Release MVP)** | Bổ sung module Kinh tế chiến trường (`P3`); nạp trọn vẹn Gói Chiến dịch Thời Trần (6–8 màn, 10–12 binh chủng, 8–10 tướng), Tutorial ngữ cảnh & Codex lịch sử; thay thế sạch 100% tài nguyên qua **Asset IP Gate** (`P4`); tối ưu đóng gói WebAssembly (nén Wasm/PCK, chống khựng shader) và APK/AAB Android cảm ứng đa điểm (`P5`). | Bản Web tải nhanh, không tràn bộ nhớ trình duyệt; bản Android và Web duy trì ổn định **60 FPS**; 0 lỗi P0/P1 tồn đọng; vượt qua toàn bộ bộ test hồi quy tự động và kiểm duyệt phát hành. |
 
 ---
@@ -4145,14 +4004,14 @@ Lộ trình 12 tuần đầu tập trung đưa dự án từ khởi tạo kiến
 
 | Tuần | Chặng công việc trọng tâm | Đầu ra kiểm chứng cụ thể | Cột mốc |
 | :---: |---|---| :---: |
-| **W1** | Khởi tạo cấu trúc dự án Godot 4.7 (`gl_compatibility`), thiết lập `scripts/core/` & `scripts/presentation/`, hệ tọa độ Hex Axial `(q, r)` và trình nạp JSON tĩnh cơ sở. | Chạy được bộ test toán học khoảng cách Hex, lân cận 6 hướng và nạp dữ liệu mẫu ở chế độ `--headless`. | — |
-| **W2** | Triển khai định tuyến A* tích hợp địa hình, `FondTerrain`, `ZOC`/`CoC`, `IgnoreZoc`/`DevoidZoc`; dựng 15 Render Layers, điều khiển Camera 2D và `StrategicZoom`. | Bản đồ `12 × 10` hiển thị mượt ở **60 FPS**, chọn đơn vị vẽ đúng vùng xanh/đỏ, thu phóng chuyển sang Military Token mượt mà. | **Đạt `CP1`** |
+| **W1** | Khởi tạo cấu trúc dự án Godot 4.7 (`gl_compatibility`), thiết lập 4 tầng `data/` / `sim/` / `game/` / `ui/`, hệ tọa độ Hex Axial `(q, r)` và Custom `Resource` (`.tres`) cơ sở. | Chạy được bộ test toán học khoảng cách Hex, lân cận 6 hướng và nạp `DataRegistry` `.tres` ở chế độ `--headless`. | — |
+| **W2** | Triển khai định tuyến A* tích hợp địa hình, `FondTerrain`, `ZOC`/`CoC`, `IgnoreZoc`/`DevoidZoc`; dựng `TileMapLayer` + 16 lớp kết xuất, điều khiển Camera 2D và `StrategicZoom`. | Bản đồ `12 × 10` hiển thị mượt ở **60 FPS**, chọn đơn vị vẽ đúng vùng xanh/đỏ, thu phóng chuyển sang Military Token mượt mà. | **Đạt `CP1`** |
 | **W3** | Xây dựng vòng lặp trận đánh 7 pha, kiến trúc `Command Pattern`, cơ chế Undo 1 lần/lượt và bộ lưu trạng thái `Seeded RNG` (`RandomNumberGenerator`). | Thực thi được lệnh Di chuyển, Đứng thủ, Kết thúc lượt và hoàn tác hợp lệ không rò rỉ trạng thái. | — |
 | **W4** | Cài đặt đầy đủ `CombatResolver` (`80%–100%` + Crit, giáp `100/(100+EffectiveDef)`, `TroopStack` 1x–3x, `Flank`, Phản kích 1 lần) và `MoraleEngine` 4 bậc Enum (`HIGH/NORMAL/LOW/CHAOS`, `TrappedLevel`). | Đánh thắng/thua được một trận giao tranh cơ bản; phát lại Replay khớp 100% từng con số sát thương. | **Đạt `CP2` & Gate `P1`** |
 | **W5** | Phát triển hệ thống AI 3 pha bằng GDScript (sinh nước đi hợp lệ, chấm điểm vị trí/mục tiêu/bảo vệ cứ điểm, thực thi tuần tự có nhịp dừng camera). | Phe AI Đại Nguyên tự hành quân tiến công và phối hợp đánh mục tiêu hợp lý không gây đơ khung hình. | — |
-| **W6** | Xây dựng Scripting Engine hướng dữ liệu (`Trigger – Condition – Action`): theo dõi số lượt, vùng tọa độ, máu tướng; thực thi đổi địa hình, gọi viện binh, bật hội thoại. | Hệ thống sự kiện đọc trực tiếp từ file kịch bản JSON mà không cần sửa cứng mã nguồn theo từng màn. | — |
-| **W7** | Biên tập trọn vẹn dữ liệu **Slice-01 Bạch Đằng 1288 (`stage_id: 10101`)**: bố trí hai phe, sự kiện `MapPhase_TideFall` đầu Vòng 4 lộ bãi cọc `StakedWater`, phục binh xuất kích và 2 nhánh điều kiện Thắng + 3 Sao. | Chơi thông suốt kịch bản 10 lượt từ Hồi 1 đến Hồi 3; hạ Ô Mã Nhi khi giữ `SignalDock (2, 8)` kích hoạt thắng ngay lập tức. | **Đạt `CP3`** |
-| **W8** | Hoàn thiện giao diện chiến trường Map-First: Input FSM 5 trạng thái, hộp `Combat Preview` xác nhận 2 bước (Min–Max, `% Crit`, phản kích), thanh Top Bar, màn Briefing & Battle Result 3 Sao. | Mọi thao tác điều quân & tấn công đạt chuẩn `<= 2 chạm`; ẩn sạch các nút/chỉ số kinh tế (`enable_economy = false`). | — |
+| **W6** | Xây dựng Scripting Engine hướng dữ liệu (`Trigger – Condition – Action`): theo dõi số lượt, vùng tọa độ, máu tướng; thực thi đổi địa hình, gọi viện binh, bật hội thoại. | Hệ thống sự kiện đọc trực tiếp từ `StageDef` (`.tres`) mà không cần sửa cứng mã nguồn theo từng màn. | — |
+| **W7** | Biên tập trọn vẹn **Slice-01 Bạch Đằng 1288 (`stage_10101_map.tscn` + `stage_10101.tres`)**: bố trí hai phe, sự kiện `MapPhase_TideFall` đầu Vòng 4 lộ bãi cọc `StakedWater`, phục binh xuất kích và 2 nhánh điều kiện Thắng + 3 Sao. | Chơi thông suốt kịch bản 10 lượt từ Hồi 1 đến Hồi 3; hạ Ô Mã Nhi khi giữ `SignalDock (2, 8)` kích hoạt thắng ngay lập tức. | **Đạt `CP3`** |
+| **W8** | Hoàn thiện giao diện chiến trường Map-First bằng scene `.tscn`: Input FSM **7 trạng thái (đánh ngay 1 chạm)**, `UnitInspector` (thông số thô của từng đạo quân), thanh Top Bar, màn Briefing & Battle Result 3 Sao. | Mọi nút UI đều bấm được (`assert_button_reachable`); ẩn sạch các nút/chỉ số kinh tế (`enable_economy = false`). | — |
 | **W9** | Đánh bóng cảm giác va chạm (Game Feel / Juice): Hit-flash trắng, Trauma Camera Shake, Hit-stop khi nổ Crit/vỡ cọc, hiệu ứng dòng chảy sông Bạch Đằng và Audio SFX Pooling. | Phản hồi thị giác – thính giác đầm tay khi thuyền giặc đâm phải bãi cọc nhọn Vòng 4 và khi Sĩ khí rớt xuống `CHAOS`. | — |
 | **W10** | Đóng băng tính năng Slice-01; chạy kiểm thử xuất bản sớm ra **HTML5/Wasm (Web)** và **APK (Android)** để đo đạc FPS, tốc độ tải và độ nhạy cảm ứng. | Bản dựng Slice-01 chạy ổn định **60 FPS** trên cả Windows Desktop, trình duyệt Web và thiết bị Android thử nghiệm. | **Đạt `CP4`** |
 | **W11** | Tổ chức vòng **Playtest độc lập `[D-17]`** (tối thiểu 5 người chơi ngoài dev); song song rà soát hồ sơ `Dossier` lịch sử Bạch Đằng 1288 (`[S12]–[S16]`) và kiểm tra nhãn `fixture / gameplay abstraction`. | Biên bản thu thập đầy đủ thời lượng trận, tỷ lệ hiểu luật (`>= 4/5`), điểm nghẽn UI và chiến thuật co cụm (nếu có). | — |
@@ -4171,7 +4030,7 @@ Không được phép chuyển giai đoạn sản xuất nếu chưa vượt qua
 
 | Cổng duyệt | Tiêu chí Design Gate (Do Design & Content Lead ký duyệt) | Tiêu chí Tech & QA Gate (Do Tech Lead ký duyệt) |
 | :---: |---|---|
-| **Gate `P1`** *(Trước khi làm Slice-01)* | Luật cốt lõi (`D-11, D-12, D-13`) cho cảm giác đánh đổi vị trí rõ ràng; khoảng sát thương `Seeded RNG` (`80%–100%` + Crit) dễ đọc và không gây ức chế. | Đạt `CP1` + `CP2`; `scripts/core/` tách biệt 100% khỏi `SceneTree`; bộ headless unit tests cho Combat, Morale, ZoC và Deterministic Replay đạt 100% pass. |
+| **Gate `P1`** *(Trước khi làm Slice-01)* | Luật cốt lõi (`D-11, D-12, D-13`, `DEC-026`) cho cảm giác đánh đổi vị trí rõ ràng; thông số đạo quân trên `UnitInspector` minh bạch và hệ số `Seeded RNG` (`80%–100%` + Crit) cân bằng. | Đạt `CP1` + `CP2` / `R1` + `R2`; `res://sim/` tách biệt 100% khỏi `SceneTree`; bộ headless unit tests cho Combat, Morale, ZoC và Deterministic Replay đạt 100% pass. |
 | **Gate `P2`** *(Trước khi nhân rộng nội dung)* | Hoàn thành Playtest `[D-17]` đạt **`>= 4/5` người chơi ngoài dev** hiểu đúng điều kiện thắng/thua & bước ngoặt Vòng 4; chốt xong `D-15, D-16`; mọi chi tiết lịch sử có `sourceRef` hoặc gắn nhãn `fixture / gameplay abstraction` chuẩn. | Đạt `CP3` + `CP4`; chơi trọn vẹn `stage_id: 10101` không lỗi soft-lock; xác nhận **60 FPS** kèm ảnh chụp kiểm chứng giao diện trên cả Desktop, bản thử Web và Android. |
 | **Gate `P3`** *(Trước khi sản xuất hàng loạt Beta)* | Kinh tế chiến trường (`MealFood`, `Starvation`, cướp lương) hòa quyện tự nhiên với nhịp đánh theo lượt, không biến trận đánh thành quản lý bảng tính; chốt dứt điểm `D-04, D-05`. | Hệ thống Save/Load 2 tầng (`Session` & `Profile`) tương thích ngược ổn định; thời gian lượt AI khi có thêm biến kinh tế vẫn giữ dưới `3.0 giây`. |
 | **Gate `P4`** *(Trước khi đóng gói Release Candidate)* | Đủ 6–8 màn Gói Thời Trần có `Dossier` lịch sử được duyệt (`D-08`); Tutorial theo ngữ cảnh và Codex hoàn chỉnh; chốt thông số mô hình F2P thân thiện dài hạn (`D-07`). | **Vượt qua Asset IP Gate:** 0% tệp đồ họa/âm thanh/dữ liệu placeholder thương mại còn sót lại trong gói build; dung lượng tải WebAssembly và RAM sử dụng nằm trong ngưỡng an toàn của trình duyệt di động. |
@@ -4179,23 +4038,19 @@ Không được phép chuyển giai đoạn sản xuất nếu chưa vượt qua
 
 ---
 
-### 16.5. Quy chuẩn Kiểm thử Tự động (`Headless Test`) & Xác minh Hình ảnh (`Screenshot Verification`)
+### 16.5. Quy chuẩn Kiểm thử 3 Lớp (`Headless Sim` + `E2E Reachability` + `Editor & Player Visual Check`)
 
-Tuân thủ quy tắc kỹ thuật cốt lõi của dự án, mọi tính năng gameplay hoặc giao diện khi bổ sung/chỉnh sửa **bắt buộc phải đi kèm hai lớp bằng chứng thực tế** trước khi báo cáo hoàn thành:
+Tuân thủ quy tắc kỹ thuật cốt lõi tại [AGENTS.md](../AGENTS.md), mọi tính năng gameplay hoặc giao diện khi bổ sung/chỉnh sửa **bắt buộc phải đi kèm đầy đủ 3 lớp bằng chứng thực tế** trước khi báo cáo hoàn thành:
 
-1. **Kiểm thử Logic Tự động Không Giao diện (`Headless Verification`):**
-   - Thực thi trực tiếp bằng dòng lệnh Godot (`godot --headless --script res://tests/run_all_tests.gd`) trên tầng `scripts/core/`.
-   - Phạm vi kiểm tra bắt buộc:
-     - Độ chính xác toán học của công thức sát thương, đường cong giáp `100 / (100 + EffectiveDef)` và quy tắc làm tròn `RoundHalfUp`.
-     - Tính tất định 100% của `Seeded RNG`: hai phiên mô phỏng độc lập nạp cùng `seed` và chuỗi `Command` phải sinh ra kết quả `CurrentHP`, `TroopStack` và bậc `Morale` giống hệt nhau tuyệt đối.
-     - Chu trình chuyển trạng thái Sĩ khí 4 bậc (đặc biệt là cơ chế `CHAOS` khóa hành động đúng số lượt rồi tự hồi về `LOW`) và kích hoạt chính xác sự kiện `MapPhase_TideFall` ở đầu Vòng 4 (`stage_id: 10101`).
-     - Chạy mô phỏng hàng loạt trận AI tự đấu để phát hiện sớm lỗi kẹt đường đi, chia cho 0 hoặc treo vòng lặp lượt.
-2. **Kiểm chứng Thị giác Thực tế (`Screenshot & Visual Verification`):**
-   - Khởi chạy cảnh thực tế trên `gl_compatibility` và trích xuất ảnh chụp màn hình (screenshot) tại các thời điểm trọng yếu:
-     - Toàn cảnh bản đồ Hex ở cả mức zoom cận cảnh lẫn mức thu phóng xa kích hoạt `StrategicZoom` (`Zoom < 0.7x`).
-     - Trạng thái mở hộp **Combat Preview 2 bước**, kiểm tra rõ sự hiển thị không tràn lề của khoảng sát thương `[Min, Max]`, `% Crit`, phản kích và các huy hiệu địa hình/sĩ khí.
-     - Khoảnh khắc đầu Vòng 4 khi bãi cọc ngầm Bạch Đằng nhô lên đâm thủng thuyền địch kèm hiệu ứng `CHAOS` / `MarchDisabled`, và màn hình Tổng kết 3 Sao.
-   - Kiểm tra chéo trên cả khung hình ngang tiêu chuẩn Desktop/Web (`16:9`) và tỷ lệ màn hình dài phổ biến trên điện thoại Android (`19.5:9` / `20:9`) để đảm bảo không che khuất vùng thao tác.
+1. **Kiểm thử Lõi Mô phỏng (`Headless Unit Verification`):**
+   - Thực thi trực tiếp bằng dòng lệnh Godot (`godot --headless --script tests/run_tests.gd`) trên tầng `res://sim/`.
+   - Phạm vi kiểm tra bắt buộc: Toán học `CombatResolver` (`100 / (100 + EffectiveDef)` & `RoundHalfUp`), tính tất định 100% của `Seeded RNG` khi phát lại Replay 50 lượt, Sĩ khí 4 bậc (`CHAOS -> LOW`), `MapPhase_TideFall` ở đầu Vòng 4, AI tự đấu không treo lượt, và đối chiếu toàn bộ chỉ số `Resource` (`.tres`) trong `DataRegistry`.
+2. **Kiểm thử E2E Tương tác & UI Bấm được (`assert_button_reachable`):**
+   - Thực thi `godot --headless --script res://tests/e2e/run_e2e.gd`: mọi nút UI trọng yếu (`StartButton`, `SkipButton`, `ResumeButton`, nút Command Dock) phải khẳng định khung `get_global_rect()` nằm trọn trong mọi tổ tiên `clip_contents` lẫn viewport, và thao tác click phải đi qua `Viewport.push_input()` thật (cấm đánh lừa test bằng `_input()` hit-test giả hoặc gọi trực tiếp `pressed.emit()`).
+   - Kiểm chứng luồng `UnitInspector` (chạm đơn vị chỉ hiện thông số thô, không hiện sát thương dự kiến) và **đánh ngay 1 chạm** khi bấm vào địch sáng Đỏ trong tầm.
+3. **Kiểm chứng Thị giác như Người chơi & Mở Godot Editor:**
+   - Mở xem trực tiếp từng ảnh chụp màn hình (`16:9` `1280×720` và `19.5:9` `1560×720`) với câu hỏi: *"Người chơi có thấy rõ nút đi tiếp không? Chữ hay thanh trượt có bị cắt/tràn không?"*. Thấy lỗi phải sửa hoặc báo CHƯA XONG.
+   - Trước khi báo xong một cổng: mở project trong Godot Editor, xác nhận View 2D (`battle.tscn`, `stage_10101_map.tscn`) và Inspector (`.tres`) có đầy đủ nội dung chỉnh được, và chạy `F5` từ `main_menu.tscn` đi qua hết luồng mở đầu.
 
 ---
 
@@ -4226,8 +4081,8 @@ Các tựa game tham chiếu dưới đây cung cấp bài học về cấu trú
 
 | Hạng mục đo lường | Chỉ số mục tiêu chuẩn (Target Metric) | Phương pháp kiểm chứng thực tế |
 |---|---|---|
-| **1. Chi phí thao tác mỗi hành động (Input Efficiency)** | **`<= 2 chạm / click`** sau khi đã chọn đơn vị để hoàn tất di chuyển hoặc xác nhận tấn công (`Two-Step Combat Confirmation`). | Đếm trực tiếp số thao tác trên cả chuột (Web/Desktop) và màn hình cảm ứng (Android); không phát sinh menu phụ chồng chéo. |
-| **2. Độ rõ & Minh bạch của Combat Preview** | Hiển thị đầy đủ **100%** các thông tin quyết định trước khi ra đòn: khoảng sát thương `[Min, Max]` (`Seeded RNG` `80%–100%`), tỷ lệ `% Crit`, dự báo sát thương phản kích (`Retaliation`) và các thẻ modifier chính (Địa hình, Sĩ khí, Khắc chế, `Flank`, `TroopStack`). | Screenshot verification hộp Combat Preview + khảo sát người chơi thử xem có hiểu vì sao sát thương tăng/giảm hay không. |
+| **1. Chi phí thao tác mỗi hành động (Input Efficiency)** | **Đánh ngay 1 chạm (`1 chạm` vào địch trong tầm Đỏ sau khi chọn quân)** theo phong cách `HexCrown` (`DEC-026`, bỏ xác nhận 2 bước rườm rà). | Đếm trực tiếp số thao tác trên cả chuột (Web/Desktop) và màn hình cảm ứng (Android); kiểm tra nút bấm được qua `assert_button_reachable()`. |
+| **2. Độ rõ thông số đạo quân (`UnitInspector`)** | Hiển thị đầy đủ **100%** thông số bản thân đạo quân trên `UnitInspector` (HP, số cờ, Công, Thủ, Tầm đi/đánh, Sĩ khí, Địa hình ô đứng) mà **không tính hộ sát thương dự kiến**. | Screenshot verification `UnitInspector` + khảo sát người chơi xem có tự đọc được tương quan lực lượng trước khi đánh hay không. |
 | **3. Hiệu năng khung hình đa nền tảng (Frame Rate)** | Duy trì ổn định **`>= 60 FPS`** (thời gian vẽ khung hình `<= 16.67 ms`), không tụt quá ngưỡng khi thu phóng toàn cảnh nhờ `StrategicZoom` (`Zoom < 0.7x`). | Đo bằng bộ đếm profiler của Godot 4.7 trên trình duyệt Web và máy Android tầm trung trong kịch bản 20–50 đơn vị hoạt động. |
 | **4. Tốc độ phản hồi lượt máy (AI Turn Pacing)** | Toàn bộ lượt đi của phe AI hoàn tất trong **`1.5 – 3.0 giây`** (tính toán ngầm `< 1.5s`, kết hợp lia camera mượt tới điểm giao tranh chính). | Đo log thời gian thực thi AI trong headless simulation 100 trận và ghi hình thực tế trong Slice-01. |
 | **5. Tỷ lệ không gian bản đồ (Map-First Screen Ratio)** | Vùng bản đồ chiến trường chiếm **`>= 80%`** diện tích hiển thị màn hình ở trạng thái bình thường; nhận diện tức thì 4 bậc Sĩ khí (`HIGH/NORMAL/LOW/CHAOS`) và ô bãi cọc `StakedWater`. | Kiểm tra bố cục trên cả tỷ lệ `16:9` (Web/PC) và `19.5:9` – `20:9` (Android) qua ảnh chụp màn hình thực tế. |
@@ -4240,7 +4095,7 @@ Các tựa game tham chiếu dưới đây cung cấp bài học về cấu trú
 Trước khi đề xuất đưa bất kỳ cơ chế mới nào từ các game benchmark vào backlog sản xuất, người thiết kế bắt buộc trả lời đủ 4 câu hỏi:
 1. **Quyết định:** Tính năng này tạo ra sự đánh đổi chiến thuật mới nào cho người chơi trong lượt đi?
 2. **Bản sắc:** Tính năng này làm nổi bật đặc trưng quân sự / địa hình Việt Nam ở thời kỳ nào?
-3. **Độ rõ UX:** Người chơi nhận biết nó trên bản đồ và trong Combat Preview chỉ trong `<= 2 chạm` bằng cách nào?
+3. **Độ rõ UX:** Người chơi nhận biết nó trên bản đồ (`TileMapLayer` / `UnitView`) và thông số đạo quân trên `UnitInspector` như thế nào?
 4. **Kiểm chứng:** Tính năng này có thể kiểm thử tự động bằng headless test và đánh giá qua playtest trong vòng 15 phút hay không?
 
 > *Nếu không trả lời thuyết phục được cả 4 câu hỏi trên, tính năng đó bắt buộc phải hoãn khỏi phạm vi sản xuất hiện tại.*
@@ -4318,7 +4173,7 @@ Phụ lục này định nghĩa đầy đủ các thuật ngữ chuyên sâu thu
 | **`ModelingType`** | Trường phân loại cách mô hình hóa một yếu tố trong game, tách biệt hoàn toàn với `Evidence grade`, gồm 4 nhãn: `historical claim` (dữ kiện lịch sử), `gameplay abstraction` (trừu tượng hóa phục vụ lối chơi), `What-if` (nhánh giả định) và `fictional` (hư cấu) (xem [historical_framework.md](gdd/03_content_presentation/historical_framework.md)). |
 | **`Preset Loadout`** | Quy tắc khóa sẵn hồ sơ danh tướng, cấp độ và biên chế quân đội theo đúng kịch bản trong chế độ **Historical Scenario** (`D-02`), đảm bảo người chơi chiến thắng bằng chiến thuật thay vì sức mạnh cày cuốc ngoại trận (xem [game_modes.md](gdd/02_gameplay_systems/game_modes.md)). |
 | **`Retaliation` (Phản kích)** | Đòn đánh trả tự động diễn ra ngay sau đòn tấn công chủ động nếu mục tiêu còn sống, không ở trạng thái `CHAOS`, kẻ tấn công nằm trong tầm `[MinRange, MaxRange]` và hợp lệ `LOS`; mỗi đơn vị chỉ phản kích tối đa **1 lần trong mỗi lượt đối phương** `[D-11]` (xem [battlefield_rules.md](gdd/02_gameplay_systems/battlefield_rules.md)). |
-| **`RoundHalfUp`** | Quy tắc làm tròn số nguyên xác định (`.5` làm tròn lên) áp dụng trong toàn bộ chuỗi tính toán sát thương của `scripts/core/`, loại bỏ sai số dấu phẩy động giữa các nền tảng để bảo đảm **100% Deterministic Replay** (xem [combat_formulas.md](gdd/mechanics/combat_formulas.md)). |
+| **`RoundHalfUp`** | Quy tắc làm tròn số nguyên xác định (`.5` làm tròn lên) áp dụng trong toàn bộ chuỗi tính toán sát thương của `res://sim/`, loại bỏ sai số dấu phẩy động giữa các nền tảng để bảo đảm **100% Deterministic Replay** (xem [combat_formulas.md](gdd/mechanics/combat_formulas.md)). |
 | **`Scenario Director`** | Lớp kịch bản điều phối sự kiện, hội thoại lịch sử, thay đổi địa hình (`MapPhase`) và đợt xuất kích tiếp viện dựa trên hệ thống `Trigger – Condition – Action` (xem [ai_difficulty.md](gdd/03_content_presentation/ai_difficulty.md) & [scenario_scripting_and_events.md](gdd/level_design/scenario_scripting_and_events.md)). |
 | **`SignalDock` (Bến Hiệu Lệnh)** | Cứ điểm chiến lược trọng yếu tại tọa độ `(2, 8)` trong màn Slice-01 Bạch Đằng 1288 (`stage_id: 10101`): Đại Việt phải giữ quyền kiểm soát cứ điểm này để kích hoạt **Thắng ngay lập tức** khi hạ gục Ô Mã Nhi hoặc bảo vệ đến hết lượt 10 (xem [production_scope_mvp.md](gdd/04_production_roadmap/production_scope_mvp.md)). |
 | **`sourceRef`** | Mã định danh nguồn tham chiếu gắn trực tiếp vào từng tuyên bố lịch sử trong `Dossier` và Codex, đối chiếu về danh mục nguồn chính sử & khảo cổ tại [Phụ lục B](gdd/appendices/appendix_b_sources.md) (ví dụ: `[S12]`, `[S15]`, `[S16]`). |
@@ -4360,12 +4215,17 @@ d:\code\VietNamHistoryStrategy\
 │       ├── Gacha/                             # 9 files (.png: luck_draw_*.png, arena_back.png, rogue_stage_back_*.png)
 │       └── Store/                             # 9 files (.webp, .png: purchase_*.webp/.png)
 │
-├── data/                                      # [BIÊN SOẠN MỚI — CHỮ THƯỜNG 100% CHO WEB & ANDROID]
-│   ├── settings/                              # troop_settings.json, stage_settings.json, tactic_settings.json
-│   └── battles/                               # battle_10101.json (Slice-01 Đại Chiến Bạch Đằng 1288), ...
+├── data/                                      # [DỮ LIỆU TĨNH EDITOR-FIRST (.tres + @tool Map Scene)]
+│   ├── defs/                                  # troops/*.tres, generals/*.tres, tactics/*.tres, facilities/*.tres, codex/*.tres
+│   ├── stages/<id>_<slug>/                    # stage_<id>.tres (StageDef) + stage_<id>_map.tscn (TileMapLayer)
+│   └── registry.tres                          # DataRegistry tổng hợp read-only nạp cho res://sim/
 │
-└── shaders/                                   # [VIẾT MỚI THUẦN GODOT 4.7 SHADING LANGUAGE]
-    └── *.gdshader                             # hit_flash.gdshader, water_flow.gdshader, fog_of_war.gdshader, ...
+├── assets_clean/                              # [TÀI NGUYÊN SẠCH ĐƯỢC ĐÓNG GÓI XUẤT BẢN (đăng ký ASSETS.md)]
+│   ├── hexcrown/                              # [CỔNG R3] Kế thừa sạch từ D:\code\HexCrown\assets cho Vertical Slice
+│   ├── audio/, emblems/, icons/, shaders/     # Âm thanh, huy hiệu, shader .gdshader thuần Godot 4.7
+│   └── ...                                    # [CỔNG R4] Hai mẫu so sánh Pixel Art vs 2D Cách điệu EasyTech
+│
+└── shaders/                                   # (Các shader phụ trợ cũ sẽ quy về assets_clean/shaders/)
 ```
 
 > [!IMPORTANT] **Ghi chú Kỹ thuật Trung thực về Khả năng Tương thích với Godot 4.7 (`gl_compatibility`):**
@@ -4453,60 +4313,21 @@ Cấu trúc thực tế trên ổ đĩa gồm đúng **7 thư mục con** (khôn
 
 ---
 
-### 6. MÃ NGUỒN HELPER ĐƯỜNG DẪN CHUẨN (`res://scripts/core/asset_paths.gd`)
+### 6. KHO TÀI NGUYÊN SẠCH KẾ THỪA TỪ `HEXCROWN` (`R3`) & CỔNG MỸ THUẬT `R4` (`DEC-022`)
 
-Mọi hằng số dưới đây tuân thủ nghiêm ngặt quy tắc:
-1. Nhóm `res://Assets/...` **chỉ trỏ tới các tệp thực sự tồn tại trên ổ đĩa** (ví dụ dùng `sfx_knifestrike1.wav` và `sfx_StrikeIron.wav` cho đao kiếm cận chiến).
-2. Nhóm Shader trỏ tới tệp **`.gdshader`** viết mới cho Godot 4.7 tại `res://shaders/`.
-3. Nhóm Dữ liệu cấu hình trỏ tới tệp **JSON chữ thường** tại `res://data/`.
+Để khắc phục ngay tình trạng bản đồ vẽ đa giác bệt và quân lính không hoạt ảnh trước đó, đồng thời không tự ý sáng tác sai định hướng của người dùng, dự án áp dụng lộ trình tài nguyên sạch 2 bước (`DEC-022`):
 
-```gdscript
-# res://scripts/core/asset_paths.gd
-class_name AssetPaths
-extends RefCounted
+1. **Bước `R3` — Kế thừa Kho Asset Sạch từ `D:\code\HexCrown` (`res://assets_clean/hexcrown/`):**
+   - **Địa hình & Công trình:** Bộ `TileSet` lục giác (`Free/`: 4 files gồm `Tileset1.png`, `spritesheet (1).png`, `Elements.png`, `kare01.png`), cùng `Blue Buildings/` (8 files) và `Red Buildings/` (8 files: `Castle.png`, `Barracks.png`, `Archery.png`, `House1..3.png`, `Monastery.png`, `Tower.png`).
+   - **Đơn vị Hoạt ảnh `32×32` (`Outline/` — 12 sprite sheets):** `MiniArcherMan.png`, `MiniArchMage.png`, `MiniCavalierMan.png`, `MiniCrossBowMan.png`, `MiniHalberdMan.png`, `MiniHorseMan.png`, `MiniKingMan.png`, `MiniMage.png`, `MiniPrinceMan.png`, `MiniShieldMan.png`, `MiniSpearMan.png`, `MiniSwordMan.png` (gắn với `AnimationPlayer` và `UnitAnimatorComponent` trong `unit_view.tscn`).
+   - **Shader & Âm thanh sạch:** 7 shader Godot (`.gdshader`: `FactionTint.gdshader`, `border_line_pulse.gdshader`, `formation_aura.gdshader`, `pulse_highlight.gdshader`, `territory_border.gdshader`, `isometric_tile_highlight.gdshader`, `pulse.gdshader`) và 185 tệp SFX `.ogg/.mp3` trong `audio_effects/`.
+   - **Ràng buộc:** Toàn bộ tệp sao chép sang `res://assets_clean/hexcrown/` phải được đăng ký nguồn gốc đầy đủ trong `ASSETS.md` và chuẩn hóa đường dẫn chữ thường `snake_case`.
+2. **Bước `R4` — 🛑 CỔNG DỪNG BẮT BUỘC HỎI NGƯỜI DÙNG (Art Style Shootout):**
+   - **Chưa chốt Pixel Art làm phong cách cuối cùng.** Khi bước vào Cổng `R4` (và trước bất kỳ thao tác thiết kế Chiến thuyền, Bãi cọc Bạch Đằng hay asset mới nào), agent **BẮT BUỘC dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế.
+   - Theo chỉ định của người dùng, dựng **2 mẫu nhỏ trên cùng cảnh Bạch Đằng**: (**Mẫu A:** Pixel Art đồng bộ `HexCrown` kèm Chiến thuyền & Bãi cọc `StakedWater` vs **Mẫu B:** 2D Cách điệu lịch sử kiểu EasyTech thiết kế riêng) để người dùng chọn phong cách chính thức, sau đó thay thế dần toàn bộ asset kế thừa từ `HexCrown`.
 
-# --- AUDIO SFX PLACEHOLDERS (Xác thực tồn tại 100% trong res://Assets/Audio/) ---
-const SFX_SWORD_STRIKE: String   = "res://Assets/Audio/sfx_StrikeIron.wav"
-const SFX_KNIFE_STRIKE: String   = "res://Assets/Audio/sfx_knifestrike1.wav"
-const SFX_SHIELD_BLOCK: String   = "res://Assets/Audio/sfx_block1.wav"
-const SFX_SPEAR_PIERCE: String   = "res://Assets/Audio/sfx_pierce.wav"
-const SFX_CROSSBOW: String       = "res://Assets/Audio/sfx_crossbow.wav"
-const SFX_ARCHERY_SHOOT: String  = "res://Assets/Audio/sfx_archery.wav"
-const SFX_ARROW_HIT: String      = "res://Assets/Audio/sfx_archery4.wav"
-const SFX_NAVAL_AMBIENCE: String = "res://Assets/Audio/sfx_naval.wav"
-const SFX_WATER_WAVE: String     = "res://Assets/Audio/sfx_wave.wav"
-const SFX_SHIP_CRASH: String     = "res://Assets/Audio/sfx_shiphit.wav"
-const SFX_FIRE_BURN: String      = "res://Assets/Audio/sfx_burn.wav"
-const SFX_ELEPHANT_MOVE: String  = "res://Assets/Audio/sfx_elephant_move.wav"
-const SFX_CAVALRY_MOVE: String   = "res://Assets/Audio/sfx_cavalrymove.wav"
-const SFX_CHAOS: String          = "res://Assets/Audio/sfx_chaos.wav"
-const SFX_WAR_HORN: String       = "res://Assets/Audio/sfx_horn.wav"
-const SFX_UI_CLICK: String       = "res://Assets/Audio/sfx_click.wav"
-const SFX_UI_SELECT: String      = "res://Assets/Audio/sfx_select.wav"
-const SFX_VICTORY: String        = "res://Assets/Audio/victory.wav"
-const SFX_DEFEAT: String         = "res://Assets/Audio/defeat.wav"
-
-# --- SFX HỎA KHÍ (ERA-GATED: Chỉ nạp cho màn chơi Thế kỷ XV+, khóa ở Bạch Đằng 1288) ---
-const SFX_ERA15_NAVAL_GUN: String = "res://Assets/Audio/sfx_naval_gun.wav"
-const SFX_ERA15_GUNFIRE: String   = "res://Assets/Audio/sfx_gunfire.wav"
-
-# --- UI PLACEHOLDERS (Xác thực tồn tại trong res://Assets/UI/) ---
-const TEX_BATTLE_RES_ATLAS: String = "res://Assets/UI/BattleAtlas/battleres_hd.png"
-const TEX_BATTLE_GEN_ATLAS: String = "res://Assets/UI/BattleAtlas/battlegen_hd.png"
-const TEX_ANNO_CAPITAL: String     = "res://Assets/UI/Battle/anno_capital.png"
-
-# --- GODOT 4.7 NATIVE SHADERS (.gdshader viết mới, KHÔNG dùng .fsh của Cocos2d-x) ---
-const SHADER_HIT_FLASH: String   = "res://shaders/hit_flash.gdshader"
-const SHADER_WATER_RIVER: String = "res://shaders/water_river.gdshader"
-const SHADER_WATER_FOAM: String  = "res://shaders/water_foam.gdshader"
-const SHADER_DISSOLVE: String    = "res://shaders/unit_dissolve.gdshader"
-
-# --- STATIC GAME DATA SCHEMAS (Chữ thường 100% chuẩn Web & Android) ---
-const DATA_TROOP_SETTINGS: String  = "res://data/settings/troop_settings.json"
-const DATA_STAGE_SETTINGS: String  = "res://data/settings/stage_settings.json"
-const DATA_TACTIC_SETTINGS: String = "res://data/settings/tactic_settings.json"
-const DATA_BATTLE_10101: String    = "res://data/battles/battle_10101.json"
-```
+### Quy ước hằng số đường dẫn thiết kế & dữ liệu (`res://data/` & `res://assets_clean/`):
+- Mọi chỉ số binh chủng, danh tướng, mưu lược, công trình, màn chơi truy xuất qua `DataRegistry` (`res://data/registry.tres`) và `StageDef` (`res://data/stages/<id>_<slug>/stage_<id>.tres`), không trỏ tĩnh vào các tệp `.json` cũ hay `res://Assets/` (thư mục `Assets/` được cô lập hoàn toàn bởi `.gdignore` & `.gitignore`).
 
 ---
 

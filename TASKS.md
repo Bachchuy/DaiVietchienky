@@ -1,48 +1,51 @@
 # Danh Sách Nhiệm Vụ Theo Cổng Duyệt (`TASKS.md`)
 
-Lộ trình nhiệm vụ bám sát đặc tả **GDD v3.4.1** (`docs/gdd/04_production_roadmap/implementation_plan.md` — Checkpoints `CP1–CP5`).  
-**Quy tắc:** Làm tuần tự từng nhiệm vụ trong Cổng hiện tại theo đúng vòng lặp TDD (`Viết test trước -> Viết code -> Chạy godot --headless --script tests/run_tests.gd -> Commit Git`). Khi hoàn tất toàn bộ nhiệm vụ của một Cổng, dừng lại và lập **BÁO CÁO CỔNG**.
+Lộ trình nhiệm vụ tuân thủ **GDD v3.5** (`docs/gdd/04_production_roadmap/implementation_plan.md`) và quy chuẩn **Kiến trúc 4 Tầng Editor-First** (`.agents/skills/project-architecture/SKILL.md`).  
+**Quy tắc:** Làm tuần tự từng nhiệm vụ theo đúng vòng lặp TDD + Kiểm chứng như người chơi (`Viết test trước -> Dựng Scene/Resource/Sim -> Chạy tests/run_tests.gd & E2E assert_button_reachable -> Xem screenshot & kiểm tra View 2D/Inspector trong Editor -> Commit Git`). Khi hoàn tất toàn bộ nhiệm vụ của một Cổng, dừng lại và lập **BÁO CÁO CỔNG**.
 
 ---
 
-## CỔNG 1 (`CP1`): Hệ Tọa Độ Hex, Định Tuyến A*/ZoC/LOS, 16 Lớp Kết Xuất & Camera 60 FPS
+## GIAI ĐOẠN 1 (`CP1–CP5` CŨ): `[LÕI SIM ĐẠT / BÁC BỎ LỚP VỎ UI-DATA-ĐỒ HỌA & COMBAT PREVIEW CŨ]`
 
-- [x] **C1-T1:** Triển khai `HexMath` (`scripts/core/hex_math.gd`) — hệ tọa độ `Pointy-topped Axial (q, r)` ↔ `Offset odd-r (col, row)`, `hex_distance`, 6 hướng `AXIAL_DIRECTIONS` (xét đối diện $180^\circ$), nội suy đường ngắm `hex_linedraw` (`LOS_NUDGE`) và quy đổi pixel `axial_to_world` ↔ `world_to_axial` (`tests/test_hex_math.gd`).
-- [x] **C1-T2:** Triển khai mô hình lõi độc lập `SceneTree` (`scripts/core/unit_combat_state.gd`, `scripts/core/battle_unit.gd`, `scripts/core/battle_map_state.gd`, `scripts/core/static_data_loader.gd`) & cấu hình `data/settings/troop_settings.json` — 9 loại địa hình `TerrainType`, bảng MP nguyên `int` theo nhánh binh chủng, hệ số thủ địa hình, vùng thành `CoC`, kiểm tra bản đồ `12×10` & `30×30` (`tests/test_battle_map_state.gd`).
-- [x] **C1-T3:** Triển khai bộ định tuyến chiến thuật `HexGridNavigator` (`scripts/core/hex_grid_navigator.gd`) — kiểm tra `has_line_of_sight` (cao điểm `HILLS`/`FORT` nhìn xuyên `FOREST`), `is_in_active_enemy_zoc`, `fond_terrain (-1 MP)`, phạt `CoC * 2`, ghìm chân `ZoC`, rút lui đầu lượt `Start-in-ZoC Withdrawal`, `ignore_zoc` / `ignore_coc` / `devoid_zoc`, tính tập ô di chuyển xanh `get_reachable_hexes`, đường đi A* `find_path` và vùng mục tiêu tầm bắn đỏ `get_attackable_hexes` (`tests/test_hex_navigator.gd`).
-- [x] **C1-T4:** Tạo bộ huy hiệu đồ họa sạch 100% (`assets_clean/`, cập nhật `ASSETS.md`) và dựng `BattleMapView` (`scripts/presentation/battle_map_view.gd`) — đủ **16 lớp kết xuất chuẩn** (`GroundLayer z=0` .. `WorldSpaceUnitHudAndTextLayer z=55` + `ScreenHudCanvasLayer layer=10`), batch-draw địa hình, vùng đi xanh (`ReachableAreaLayer`), vùng bắn đỏ (`AttackableAreaLayer`), đường dẫn A* và chuyển đổi tự động `UnitModelLayer` ↔ `StrategicTokenLayer` (`tests/test_battle_map_view.gd`).
-- [x] **C1-T5:** Triển khai `BattleCameraController` (`scripts/presentation/battle_camera_controller.gd`) — nội suy hàm mũ `1.0 - exp(-speed * delta)` độc lập FPS cho vị trí & zoom (`0.5x..1.2x`), kẹp biên bản đồ theo mức zoom, kéo pan chuột/cảm ứng, phát tín hiệu `strategic_lod_changed` tại ngưỡng `< 0.65`, và `Trauma Shake` dùng `_fx_rng` tách biệt hoàn toàn khỏi RNG mô phỏng (`tests/test_battle_camera.gd`).
-- [x] **C1-T6:** Dựng Scene tương tác Sa bàn `CP1` (`scenes/battle/battle_sandbox_cp1.tscn`, `scripts/presentation/battle_sandbox_cp1.gd`, cấu hình `main_scene` trong `project.godot`) — hỗ trợ chọn đơn vị hiện vùng xanh/vùng đỏ/đường đi A* trên bản đồ Bạch Đằng `12×10`, phím chuyển nhanh chế độ Stress-Test `30×30` với `44+` đơn vị hoạt động đồng thời, kiểm chứng headless `<= 16.67 ms/frame` (60 FPS) và trích xuất ảnh chụp màn hình thực tế (`tests/test_cp1_integration_and_perf.gd`).
+> [!WARNING] **Kết luận Kiểm toán & Chơi thử Thực tế (21/11/2026 — `DEC-021..DEC-026`):**
+> - **Phần Đạt (Giữ lại & di chuyển sang `res://sim/`):** Toàn bộ lõi mô phỏng thuần (`HexMath`, `BattleMapState`, `HexGridNavigator`, `CombatResolver`, `MoraleEngine`, `BattleCommands`, `BattleEconomy`, `ScenarioEventManager`, `AIDecisionMatrix`, `BattleSaveManager`) và `82/82` unit tests.
+> - **Phần Bị Bác Bỏ (Đập đi xây lại ở `R1–R5`):**
+>   1. Scene `battle_sandbox_cp1.tscn` chỉ có 1 node, View 2D trong Editor trống hoàn toàn, bản đồ vẽ đa giác bệt bằng `_draw()`.
+>   2. Dữ liệu tĩnh dùng JSON nên không chỉnh được trực tiếp trong Godot Inspector.
+>   3. HUD sinh node bằng code trong `battle_hud_controller.gd` (1.556 dòng), nút `BẮT ĐẦU TRẬN ĐÁNH` và nút modal `Pause` bị cắt khuất bởi kích thước cứng + `clip_contents`, lọt kiểm thử do `_input()` tự hit-test giả.
+>   4. Cơ chế `CombatPreviewBox` + xác nhận đánh 2 bước (`AimingTarget`) bị loại bỏ hoàn toàn theo `DEC-026`, thay bằng `UnitInspector` chỉ hiện thông số đạo quân và thao tác **đánh ngay 1 chạm** như `HexCrown`.
 
----
-
-## CỔNG 2 (`CP2` / Gate `P1`): Vòng Lặp 7 Pha, Command/Undo/Replay, Combat Seeded RNG & Sĩ Khí 4 Bậc
-
-- [x] **C2-T1:** Triển khai `SeededRng` & `CombatResolver` (`80%–100%` + Crit, giáp `100/(100+EffectiveDef)`, `RoundHalfUp`, `TroopStack` 1x–3x, `Flank`, phản kích tối đa 1 lần/lượt, dự báo `[Min, Max]` cho Combat Preview).
-- [x] **C2-T2:** Triển khai `MoraleEngine` 4 bậc Enum (`HIGH`, `NORMAL`, `LOW`, `CHAOS`), bao vây `TrappedLevel`, lan truyền đồng đội tử trận & tự hồi `CHAOS -> LOW`.
-- [x] **C2-T3:** Triển khai `BattleCommand` (`March`, `Attack`, `CastSkill`, `Wait`, `EndTurn`), luật Undo 1 lần/lượt cho `MarchCommand` (đủ 5 điều kiện an toàn) và bộ ghi/phát lại Replay tất định 100%.
-- [x] **C2-T4:** Triển khai `BattleGameController` điều phối Vòng lặp Chiến trường 7 pha & kiểm thử phát lại 50 lượt không lệch 1 điểm HP.
+- [x] *(Lõi Sim Đạt — Vỏ Cũ Bác Bỏ)* **C1-T1..C1-T6 (`CP1`):** Hệ tọa độ Hex, A*/ZoC/LOS (giữ `Sim`; bỏ `BattleMapView._draw()` & `BattleSandboxCP1`).
+- [x] *(Lõi Sim Đạt)* **C2-T1..C2-T4 (`CP2`):** Vòng lặp 7 pha, Command/Undo 5 điều kiện/Replay tất định, Combat `Seeded RNG`, Sĩ khí 4 bậc.
+- [x] *(Lõi Sim Đạt — Dữ liệu JSON chuyển sang `.tres`)* **C3-T1..C3-T3 (`CP3`):** AI 3 pha tuân thủ Fog of War, `ScenarioEventManager` (`MapPhase_TideFall` Vòng 4).
+- [x] *(Vỏ UI/Preview Cũ Bác Bỏ — Giữ Shader/Audio/Save)* **C4-T1..C4-T3 (`CP4`):** Giữ `CombatJuiceHelper`, `BattleAudioManager`, `BattleSaveManager`; bác bỏ `battle_hud_controller.gd` (1.556 dòng) và `CombatPreviewBox`.
+- [x] *(Lõi Sim Đạt — Dữ liệu JSON chuyển sang `.tres`)* **C5-T1..C5-T3 (`CP5`):** Giữ `BattleEconomy`, `AssetIpAuditor`, `export_presets.cfg`; tái cấu trúc UI/Data/Map ở `R1–R5`.
 
 ---
 
-## CỔNG 3 (`CP3`): Bộ Não AI 3 Pha & Kịch Bản Sự Kiện Bạch Đằng 1288 (`stage_id: 10101`)
+## GIAI ĐOẠN 2 — LỘ TRÌNH TÁI KIẾN TRÚC EDITOR-FIRST & NÂNG CẤP ĐỒ HỌA (`R1–R5` / `CP6–CP10`)
 
-- [x] **C3-T1:** Triển khai hệ thống AI 3 pha (`Generators -> Evaluators -> Utility Scoring`) tuân thủ Fog of War, hoàn tất tính toán `< 1.5s/lượt`.
-- [x] **C3-T2:** Triển khai `ScenarioEventManager` hướng dữ liệu (`Trigger – Condition – Action`) và điều kiện Thắng/Thua/3 Sao.
-- [x] **C3-T3:** Biên tập trọn vẹn dữ liệu `data/settings/stage_settings.json` & `data/battles/battle_10101.json` (Bạch Đằng 1288, sự kiện `MapPhase_TideFall` đầu Vòng 4 lộ bãi cọc `StakedWater`, phục binh xuất kích, hạ Ô Mã Nhi khi giữ `SignalDock (2, 8)`), mô phỏng AI-vs-AI 100 trận không treo lượt.
+### CỔNG `R1` (`CP6`): Cấu Trúc 4 Tầng (`sim/`, `data/`, `game/battle/`, `ui/`), FSM 7 Trạng Thái (Đánh Ngay 1 Chạm) & UI `.tscn` + `theme.tres`
+- [ ] **R1-T1:** Di chuyển sạch tầng Lõi (`scripts/core/`, `scripts/ai/`) sang `res://sim/` (`sim/state/`, `sim/commands/`, `sim/rules/`, `sim/ai/`), tạo `BattleSession` (`res://game/battle/battle_session.gd` giữ `BattleGameController` và phát `signal` có kiểu), rút gọn `BattleInputFSM` từ 8 xuống **7 trạng thái** (`IDLE`, `UNIT_SELECTED`, `MOVING`, `POST_MOVE_ACTION`, `ATTACKING`, `SKILL_TARGETING`, `EXECUTE_SKILL` — bỏ `AIMING_TARGET`, chạm 1 lần vào địch trong tầm đỏ là đánh ngay, chạm vào đơn vị ngoài tầm hoặc chuột phải chỉ mở thông số trên `UnitInspector`), giữ `82/82` unit tests xanh.
+- [ ] **R1-T2:** Tạo `res://ui/common/theme.tres` và `res://ui/common/modal_frame.tscn` (`PanelContainer > MarginContainer > VBoxContainer`, nội dung dài trong `ScrollContainer`, hàng nút hành động `ButtonRow` cố định ở chân ngoài vùng cuộn, hỗ trợ `Enter`/`Esc`, cấm kích thước cứng kèm `clip_contents`).
+- [ ] **R1-T3:** Dựng các scene HUD/Modal độc lập trong `res://ui/battle_hud/` (`top_bar.tscn`, `unit_inspector.tscn` chỉ hiện thông số đạo quân không tính trước sát thương, `command_dock.tscn`, `briefing_modal.tscn`, `dialogue_modal.tscn`, `pause_modal.tscn`, `result_summary_modal.tscn`), mỗi script `<= 400` dòng kết nối qua `@export var session: BattleSession`; **xóa bỏ hoàn toàn** `CombatPreviewBox`, `battle_hud_controller.gd` (1.556 dòng) và hàm `_input()` tự hit-test nút.
+- [ ] **R1-T4:** Triển khai bộ kiểm thử `assert_button_reachable()` (kiểm tra nút nằm trọn trong mọi tổ tiên `clip_contents` và viewport, click qua `Viewport.push_input` thật) cùng kiểm thử 1-tap attack & `UnitInspector`; chụp ảnh kiểm chứng mọi modal ở `1280×720` (`16:9`) và `1560×720` (`19.5:9`) và mở kiểm tra từng ảnh.
 
----
+### CỔNG `R2` (`CP7`): Chuyển Đổi Dữ Liệu Tĩnh Sang Custom `Resource` (`.tres`) & Biên Tập Trong Inspector
+- [ ] **R2-T1:** Định nghĩa các lớp `Resource` có `@export` đầy đủ (`TroopDef`, `GeneralDef`, `TacticDef`, `FacilityDef`, `CodexEntryDef`, `DataRegistry`) trong `res://data/defs/`.
+- [ ] **R2-T2:** Định nghĩa `StageDef` và các Sub-Resource (`ScenarioEventDef`, `DialogueLineDef`, `VictoryConditionDef`, `DefeatConditionDef`, `StarConditionDef`, `UnitPlacementDef`, `NamedAreaDef`) chỉnh được hoàn toàn trong Godot Inspector.
+- [ ] **R2-T3:** Viết công cụ chuyển đổi một lần & sinh toàn bộ tệp `.tres` trong `res://data/defs/`, `res://data/stages/10101_bach_dang/stage_10101.tres` và `res://data/registry.tres`; cập nhật tầng `sim/` đọc trực tiếp từ `Resource` (`DataRegistry` & `StageDef`), chạy unit test đối chiếu 100% thông số với JSON cũ rồi loại bỏ `res://data/settings/*.json`.
 
-## CỔNG 4 (`CP4` / Gate `P2`): Giao Diện Chiến Trường Map-First, Combat Preview 2 Bước & Polish Va Chạm
+### CỔNG `R3` (`CP8`): Bản Đồ `TileMapLayer`, `UnitView.tscn` Ghép Component & Kế Thừa Bộ Asset Sạch Từ `HexCrown` Cho Màn `10101` Bạch Đằng
+- [ ] **R3-T1:** Tích hợp bộ asset sạch từ `D:\code\HexCrown\assets` (`TileSet` lục giác, công trình Đỏ/Xanh, 12 sprite sheet lính `32×32`, shader `FactionTint` / `pulse_highlight` / `territory_border`, bộ SFX `.ogg/.mp3`) vào `res://assets_clean/hexcrown/` và đăng ký đầy đủ trong `ASSETS.md`.
+- [ ] **R3-T2:** Dựng `res://game/battle/units/unit_view.tscn` theo kiến trúc Component của `HexCrown` (`Sprite2D` + `AnimationPlayer` + `UnitAnimatorComponent` + `HealthBarComponent` + `StatusBadgeComponent` + `FactionTint.gdshader`, mỗi script `<= 400` dòng).
+- [ ] **R3-T3:** Dựng `res://game/battle/map/battle_map.tscn` và `res://data/stages/10101_bach_dang/stage_10101_map.tscn` dùng `TileMapLayer` + script `@tool` đồng bộ hai chiều với `stage_10101.tres` (vẽ địa hình trực tiếp trên `TileMapLayer` và kéo-thả điểm đặt quân trong View 2D của Editor).
+- [ ] **R3-T4:** Dựng `res://game/battle/battle.tscn` ghép `BattleSession`, `Camera2D`, `BattleMap`, `BattleHud`; xóa bỏ `battle_map_view.gd` (880 dòng) và `battle_sandbox_cp1.gd` (806 dòng); mở Editor kiểm tra View 2D + Inspector có nội dung và chơi thông suốt màn `10101` từ `main_menu.tscn` ở 60 FPS.
 
-- [x] **C4-T1:** Triển khai `BattleInputFSM` 8 trạng thái khép kín (gồm `PostMoveAction` & xác nhận đòn đánh 2 bước).
-- [x] **C4-T2:** Hoàn thiện HUD Map-First (`>= 80%` diện tích bản đồ), `CombatPreviewBox`, Top Bar (`enable_economy = false`), Briefing, Hội thoại kịch bản & màn Tổng kết 3 Sao.
-- [x] **C4-T3:** Tích hợp Game Feel / Juice sạch 100% (shader `hit_flash.gdshader`, `water_flow.gdshader`, Hit-stop, `CPUParticles2D`, âm thanh tổng hợp sạch khai báo trong `ASSETS.md`) & Save/Load phiên trận đánh 2 tầng.
+### CỔNG `R4` (`CP9` — 🛑 CỔNG DỪNG BẮT BUỘC HỎI NGƯỜI DÙNG): So Sánh 2 Mẫu Mỹ Thuật (`Pixel Art` vs `2D Cách Điệu EasyTech`) & Thiết Kế Asset Chiến Thuyền / Bãi Cọc Bạch Đằng
+- [ ] **R4-T1 (🛑 DỪNG HỎI NGƯỜI DÙNG):** Dừng lại hoàn toàn trước khi tạo/vẽ bất kỳ asset mới nào; báo cáo người dùng để người dùng lên phương án và chỉ định công cụ thiết kế.
+- [ ] **R4-T2:** Theo phương án người dùng chọn, dựng **2 mẫu nhỏ trên cùng cảnh Bạch Đằng** (**Mẫu A: Pixel Art** đồng bộ `HexCrown` kèm Chiến thuyền & Bãi cọc `StakedWater` vs **Mẫu B: 2D Cách điệu lịch sử kiểu EasyTech** thiết kế riêng) để người dùng đối chiếu trực quan và chốt phong cách đồ họa chính thức (tiến tới thay thế dần asset của `HexCrown`).
 
----
-
-## CỔNG 5 (`CP5` / Gates `P3–P5`): Kinh Tế Chiến Trường, Gói Chiến Dịch Thời Trần & Tối Ưu Web/Android
-
-- [x] **C5-T1:** Triển khai module Kinh tế chiến trường (`Coin`, `Food`, `Tech`, `Mana`, `MealFood`, `Starvation`) khi `enable_economy = true`.
-- [x] **C5-T2:** Hoàn thiện Gói Chiến dịch Thời Trần, Tutorial ngữ cảnh, Codex lịch sử & rà soát Asset IP Gate sạch 100%.
-- [x] **C5-T3:** Cấu hình xuất bản Web (HTML5/Wasm) & Android, kiểm thử hiệu năng 60 FPS và hồi quy toàn diện.
+### CỔNG `R5` (`CP10`): Nhân Rộng Chuẩn Editor-First & Phong Cách Đồ Họa Đã Chốt Sang 5 Màn Thời Trần Còn Lại (`10102–10106`)
+- [ ] **R5-T1:** Dựng `stage_<id>_map.tscn` (`TileMapLayer`) và `stage_<id>.tres` (`StageDef`) chỉnh được trong Editor cho 5 màn `10102` (Bình Than), `10103` (Hàm Tử), `10104` (Chương Dương), `10105` (Vân Đồn — có kinh tế), `10106` (Nội Bàng).
+- [ ] **R5-T2:** Nâng cấp `main_menu.tscn` & `codex_panel.tscn` theo `ui/common/theme.tres` mới, chạy toàn bộ Unit + E2E (`assert_button_reachable`) + kiểm tra View 2D/Inspector + chạy F5 luồng mở đầu, và kiểm thử tối ưu xuất bản Web/Android 60 FPS.

@@ -10,9 +10,13 @@
 
 ---
 
-## 13.1. Art Direction (Định hướng mỹ thuật)
+## 13.1. Art Direction (Định hướng mỹ thuật & Lộ trình Đồ họa `DEC-022`)
 
-- **Phong cách:** 2D Stylized Historical Map (Bản đồ quân sự cổ cách điệu hóa), tối ưu hiển thị sắc nét trên renderer **Godot 4.7 `gl_compatibility`** (Web & Android).
+- **Giai đoạn Vertical Slice kỹ thuật (`R3`):** Tạm thời kế thừa bộ `TileSet` lục giác, công trình Đỏ/Xanh, 12 sprite sheet đơn vị `32×32` có hoạt ảnh, shader (`FactionTint`, `pulse_highlight`, `territory_border`) và bộ SFX sạch từ `HexCrown` vào `res://assets_clean/hexcrown/` để đảm bảo bản đồ `TileMapLayer` và `unit_view.tscn` vận hành mượt ở **60 FPS** trên renderer **Godot 4.7 `gl_compatibility`** (Web & Android).
+- **Cổng So sánh Mỹ thuật (`R4` — Chưa khóa cứng phong cách cuối cùng):** Trước khi sản xuất hàng loạt asset riêng, bắt buộc dựng **2 mẫu nhỏ trên cùng cảnh Bạch Đằng** để người dùng đối chiếu trực quan và chốt phong cách chính thức, tiến tới thay thế dần asset kế thừa từ `HexCrown`:
+  1. **Mẫu A — Pixel Art:** Đồng bộ phong cách `HexCrown`, thiết kế bổ sung Sprite Chiến thuyền và Bãi cọc Bạch Đằng (`StakedWater`).
+  2. **Mẫu B — 2D Cách điệu chiến thuật kiểu EasyTech (2D Stylized Historical Map):** Bản đồ quân sự cổ cách điệu hóa, đường nét rõ sắc và trang phục lịch sử Việt Nam tự thiết kế.
+- **Quy tắc cứng quy trình tạo Asset (`DEC-022`):** Khi đến bất kỳ bước thiết kế hoặc tạo asset mới nào, **bắt buộc dừng lại hỏi người dùng** để người dùng lên phương án và chọn công cụ thiết kế; tuyệt đối không tự ý vẽ hay sinh asset.
 - **Yêu cầu hiển thị:** Bản đồ dễ đọc địa hình, silhouette binh chủng tách biệt rõ ràng ở cả tầm nhìn gần (`UnitModelLayer`) lẫn khi thu nhỏ sang huy hiệu quân sự (`StrategicTokenLayer` ở `zoom < 0.65`), màu sắc phân phe sắc nét và không lấn át thông tin chiến thuật.
 - **Chân dung tướng:** Là tranh minh họa tái dựng nghệ thuật theo tư liệu trang phục thời đại; khi không có di ảnh lịch sử đương thời xác thực, tuyệt đối không gắn nhãn như chân dung lịch sử nguyên bản.
 - **Tính đồng bộ & Quản trị Placeholder:** Map tiles, icon, chân dung, VFX và thanh trạng thái đơn vị tuân thủ chung hệ thống tỷ lệ và độ tương phản. Mọi tài nguyên placeholder dùng thử nghiệm nội bộ phải được kiểm kê minh bạch và thay thế 100% trước bản phát hành chính thức theo lộ trình tại [ASSET_CATALOG.md](../../assets/ASSET_CATALOG.md).

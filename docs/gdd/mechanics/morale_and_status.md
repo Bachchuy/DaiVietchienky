@@ -55,7 +55,7 @@ Toàn bộ trò chơi sử dụng **4 bậc Enum rời rạc** thay cho điểm 
 
 ## 3. Hệ thống 7 Thuộc tính Trạng thái & Khống chế (Status & CC Properties)
 
-Toàn bộ cờ trạng thái sử dụng tên biến chuẩn GDScript/JSON (`snake_case`):
+Toàn bộ cờ trạng thái sử dụng tên biến chuẩn GDScript / `Resource` (`snake_case`):
 
 ```mermaid
 graph TD

@@ -33,17 +33,18 @@ Camera ưu tiên trải nghiệm **map-first**, vận hành mượt ở **60 FPS
 
 ## 11.3. Battle UI và phản hồi
 
-Giao diện chiến trường kế thừa bố cục `form_battle_game` và tinh giản theo phạm vi từng màn chơi:
-- **Top Status Bar (Thanh Trạng thái Động):**
+Giao diện chiến trường xây dựng hoàn toàn bằng các **Scene `.tscn` độc lập + `res://ui/common/theme.tres`** (không sinh UI bằng code cứng, mọi Modal đặt nút hành động chính cố định ở chân ngoài `ScrollContainer` theo `DEC-024`) và tinh giản theo phạm vi từng màn chơi:
+- **Top Status Bar (`top_bar.tscn`):**
   - Luôn hiển thị: Nút Tạm dừng (`[PAUSE]`), Bộ đếm vòng đấu (ví dụ Slice-01: `VÒNG: 03/10`), Phe đang hành động, Điểm Mưu lược (`Mana`) và Tóm tắt mục tiêu chính.
   - **Ẩn/Hiện Kinh tế theo cờ kịch bản (`enable_economy`):** Ở các màn chiến thuật thuần túy như **Slice-01 Bạch Đằng 1288 (`enable_economy == false`)**, cụm tài nguyên `Coin / Food / Tech` được ẩn hoàn toàn để giữ HUD gọn sạch đúng phạm vi MVP; chỉ tự động hiển thị ở các màn P3+ có bật kinh tế chiến trường (`enable_economy == true`).
-- **Overhead Unit Badges:** Nổi trực tiếp phía trên từng đạo quân (Thanh máu chia nấc theo số cờ gộp `TroopStack`, Icon 4 bậc Sĩ khí, Badges hiệu ứng khống chế CC).
-- **Bottom Command Dock:** Khung Avatar Tướng, thông tin binh chủng/địa hình và cụm nút lệnh chuẩn hóa cho thao tác ngón cái: `[ĐI]`, `[ĐÁNH]`, `[MƯU LƯỢC]`, `[HOÀN TÁC]`, `[ĐỢI]` (chốt vị trí sau khi di chuyển) và `[KẾT THÚC LƯỢT]`.
-- **Combat Preview Box (Xác nhận Đòn đánh 2 Bước):**
-  - *Bước 1 (Nhắm mục tiêu):* Chạm lần 1 vào quân địch trong tầm để mở hộp dự báo sát thương (`Min~Max`, tỷ lệ Chí mạng `%`, dự báo Phản kích, hệ số Khắc chế/Địa hình/Flank) kèm hiệu ứng nhấp nháy phần máu dự kiến mất.
-  - *Bước 2 (Thực thi):* Chạm lần 2 vào mục tiêu hoặc bấm nút `[ĐÁNH]` trên Command Dock để tung đòn — triệt tiêu hoàn toàn lỗi chạm nhầm trên màn hình cảm ứng.
+- **Overhead Unit Badges (`unit_view.tscn`):** Nổi trực tiếp phía trên từng đạo quân (Thanh máu chia nấc theo số cờ gộp `TroopStack`, Icon 4 bậc Sĩ khí, Badges hiệu ứng khống chế CC).
+- **Bottom Command Dock (`command_dock.tscn`):** Khung Avatar Tướng, thông tin binh chủng/địa hình và cụm nút lệnh chuẩn hóa cho thao tác ngón cái: `[MƯU LƯỢC]`, `[HOÀN TÁC]`, `[ĐỢI]` (chốt vị trí sau khi di chuyển) và `[KẾT THÚC LƯỢT]`.
+- **`UnitInspector` & Đánh Ngay 1 Chạm (`DEC-026` — Bỏ Triết Lý Biết Trước):**
+  - **Không có hộp dự báo sát thương (`CombatPreviewBox`):** Trò chơi không tính hộ trước dải sát thương `[Min, Max]` hay sát thương phản kích trước khi ra đòn.
+  - Khi chưa chọn quân ta (hoặc click chuột phải / chạm vào đơn vị địch ngoài vùng tấn công Đỏ), bảng **`UnitInspector` (`unit_inspector.tscn`)** chỉ hiển thị **thông số thô của đạo quân đó** (HP, Công, Thủ, Tầm đi/Tầm đánh, Sĩ khí, Địa hình) để người chơi tự đối chiếu và phán đoán chiến thuật.
+  - Khi đã chọn quân ta và ô địch sáng Đỏ trong tầm đánh, **chạm/click 1 lần vào địch là ra đòn tấn công ngay lập tức** như `HexCrown`; kết quả sát thương thực tế được hệ thống tính toán và gieo ngẫu nhiên (`Seeded RNG`) ngay lúc va chạm.
 - Sát thương nảy số động trên đầu quân (`WorldSpaceUnitHudAndTextLayer` — Floating Combat Text).
-- Kiến trúc **16 lớp kết xuất phân tầng** (bao gồm `MapEffectLayer`, `StrategicTokenLayer`, `FogOfWarLayer` và `ScreenHudCanvasLayer`) cùng luồng **Input FSM 8 trạng thái** (`Idle -> UnitSelected -> Moving -> PostMoveAction -> ...`): xem [battle_ui_and_rendering.md](../ui_ux/battle_ui_and_rendering.md).
+- Kiến trúc **16 lớp kết xuất phân tầng** (`TileMapLayer` + `unit_view.tscn` + `ScreenHudCanvasLayer`) cùng luồng **Input FSM 7 trạng thái** (`Idle -> UnitSelected -> Moving -> PostMoveAction -> Attacking / SkillTargeting`, bỏ `AimingTarget`): xem [battle_ui_and_rendering.md](../ui_ux/battle_ui_and_rendering.md).
 
 ---
 
