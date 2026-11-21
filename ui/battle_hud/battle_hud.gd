@@ -19,7 +19,7 @@ var vfx_quality_index: int = 2
 
 var _sandbox: Node = null
 var _controller: BattleGameController = null
-var _map_view: BattleMapView = null
+var _map_view: BattleMap = null
 var _camera: BattleCameraController = null
 var _input_fsm: BattleInputFSM = null
 var _combat_log_entries: PackedStringArray = PackedStringArray()
@@ -46,7 +46,7 @@ func _ready() -> void:
 	_fit_all_modals(_get_current_viewport_size())
 
 
-func setup(sandbox: Node, p_session: Variant, map_view: BattleMapView, camera: BattleCameraController, input_fsm: BattleInputFSM) -> void:
+func setup(sandbox: Node, p_session: Variant, map_view: BattleMap, camera: BattleCameraController, input_fsm: BattleInputFSM) -> void:
 	_sandbox = sandbox
 	if p_session is BattleSession:
 		session = p_session as BattleSession
@@ -283,10 +283,10 @@ func _connect_child_signals() -> void:
 	if _command_dock != null:
 		_command_dock.move_pressed.connect(func() -> void: _command_dock.show_move_hint(_input_fsm))
 		_command_dock.attack_pressed.connect(func() -> void: _command_dock.execute_attack_in_range(_controller, _input_fsm))
-		_command_dock.skill_pressed.connect(func() -> void: HudSandboxBridge.trigger_method(_sandbox, "try_enter_skill_targeting"))
-		_command_dock.undo_pressed.connect(func() -> void: HudSandboxBridge.trigger_method(_sandbox, "try_undo_march"))
-		_command_dock.wait_pressed.connect(func() -> void: HudSandboxBridge.trigger_method(_sandbox, "try_wait_selected"))
-		_command_dock.end_turn_pressed.connect(func() -> void: HudSandboxBridge.trigger_method(_sandbox, "end_active_faction_turn"))
+		_command_dock.skill_pressed.connect(func() -> void: _trigger_battle_method("try_enter_skill_targeting"))
+		_command_dock.undo_pressed.connect(func() -> void: _trigger_battle_method("try_undo_march"))
+		_command_dock.wait_pressed.connect(func() -> void: _trigger_battle_method("try_wait_selected"))
+		_command_dock.end_turn_pressed.connect(func() -> void: _trigger_battle_method("end_active_faction_turn"))
 	if _briefing_modal != null:
 		_briefing_modal.start_pressed.connect(dismiss_briefing)
 		_briefing_modal.skip_pressed.connect(skip_intro)
@@ -299,7 +299,7 @@ func _connect_child_signals() -> void:
 		_pause_modal.restart_requested.connect(_on_restart_requested)
 		_pause_modal.save_and_exit_requested.connect(_on_save_and_exit_requested)
 		_pause_modal.accessibility_changed.connect(_on_accessibility_changed)
-		_pause_modal.bus_volume_changed.connect(func(bus: String, val: float) -> void: HudSandboxBridge.apply_bus_volume(_sandbox, bus, val))
+		_pause_modal.bus_volume_changed.connect(_on_bus_volume_changed)
 	if _summary_modal != null:
 		_summary_modal.retry_requested.connect(_on_restart_requested)
 		_summary_modal.replay_requested.connect(_on_replay_requested)
@@ -307,6 +307,18 @@ func _connect_child_signals() -> void:
 
 func _get_current_viewport_size() -> Vector2:
 	return get_viewport().get_visible_rect().size if get_viewport() != null else Vector2(1280.0, 720.0)
+
+
+func _trigger_battle_method(method_name: String) -> void:
+	if _sandbox != null and _sandbox.has_method(method_name):
+		_sandbox.call(method_name)
+
+
+func _on_bus_volume_changed(bus_name: String, linear_val: float) -> void:
+	if _sandbox != null and _sandbox.has_method("get_audio_manager"):
+		var am: Variant = _sandbox.call("get_audio_manager")
+		if am is Object and (am as Object).has_method("set_bus_linear_volume"):
+			(am as Object).call("set_bus_linear_volume", bus_name, linear_val)
 
 
 func _on_fsm_unit_focused(unit: BattleUnit) -> void:
@@ -320,18 +332,18 @@ func _on_fsm_state_changed(_old_state: int, _new_state: int) -> void:
 func _on_restart_requested() -> void:
 	dismiss_all_modals()
 	retry_requested.emit()
-	HudSandboxBridge.trigger_method(_sandbox, "load_bach_dang_preview_12x10")
+	_trigger_battle_method("load_bach_dang_preview_12x10")
 
 
 func _on_replay_requested() -> void:
 	if _summary_modal != null:
 		_summary_modal.visible = false
 	replay_requested.emit()
-	HudSandboxBridge.trigger_method(_sandbox, "verify_deterministic_replay_live")
+	_trigger_battle_method("verify_deterministic_replay_live")
 
 
 func _on_save_and_exit_requested() -> void:
-	HudSandboxBridge.trigger_method(_sandbox, "save_session_and_profile")
+	_trigger_battle_method("save_session_and_profile")
 	save_and_exit_requested.emit()
 	close_pause_modal()
 
@@ -339,12 +351,24 @@ func _on_save_and_exit_requested() -> void:
 func _on_accessibility_changed(rf: bool, vfx_q: int, shake_s: float) -> void:
 	reduce_flashing = rf
 	vfx_quality_index = vfx_q
-	HudSandboxBridge.apply_accessibility(_sandbox, _camera, reduce_flashing, vfx_quality_index, shake_s)
+	if _camera != null:
+		_camera.shake_user_scale = shake_s
+	if _sandbox != null and _sandbox.has_method("get_juice_helper"):
+		var jh: Variant = _sandbox.call("get_juice_helper")
+		if jh is Object:
+			(jh as Object).set("reduce_flashing", reduce_flashing)
+			if (jh as Object).has_method("set_vfx_quality"):
+				(jh as Object).call("set_vfx_quality", vfx_quality_index)
 	accessibility_changed.emit(reduce_flashing, vfx_quality_index, shake_s)
 
 
 func _on_event_camera_focus_requested(target_hex: Vector2i, _duration: float) -> void:
-	HudSandboxBridge.focus_camera_on_hex(_camera, _map_view, target_hex)
+	if _camera == null or _map_view == null:
+		return
+	var was_locked: bool = _camera.camera_locked
+	_camera.camera_locked = false
+	_camera.pan_to_world_pos(_map_view.axial_to_world(target_hex), true)
+	_camera.camera_locked = was_locked
 
 
 func _on_controller_round_started(round_num: int) -> void:

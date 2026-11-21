@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/battle/battle.gd" id="1_battle"]
+[ext_resource type="Script" path="res://game/battle/battle_session.gd" id="2_session"]
+[ext_resource type="Resource" path="res://data/registry.tres" id="3_registry"]
+[ext_resource type="Resource" path="res://data/stages/10101_bach_dang/stage_10101.tres" id="4_stage_10101"]
+[ext_resource type="PackedScene" path="res://game/battle/map/battle_map.tscn" id="5_battle_map"]
+[ext_resource type="Script" path="res://scripts/presentation/battle_camera_controller.gd" id="6_camera"]
+[ext_resource type="Script" path="res://game/battle/battle_input_fsm.gd" id="7_fsm"]
+[ext_resource type="Script" path="res://scripts/presentation/combat_juice_helper.gd" id="8_juice"]
+[ext_resource type="Script" path="res://scripts/presentation/battle_audio_manager.gd" id="9_audio"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/battle_hud.tscn" id="10_hud"]
+
+[node name="Battle" type="Node2D" node_paths=PackedStringArray("session", "battle_map", "camera", "input_fsm", "juice_helper", "audio_manager", "hud_canvas_layer", "hud")]
+script = ExtResource("1_battle")
+session = NodePath("BattleSession")
+battle_map = NodePath("BattleMap")
+camera = NodePath("BattleCamera2D")
+input_fsm = NodePath("BattleInputFSM")
+juice_helper = NodePath("CombatJuiceHelper")
+audio_manager = NodePath("BattleAudioManager")
+hud_canvas_layer = NodePath("ScreenHudCanvasLayer")
+hud = NodePath("ScreenHudCanvasLayer/BattleHud")
+
+[node name="BattleSession" type="Node" parent="."]
+script = ExtResource("2_session")
+registry = ExtResource("3_registry")
+stage_def = ExtResource("4_stage_10101")
+
+[node name="BattleMap" parent="." instance=ExtResource("5_battle_map")]
+
+[node name="BattleCamera2D" type="Camera2D" parent="."]
+script = ExtResource("6_camera")
+
+[node name="BattleInputFSM" type="Node" parent="." node_paths=PackedStringArray("session")]
+script = ExtResource("7_fsm")
+session = NodePath("../BattleSession")
+
+[node name="CombatJuiceHelper" type="Node" parent="."]
+script = ExtResource("8_juice")
+
+[node name="BattleAudioManager" type="Node" parent="."]
+script = ExtResource("9_audio")
+
+[node name="ScreenHudCanvasLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="BattleHud" parent="ScreenHudCanvasLayer" node_paths=PackedStringArray("session") instance=ExtResource("10_hud")]
+session = NodePath("../../BattleSession")

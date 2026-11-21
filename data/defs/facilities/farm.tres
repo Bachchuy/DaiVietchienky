@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FacilityDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/facility_def.gd" id="1_0ii1u"]
+
+[resource]
+script = ExtResource("1_0ii1u")
+facility_id = "Farm"
+display_name = "Ruộng Quân Điền"
+food_yield_per_level = Array[int]([80, 120, 160])
+upgrade_coin_cost = Array[int]([120, 240])
+upgrade_tech_cost = Array[int]([30, 60])

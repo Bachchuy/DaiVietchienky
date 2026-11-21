@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
+const SANDBOX_SCENE_PATH: String = "res://game/battle/battle.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu.tscn"
 const CODEX_SCENE_PATH: String = "res://scenes/ui/codex_panel.tscn"
 const CAMPAIGN_CTRL_PATH: String = "res://scripts/presentation/campaign_menu_controller.gd"
@@ -20,10 +20,14 @@ func _clear_saves() -> void:
 
 
 func test_tran_campaign_six_stages_troops_generals_and_van_don_economy_load() -> void:
-	var stages: Array = StaticLoaderScript.load_json_array("res://data/settings/stage_settings.json")
-	var troops: Array = StaticLoaderScript.load_json_array("res://data/settings/troop_settings.json")
-	var generals: Array = StaticLoaderScript.load_json_array("res://data/settings/general_settings.json")
-	var facilities: Array = StaticLoaderScript.load_json_array("res://data/settings/facility_settings.json")
+	var reg: DataRegistry = StaticLoaderScript.load_registry()
+	assert_not_null(reg, "DataRegistry resource loads cleanly")
+	if reg == null:
+		return
+	var stages: Array[StageDef] = reg.stages
+	var troops: Array[TroopDef] = reg.troops
+	var generals: Array[GeneralDef] = reg.generals
+	var facilities: Array[FacilityDef] = reg.facilities
 
 	assert_eq(stages.size(), 6, "6 Trần Dynasty campaign stages")
 	assert_gte(float(troops.size()), 10.0, "At least 10 troop definitions")
@@ -33,23 +37,21 @@ func test_tran_campaign_six_stages_troops_generals_and_van_don_economy_load() ->
 
 	var valid_types: Array[String] = ["historical_claim", "abstraction", "fixture", "what_if"]
 	var has_economy_stage: bool = false
-	for s_var: Variant in stages:
-		var sd: Dictionary = s_var as Dictionary
-		var sid: int = int(sd.get("id", 0))
-		assert_false(str(sd.get("source_ref", "")).is_empty(), "Stage %d has source_ref" % sid)
-		assert_true(valid_types.has(str(sd.get("modeling_type", ""))), "Stage %d has valid modeling_type" % sid)
-		var ctrl: BattleGameController = ScenarioLoaderScript.load_stage(sid, 12880409)
+	for st: StageDef in stages:
+		var sid: int = st.stage_id
+		assert_false(st.source_ref.is_empty(), "Stage %d has source_ref" % sid)
+		assert_true(valid_types.has(st.modeling_type), "Stage %d has valid modeling_type" % sid)
+		var ctrl: BattleGameController = ScenarioLoaderScript.load_stage(sid, 12880409, reg)
 		assert_not_null(ctrl, "Stage %d loads cleanly" % sid)
-		if bool(sd.get("enable_economy", false)):
+		if st.enable_economy:
 			has_economy_stage = true
 			assert_true(ctrl.enable_economy, "Stage %d enables economy on controller" % sid)
 			assert_not_null(ctrl.get("economy"), "Stage %d initializes BattleEconomy" % sid)
 	assert_true(has_economy_stage, "Campaign includes Vân Đồn economy-enabled stage")
 
-	for g_var: Variant in generals:
-		var gd: Dictionary = g_var as Dictionary
-		assert_false(str(gd.get("source_ref", "")).is_empty(), "General has source_ref")
-		assert_true(valid_types.has(str(gd.get("modeling_type", ""))), "General has valid modeling_type")
+	for g: GeneralDef in generals:
+		assert_false(g.source_ref.is_empty(), "General has source_ref")
+		assert_true(valid_types.has(g.modeling_type), "General has valid modeling_type")
 
 
 func test_campaign_menu_controller_sequential_unlock_preset_lock_and_free_replay() -> void:
@@ -113,24 +115,30 @@ func test_contextual_tutorial_overlay_first_occurrence_persistence_and_economy_g
 
 
 func test_historical_codex_era_separation_938_981_1288_and_grade_d_benchmark_rules() -> void:
-	var entries: Array = StaticLoaderScript.load_json_array("res://data/settings/codex_entries.json")
+	var entries: Array[CodexEntryDef] = StaticLoaderScript.load_codex_defs()
 	assert_gt(float(entries.size()), 0.0, "Codex has entries")
 
-	var raw_txt: String = FileAccess.get_file_as_string("res://data/settings/codex_entries.json")
-	assert_true(raw_txt.contains("938") and raw_txt.contains("981") and raw_txt.contains("1288"), "Codex separates 938, 981, and 1288 Bạch Đằng")
-
-	for e_var: Variant in entries:
-		var e: Dictionary = e_var as Dictionary
-		assert_false(str(e.get("source_ref", "")).is_empty(), "Entry has source_ref")
-		assert_false(str(e.get("modeling_type", "")).is_empty(), "Entry has modeling_type")
-		var grade: String = str(e.get("evidence_grade", ""))
-		if str(e.get("category", "")) == "historical":
+	var has_938: bool = false
+	var has_981: bool = false
+	var has_1288: bool = false
+	for c: CodexEntryDef in entries:
+		if c.matches_query("938"):
+			has_938 = true
+		if c.matches_query("981"):
+			has_981 = true
+		if c.matches_query("1288"):
+			has_1288 = true
+		assert_false(c.source_ref.is_empty(), "Entry has source_ref")
+		assert_false(c.modeling_type.is_empty(), "Entry has modeling_type")
+		var grade: String = c.evidence_grade
+		if c.category == "historical":
 			assert_true(["A", "B", "C", "D"].has(grade), "Historical entry has evidence_grade A-D")
 		if grade == "D":
-			assert_ne(str(e.get("modeling_type", "")), "historical_claim", "Grade D never labeled historical_claim")
-		var sref: String = str(e.get("source_ref", ""))
+			assert_ne(c.modeling_type, "historical_claim", "Grade D never labeled historical_claim")
+		var sref: String = c.source_ref
 		if sref.contains("[S1]") or sref.contains("[S2]") or sref.contains("[S8]"):
 			assert_true(grade.is_empty(), "Benchmark refs excluded from historical evidence_grade")
+	assert_true(has_938 and has_981 and has_1288, "Codex separates 938, 981, and 1288 Bạch Đằng")
 
 	var codex_packed: PackedScene = load(CODEX_SCENE_PATH) as PackedScene
 	assert_not_null(codex_packed, "codex_panel.tscn exists")

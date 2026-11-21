@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TacticDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/tactic_def.gd" id="1_yc77w"]
+
+[resource]
+script = ExtResource("1_yc77w")
+tactic_id = 10001
+code = "hich_tuong_si"
+display_name = "Hịch Tướng Sĩ"
+owner_general_id = 1001
+morale_shift = 1
+clears_chaos = true
+source_ref = "Hịch Tướng Sĩ — Trần Quốc Tuấn"

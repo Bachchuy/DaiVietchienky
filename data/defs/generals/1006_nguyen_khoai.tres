@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="GeneralDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/general_def.gd" id="1_88q77"]
+
+[resource]
+script = ExtResource("1_88q77")
+general_id = 1006
+code = "nguyen_khoai"
+display_name = "Liệt Hầu Nguyễn Khoái"
+command_stat = 22
+luck = 74
+infantry_mult = 1.22
+archer_mult = 1.1
+cavalry_mult = 1.1
+naval_mult = 1.15
+aura_damage_deepen = 8
+aura_damage_resist = 8
+unique_skill_id = 10001
+unique_skill_name = "Thánh Dực Tiên Phong"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1288) [S6]"

@@ -1,20 +1,15 @@
-# Handoff Report — `R2-T1` Custom `Resource` Definitions
-- **Status:** `READY_FOR_CODEX_REVIEW` (Gate `R1` committed at `8024d89`; `R2-T1` ready before `R2-T2`)
-
-## 1. Changed Files
-- `data/defs/troop_def.gd` (`264` lines), `general_def.gd` (`131`), `tactic_def.gd` (`61`), `facility_def.gd` (`88`), `codex_entry_def.gd` (`57`), `data_registry.gd` (`207`): pure `Resource` schemas with `@export` groups/enums/ranges, `from_dict()`/`to_*dict()` parity, `DataRegistry` typed lookups & `validate()`, zero `sim/`/`Node` imports.
-- `ASSETS.md`: registered the 6 `res://data/defs/*.gd` files for `AssetIpAuditor`.
-- `tests/test_data_defs.gd` (`250` lines): JSON parity across all 12 troops, 9 generals, 1 tactic, 7 facilities, 7 codex entries; `BattleUnit.from_troop_dict()` equivalence; `DataRegistry` lookups & `validate()`; `.tres` save/reload roundtrip under `user://tmp_test_data_defs/`.
-- `TASKS.md`, `STATE.md`: marked `R2-T1` `[x]` (`5/15`).
-
-## 2. Tests Run & Actual Results
-- `.\godot.cmd --headless --script res://tests/run_tests.gd -- --suite=data_defs,tran_campaign`: `9/9` passed | `0` failed | `879` assertions (`1.53s`).
-- `.\godot.cmd --headless --script res://tests/run_tests.gd`: `98/98` passed | `0` failed | `7853` assertions (`7.67s`).
-
-## 3. Known Limitations
-- `StageDef` & Sub-Resources (`R2-T2`) and `.tres` data generation / JSON removal (`R2-T3`) are scheduled next.
-- `CodexEntryDef.evidence_grade` uses `@export var evidence_grade: String = ""` (Godot 4.7 `@export_enum` rejects empty `""` arg).
-
-## 4. Verification Checklist (Godot Editor)
-1. In FileSystem dock, right-click → **Create New → Resource** and search `TroopDef`, `GeneralDef`, `TacticDef`, `FacilityDef`, `CodexEntryDef`, `DataRegistry`.
-2. Inspect `TroopDef` / `DataRegistry` groups and enums in the Inspector.
+# Handoff: R3-T4 & Gate R3 — Editor-First battle.tscn & Legacy Removal
+- **Status:** `READY_FOR_CODEX_REVIEW`
+- **Changed Files (R3-T4):**
+  - Added: `game/battle/battle.tscn`, `game/battle/battle.gd` (396L), `game/battle/battle_fx_bridge.gd` (194L)
+  - Updated: `hex_overlay_layer.gd`, `battle_map.gd`, `stage_map_tool.gd`, `battle_input_fsm.gd`, `battle_input_rules.gd`, `combat_juice_helper.gd`, `battle_hud.gd`, `campaign_menu_controller.gd`, `project.godot`, 8 suites in `tests/`
+  - Deleted: `battle_map_view.gd`, `battle_sandbox_cp1.gd`, `battle_sandbox_cp1.tscn`, `hud_sandbox_bridge.gd`
+- **Tests Run:**
+  - `.\godot.cmd --headless --script res://tests/run_tests.gd -- --suite=smoke,hud,fsm,map_view` -> `32/32 passed | 0 failed | 939 assertions`
+  - `.\godot.cmd --headless --script res://tests/run_tests.gd` -> `110/110 passed | 0 failed | 7967 assertions`
+  - `.\godot.cmd --headless --script res://tests/run_tests.gd -- --stress` -> `110/110 passed | 0 failed | 8159 assertions` (zero `SCRIPT ERROR`)
+- **Known Limitations:** Next task **`R4-T1`** is the **mandatory user-stop gate** (`DEC-022`); no new graphics/assets may be created until user approves style & tools.
+- **Manual Check (`F5`):**
+  1. Press `F5` -> verify `main_menu.tscn` boots and click **VÀO CHIẾN DỊCH BẠCH ĐẰNG 1288** -> transitions cleanly to `res://game/battle/battle.tscn`.
+  2. Dismiss Briefing, select unit (blue reach + red targets appear on `TileMapLayer`), move/undo/wait/cast skill/end turn `[Space]` -> play through Round 4 TideFall & Victory at 60 FPS.
+  3. Open `res://game/battle/battle.tscn` in Godot Editor -> verify 2D View & Inspector exports are visible without warnings.

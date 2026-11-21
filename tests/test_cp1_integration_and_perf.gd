@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
+const SANDBOX_SCENE_PATH: String = "res://game/battle/battle.tscn"
 const HexMathScript = preload("res://sim/rules/hex_math.gd")
 
 
@@ -21,7 +21,7 @@ func test_cp1_bach_dang_12x10_scene_loads_and_unit_selection_overlays_exact() ->
 
 	var map_state: BattleMapState = sandbox.call("get_map_state") as BattleMapState
 	var nav: HexGridNavigator = sandbox.call("get_navigator") as HexGridNavigator
-	var map_view: BattleMapView = sandbox.call("get_map_view") as BattleMapView
+	var map_view: BattleMap = sandbox.call("get_map_view") as BattleMap
 
 	assert_not_null(map_state)
 	assert_not_null(nav)
@@ -42,7 +42,7 @@ func test_cp1_bach_dang_12x10_scene_loads_and_unit_selection_overlays_exact() ->
 			break
 	assert_not_null(target_unit, "Must have at least one Dai Viet unit")
 
-	var click_pos: Vector2 = HexMathScript.axial_to_world(target_unit.hex_position, map_view.hex_size)
+	var click_pos: Vector2 = map_view.axial_to_world(target_unit.hex_position)
 	sandbox.call("click_world_position", click_pos)
 
 	assert_eq(map_view.get_selected_unit(), target_unit)
@@ -55,7 +55,7 @@ func test_cp1_bach_dang_12x10_scene_loads_and_unit_selection_overlays_exact() ->
 	# Pick a reachable destination and verify A* path preview
 	for r_hex: Vector2i in actual_reach.keys():
 		if r_hex != target_unit.hex_position:
-			sandbox.call("hover_world_position", HexMathScript.axial_to_world(r_hex, map_view.hex_size))
+			sandbox.call("hover_world_position", map_view.axial_to_world(r_hex))
 			assert_gte(float(map_view.get_preview_path().size()), 2.0, "Hovering reachable hex draws A* path")
 			break
 
@@ -67,7 +67,7 @@ func test_cp1_stress_30x30_with_44_units_maintains_60fps_budget_and_strategic_zo
 
 	sandbox.call("load_stress_benchmark_30x30", 44)
 	var map_state: BattleMapState = sandbox.call("get_map_state") as BattleMapState
-	var map_view: BattleMapView = sandbox.call("get_map_view") as BattleMapView
+	var map_view: BattleMap = sandbox.call("get_map_view") as BattleMap
 	var camera: BattleCameraController = sandbox.call("get_camera") as BattleCameraController
 
 	assert_eq(map_state.width, 30)
@@ -76,7 +76,7 @@ func test_cp1_stress_30x30_with_44_units_maintains_60fps_budget_and_strategic_zo
 
 	# Select a central unit so blue/red overlays are active during frame benchmark
 	var units: Array[BattleUnit] = map_state.get_all_units()
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(units[0].hex_position, map_view.hex_size))
+	sandbox.call("click_world_position", map_view.axial_to_world(units[0].hex_position))
 
 	camera.set_zoom_level(BattleCameraController.ZOOM_STRATEGIC, false)
 	var start_usec: int = Time.get_ticks_usec()
@@ -86,7 +86,7 @@ func test_cp1_stress_30x30_with_44_units_maintains_60fps_budget_and_strategic_zo
 		sandbox.call("_process", 1.0 / 60.0)
 		if i == 20 or i == 40:
 			var sample_u: BattleUnit = units[i % units.size()]
-			sandbox.call("click_world_position", HexMathScript.axial_to_world(sample_u.hex_position, map_view.hex_size))
+			sandbox.call("click_world_position", map_view.axial_to_world(sample_u.hex_position))
 	var total_ms: float = float(Time.get_ticks_usec() - start_usec) / 1000.0
 	var avg_frame_ms: float = total_ms / float(frames)
 

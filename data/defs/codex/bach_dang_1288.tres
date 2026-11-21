@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CodexEntryDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/codex_entry_def.gd" id="1_2cufm"]
+
+[resource]
+script = ExtResource("1_2cufm")
+entry_id = "bach_dang_1288"
+title = "Đại Chiến Bạch Đằng Năm 1288 (Hưng Đạo Vương Trần Quốc Tuấn)"
+era = "1288 — Thời Trần (Kháng chiến chống Nguyên – Mông lần 3)"
+evidence_grade = "A"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V & Bãi cọc Yên Giang – Cao Quỳ (1288) [S6][S7]"
+summary = "Ngày 9 tháng 4 năm 1288, Quốc công Tiết chế Trần Quốc Tuấn bày trận cọc gỗ ở các nhánh sông Bạch Đằng – Chanh – Kênh – Rút, dùng thuyền nhẹ khiêu chiến nhử đoàn thuyền Ô Mã Nhi và Phàn Tiếp chờ con nước thủy triều rút, kết hợp bè lửa hỏa công tiêu diệt và bắt sống toàn bộ thủy quân Đại Nguyên."

@@ -1,0 +1,803 @@
+[gd_resource type="Resource" script_class="StageDef" format=3 uid="uid://cqx87wjhyxh00"]
+
+[ext_resource type="Script" uid="uid://bqmt70ga5xuck" path="res://data/defs/named_area_def.gd" id="1_uy382"]
+[ext_resource type="Script" uid="uid://dqch8wskkwnjh" path="res://data/defs/defeat_condition_def.gd" id="2_imgua"]
+[ext_resource type="Script" uid="uid://xj8fxa6ymexy" path="res://data/defs/dialogue_line_def.gd" id="3_d5e4n"]
+[ext_resource type="Script" uid="uid://bjg3cyl7soq0f" path="res://data/defs/stage_facility_def.gd" id="4_3k7k0"]
+[ext_resource type="Script" uid="uid://b1xfcqf8y3mts" path="res://data/defs/stage_faction_def.gd" id="5_gi7je"]
+[ext_resource type="PackedScene" uid="uid://c861qhu8h4b" path="res://data/stages/10101_bach_dang/stage_10101_map.tscn" id="6_imgua"]
+[ext_resource type="Script" uid="uid://cguox4j72c5uo" path="res://data/defs/unit_placement_def.gd" id="6_xbj02"]
+[ext_resource type="Script" uid="uid://y2m303442pul" path="res://data/defs/stage_def.gd" id="7_q4ts3"]
+[ext_resource type="Script" uid="uid://c4xnc7gne544l" path="res://data/defs/scenario_event_def.gd" id="8_3kbe3"]
+[ext_resource type="Script" uid="uid://c4r62npvb2pym" path="res://data/defs/scenario_event_condition_def.gd" id="9_auhmc"]
+[ext_resource type="Script" uid="uid://bsj6o2fdm28hb" path="res://data/defs/scenario_event_action_def.gd" id="10_5cydu"]
+[ext_resource type="Script" uid="uid://b7vf7ebewvkny" path="res://data/defs/star_condition_def.gd" id="11_tu06u"]
+[ext_resource type="Script" uid="uid://c40wxn1rljd5d" path="res://data/defs/terrain_override_def.gd" id="12_iwekg"]
+[ext_resource type="Script" uid="uid://blyjpvh2ccics" path="res://data/defs/victory_condition_def.gd" id="13_khuhs"]
+
+[sub_resource type="Resource" id="Resource_lavwa"]
+script = ExtResource("1_uy382")
+area_id = "signal_dock"
+display_name = "Bến Cọc Bạch Đằng (SignalDock)"
+hexes = Array[Vector2i]([Vector2i(2, 8)])
+initial_owner = 1
+is_objective = true
+
+[sub_resource type="Resource" id="Resource_7ttx0"]
+script = ExtResource("1_uy382")
+area_id = "area_bai_coc"
+display_name = "Bãi Cọc Ngầm Bạch Đằng"
+hexes = Array[Vector2i]([Vector2i(5, 4), Vector2i(6, 4), Vector2i(6, 5), Vector2i(7, 5), Vector2i(5, 5), Vector2i(6, 3)])
+
+[sub_resource type="Resource" id="Resource_k73us"]
+script = ExtResource("2_imgua")
+area_id = "signal_dock"
+
+[sub_resource type="Resource" id="Resource_7876a"]
+script = ExtResource("2_imgua")
+condition_type = "GeneralDefeated"
+target_general_id = 1001
+
+[sub_resource type="Resource" id="Resource_n47of"]
+script = ExtResource("2_imgua")
+condition_type = "AllUnitsEliminated"
+
+[sub_resource type="Resource" id="Resource_r53hq"]
+script = ExtResource("2_imgua")
+condition_type = "MaxRoundsUnfulfilled"
+max_rounds = 10
+
+[sub_resource type="Resource" id="Resource_ae3ki"]
+script = ExtResource("3_d5e4n")
+dialogue_id = "talk_opening_bach_dang"
+speaker = "Trần Quốc Tuấn"
+line = "Nhử thủy binh Ô Mã Nhi tiến sâu qua lòng sông, giữ vững Bến Tín Hiệu chờ con nước rút!"
+
+[sub_resource type="Resource" id="Resource_f1ob1"]
+script = ExtResource("3_d5e4n")
+dialogue_id = "talk_trieu_rut"
+speaker = "Trần Quốc Tuấn"
+line = "Nước triều đã rút! Toàn quân phát hỏa công, thúc kích chặn đường tháo chạy của giặc Nguyên!"
+
+[sub_resource type="Resource" id="Resource_p0yel"]
+script = ExtResource("3_d5e4n")
+dialogue_id = "talk_omnhi_hoang_loan"
+speaker = "Ô Mã Nhi"
+line = "Cọc ngầm vỡ thuyền! Đội hình thủy quân đại loạn rồi!"
+
+[sub_resource type="Resource" id="Resource_tacrm"]
+script = ExtResource("5_gi7je")
+display_name = "Đại Việt"
+is_player = true
+target_generals = Array[int]([9001])
+protected_generals = Array[int]([1001])
+
+[sub_resource type="Resource" id="Resource_21mq3"]
+script = ExtResource("5_gi7je")
+faction_id = 2
+display_name = "Đại Nguyên"
+team_id = 2
+target_generals = Array[int]([1001])
+protected_generals = Array[int]([9001])
+
+[sub_resource type="Resource" id="Resource_0uis0"]
+script = ExtResource("6_xbj02")
+unit_id = 101
+troop_stack = 3
+hex_pos = Vector2i(2, 8)
+initial_morale = "HIGH"
+general_id = 1001
+general_name = "Trần Quốc Tuấn"
+is_commander_in_chief = true
+general_command_stat = 98
+general_luck = 15
+m_command = 1.15
+aura_radius_hex = 2
+aura_damage_deepen = 10
+aura_damage_resist = 10
+grants_dead_mate_immunity = true
+modeling_type = "historical_claim"
+source_ref = "Đại Việt Sử Ký Toàn Thư (1288)"
+
+[sub_resource type="Resource" id="Resource_8754i"]
+script = ExtResource("6_xbj02")
+unit_id = 102
+troop_id = 40201
+troop_stack = 3
+hex_pos = Vector2i(5, 6)
+initial_morale = "HIGH"
+general_id = 1002
+general_name = "Trần Khánh Dư"
+general_command_stat = 90
+general_luck = 12
+m_command = 1.1
+aura_radius_hex = 1
+aura_damage_deepen = 5
+modeling_type = "abstraction"
+source_ref = "Thủy quân tiền tiêu Bạch Đằng"
+
+[sub_resource type="Resource" id="Resource_v084n"]
+script = ExtResource("6_xbj02")
+unit_id = 103
+troop_id = 40102
+troop_stack = 3
+hex_pos = Vector2i(3, 5)
+modeling_type = "abstraction"
+source_ref = "Cung nỏ bờ tây"
+
+[sub_resource type="Resource" id="Resource_rq5rw"]
+script = ExtResource("6_xbj02")
+unit_id = 104
+troop_id = 40104
+troop_stack = 2
+hex_pos = Vector2i(2, 7)
+modeling_type = "abstraction"
+source_ref = "Tượng binh hộ giá bến đò"
+
+[sub_resource type="Resource" id="Resource_mcr4x"]
+script = ExtResource("6_xbj02")
+unit_id = 105
+troop_id = 40202
+troop_stack = 2
+hex_pos = Vector2i(4, 7)
+modeling_type = "historical_claim"
+source_ref = "Chiến thuật hỏa công Bạch Đằng"
+
+[sub_resource type="Resource" id="Resource_juw1e"]
+script = ExtResource("6_xbj02")
+unit_id = 201
+faction_id = 2
+troop_id = 40902
+troop_stack = 3
+hex_pos = Vector2i(6, 1)
+general_id = 9001
+general_name = "Ô Mã Nhi"
+is_commander_in_chief = true
+general_command_stat = 92
+general_luck = 10
+m_command = 1.1
+aura_radius_hex = 2
+aura_damage_deepen = 8
+modeling_type = "historical_claim"
+source_ref = "Nguyên Sử & ĐVSKTT (1288)"
+
+[sub_resource type="Resource" id="Resource_jqvx8"]
+script = ExtResource("6_xbj02")
+unit_id = 202
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(5, 2)
+source_ref = "Chiến thuyền tiền phong hữu"
+
+[sub_resource type="Resource" id="Resource_0gppt"]
+script = ExtResource("6_xbj02")
+unit_id = 203
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(7, 2)
+source_ref = "Chiến thuyền tiền phong tả"
+
+[sub_resource type="Resource" id="Resource_6ubf1"]
+script = ExtResource("6_xbj02")
+unit_id = 204
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(6, 2)
+source_ref = "Chiến thuyền trung quân"
+
+[sub_resource type="Resource" id="Resource_j7oqr"]
+script = ExtResource("6_xbj02")
+unit_id = 205
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(7, 3)
+source_ref = "Thuyền hộ tống"
+
+[sub_resource type="Resource" id="Resource_kg3dw"]
+script = ExtResource("6_xbj02")
+unit_id = 206
+faction_id = 2
+troop_stack = 2
+hex_pos = Vector2i(9, 4)
+source_ref = "Đồn bộ binh bờ đông"
+
+[sub_resource type="Resource" id="Resource_sq4ol"]
+script = ExtResource("6_xbj02")
+unit_id = 207
+faction_id = 2
+troop_id = 40102
+troop_stack = 2
+hex_pos = Vector2i(9, 5)
+source_ref = "Cung thủ bờ đông"
+
+[sub_resource type="Resource" id="Resource_6s8ah"]
+script = ExtResource("9_auhmc")
+
+[sub_resource type="Resource" id="Resource_ep4pq"]
+script = ExtResource("10_5cydu")
+action_type = "CameraFocus"
+target_hex = Vector2i(6, 4)
+
+[sub_resource type="Resource" id="Resource_6bvmk"]
+script = ExtResource("10_5cydu")
+dialogue_id = "talk_opening_bach_dang"
+
+[sub_resource type="Resource" id="Resource_ca1lt"]
+script = ExtResource("8_3kbe3")
+event_id = "evt_10101_opening"
+event_name = "Khai Màn Thủy Chiến Bạch Đằng"
+conditions = Array[ExtResource("9_auhmc")]([SubResource("Resource_6s8ah")])
+results = Array[ExtResource("10_5cydu")]([SubResource("Resource_ep4pq"), SubResource("Resource_6bvmk")])
+
+[sub_resource type="Resource" id="Resource_r354x"]
+script = ExtResource("9_auhmc")
+numeric_value = 4.0
+
+[sub_resource type="Resource" id="Resource_2ro07"]
+script = ExtResource("10_5cydu")
+action_type = "CameraFocus"
+target_hex = Vector2i(6, 4)
+duration = 1.2
+
+[sub_resource type="Resource" id="Resource_jx3ly"]
+script = ExtResource("10_5cydu")
+dialogue_id = "talk_trieu_rut"
+
+[sub_resource type="Resource" id="Resource_3k61t"]
+script = ExtResource("10_5cydu")
+action_type = "AlterTerrain"
+area_id = "area_bai_coc"
+
+[sub_resource type="Resource" id="Resource_2hpha"]
+script = ExtResource("10_5cydu")
+action_type = "ApplyAreaEffect"
+area_id = "area_bai_coc"
+target_faction_id = 2
+march_disabled_turns = 2
+chaos_turns = 2
+
+[sub_resource type="Resource" id="Resource_vo00k"]
+script = ExtResource("6_xbj02")
+unit_id = 106
+troop_id = 40202
+troop_stack = 2
+hex_pos = Vector2i(4, 4)
+display_name_override = "Thuyền Hỏa Công Bờ Tây"
+initial_morale = "HIGH"
+
+[sub_resource type="Resource" id="Resource_k7rnx"]
+script = ExtResource("6_xbj02")
+unit_id = 107
+troop_id = 40103
+troop_stack = 2
+hex_pos = Vector2i(2, 3)
+display_name_override = "Khinh Kỵ Tập Kích"
+initial_morale = "HIGH"
+
+[sub_resource type="Resource" id="Resource_mnim2"]
+script = ExtResource("10_5cydu")
+action_type = "SpawnReinforcements"
+reinforcements = Array[ExtResource("6_xbj02")]([SubResource("Resource_vo00k"), SubResource("Resource_k7rnx")])
+
+[sub_resource type="Resource" id="Resource_kwtd6"]
+script = ExtResource("10_5cydu")
+action_type = "ModifyMorale"
+faction_id = 1
+morale_delta = 1
+
+[sub_resource type="Resource" id="Resource_tkv3j"]
+script = ExtResource("8_3kbe3")
+event_id = "evt_10101_tide_fall"
+event_name = "Nước Rút Lộ Bãi Cọc Bạch Đằng"
+conditions = Array[ExtResource("9_auhmc")]([SubResource("Resource_r354x")])
+results = Array[ExtResource("10_5cydu")]([SubResource("Resource_2ro07"), SubResource("Resource_jx3ly"), SubResource("Resource_3k61t"), SubResource("Resource_2hpha"), SubResource("Resource_mnim2"), SubResource("Resource_kwtd6")])
+
+[sub_resource type="Resource" id="Resource_fxk3j"]
+script = ExtResource("9_auhmc")
+field = "general_alive"
+value_kind = 1
+general_id = 9001
+
+[sub_resource type="Resource" id="Resource_f8ryq"]
+script = ExtResource("9_auhmc")
+field = "unit_hp_ratio"
+op = "<="
+numeric_value = 0.5
+general_id = 9001
+
+[sub_resource type="Resource" id="Resource_ngqxl"]
+script = ExtResource("10_5cydu")
+dialogue_id = "talk_omnhi_hoang_loan"
+
+[sub_resource type="Resource" id="Resource_x6s4k"]
+script = ExtResource("10_5cydu")
+action_type = "ModifyMorale"
+faction_id = 2
+morale_delta = -1
+
+[sub_resource type="Resource" id="Resource_uih6d"]
+script = ExtResource("8_3kbe3")
+event_id = "evt_10101_omnhi_wounded"
+event_name = "Soái Hạm Ô Mã Nhi Trọng Thương"
+trigger_type = "OnAfterCommand"
+conditions = Array[ExtResource("9_auhmc")]([SubResource("Resource_fxk3j"), SubResource("Resource_f8ryq")])
+results = Array[ExtResource("10_5cydu")]([SubResource("Resource_ngqxl"), SubResource("Resource_x6s4k")])
+
+[sub_resource type="Resource" id="Resource_5u4ky"]
+script = ExtResource("11_tu06u")
+description = "Đạt điều kiện chiến thắng"
+
+[sub_resource type="Resource" id="Resource_g7dr6"]
+script = ExtResource("11_tu06u")
+star = 2
+condition_type = "MaxRoundLimit"
+description = "Chiến thắng trong vòng <= 8 lượt"
+
+[sub_resource type="Resource" id="Resource_itx5b"]
+script = ExtResource("11_tu06u")
+star = 3
+condition_type = "CasualtyHpPercentLimit"
+description = "Tổn thất quân Đại Việt <= 20% tổng MaxHP"
+
+[sub_resource type="Resource" id="Resource_rr04c"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 0)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_ueiev"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 0)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_k4pme"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 0)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_24gcd"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 0)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_qon31"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 0)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_5srpj"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 1)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_wyb1y"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 1)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_w8wti"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 1)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_i7bp2"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 1)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_umg1l"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 1)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_utolt"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 2)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_oo8uw"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 2)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_b0dds"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 2)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_6umqe"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 2)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_r25pp"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 2)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_a41wa"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 3)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_t622d"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 3)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_wbi2g"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 3)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_6k8da"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 3)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_dp651"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 3)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_parg6"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 4)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_fpd7i"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 4)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_ul8jd"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 4)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_5hnk0"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 4)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_6vx7n"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 4)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_up8xy"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 5)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_8bpv0"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 5)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_erwhj"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 5)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_e00dg"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 5)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_y4kgk"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 5)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_72kri"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 6)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_idevd"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 6)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_1c72x"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 6)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_rw0qj"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 6)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_7y5bk"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 6)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_dj14j"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 7)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_33s12"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 7)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_m55b8"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 7)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_prtkh"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 7)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_f5xrw"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 7)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_xq6ap"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 8)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_vmigh"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 8)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_pm48a"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 8)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_hppyk"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 8)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_4f3xh"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 8)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_5ib1r"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(4, 9)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_3sjjj"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(5, 9)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_vp26y"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(6, 9)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_tq3rr"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(7, 9)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_qgfa1"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(8, 9)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_wxtyd"]
+script = ExtResource("12_iwekg")
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_ud64d"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(1, 0)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_slg00"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 0)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_33wy3"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(0, 1)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_qa8kc"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(1, 1)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_psjh5"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 1)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_jygwg"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(0, 2)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_n44c0"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(1, 2)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_eo2nb"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 2)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_inu8j"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(0, 3)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_l6f5b"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(1, 3)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_v0slt"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 3)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_w32jv"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(3, 3)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_5qn7i"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(0, 4)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_tytin"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(1, 4)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_wxpnx"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 4)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_tpriy"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(3, 4)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_ufh2v"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 5)
+terrain = 3
+
+[sub_resource type="Resource" id="Resource_v2kmm"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(3, 6)
+terrain = 3
+
+[sub_resource type="Resource" id="Resource_c5hn5"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(2, 8)
+terrain = 7
+
+[sub_resource type="Resource" id="Resource_nvh1o"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(3, 8)
+terrain = 7
+
+[sub_resource type="Resource" id="Resource_ls8e2"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(9, 2)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_rw4j3"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(10, 2)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_0llbm"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(11, 2)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_0ryvl"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(9, 3)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_upxmh"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(10, 3)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_ur8a8"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(11, 3)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_f6tpl"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(9, 4)
+terrain = 6
+fort_owner = 2
+
+[sub_resource type="Resource" id="Resource_4wiu3"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(10, 4)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_7n1l2"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(11, 4)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_y4hef"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(9, 5)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_r3tnr"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(10, 5)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_km7du"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(11, 5)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_r4e4w"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(9, 6)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_7fohg"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(10, 6)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_inrui"]
+script = ExtResource("12_iwekg")
+hex_pos = Vector2i(11, 6)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_73erd"]
+script = ExtResource("13_khuhs")
+target_general_id = 9001
+required_area_id = "signal_dock"
+
+[sub_resource type="Resource" id="Resource_oxwfd"]
+script = ExtResource("13_khuhs")
+condition_type = "HoldAreaAndEnemyCasualtyAtMaxRound"
+required_area_id = "signal_dock"
+at_round = 10
+
+[resource]
+script = ExtResource("7_q4ts3")
+code = "bach_dang_1288"
+stage_name = "Đại Chiến Bạch Đằng 1288"
+source_ref = "Đại Việt Sử Ký Toàn Thư (1288) [S6]"
+map_scene = ExtResource("6_imgua")
+max_general_seats = 3
+preset_general_ids = Array[int]([1001, 1004, 1006])
+factions = Array[ExtResource("5_gi7je")]([SubResource("Resource_tacrm"), SubResource("Resource_21mq3")])
+terrain_overrides = Array[ExtResource("12_iwekg")]([SubResource("Resource_rr04c"), SubResource("Resource_ueiev"), SubResource("Resource_k4pme"), SubResource("Resource_24gcd"), SubResource("Resource_qon31"), SubResource("Resource_5srpj"), SubResource("Resource_wyb1y"), SubResource("Resource_w8wti"), SubResource("Resource_i7bp2"), SubResource("Resource_umg1l"), SubResource("Resource_utolt"), SubResource("Resource_oo8uw"), SubResource("Resource_b0dds"), SubResource("Resource_6umqe"), SubResource("Resource_r25pp"), SubResource("Resource_a41wa"), SubResource("Resource_t622d"), SubResource("Resource_wbi2g"), SubResource("Resource_6k8da"), SubResource("Resource_dp651"), SubResource("Resource_parg6"), SubResource("Resource_fpd7i"), SubResource("Resource_ul8jd"), SubResource("Resource_5hnk0"), SubResource("Resource_6vx7n"), SubResource("Resource_up8xy"), SubResource("Resource_8bpv0"), SubResource("Resource_erwhj"), SubResource("Resource_e00dg"), SubResource("Resource_y4kgk"), SubResource("Resource_72kri"), SubResource("Resource_idevd"), SubResource("Resource_1c72x"), SubResource("Resource_rw0qj"), SubResource("Resource_7y5bk"), SubResource("Resource_dj14j"), SubResource("Resource_33s12"), SubResource("Resource_m55b8"), SubResource("Resource_prtkh"), SubResource("Resource_f5xrw"), SubResource("Resource_xq6ap"), SubResource("Resource_vmigh"), SubResource("Resource_pm48a"), SubResource("Resource_hppyk"), SubResource("Resource_4f3xh"), SubResource("Resource_5ib1r"), SubResource("Resource_3sjjj"), SubResource("Resource_vp26y"), SubResource("Resource_tq3rr"), SubResource("Resource_qgfa1"), SubResource("Resource_wxtyd"), SubResource("Resource_ud64d"), SubResource("Resource_slg00"), SubResource("Resource_33wy3"), SubResource("Resource_qa8kc"), SubResource("Resource_psjh5"), SubResource("Resource_jygwg"), SubResource("Resource_n44c0"), SubResource("Resource_eo2nb"), SubResource("Resource_inu8j"), SubResource("Resource_l6f5b"), SubResource("Resource_v0slt"), SubResource("Resource_w32jv"), SubResource("Resource_5qn7i"), SubResource("Resource_tytin"), SubResource("Resource_wxpnx"), SubResource("Resource_tpriy"), SubResource("Resource_ufh2v"), SubResource("Resource_v2kmm"), SubResource("Resource_c5hn5"), SubResource("Resource_nvh1o"), SubResource("Resource_ls8e2"), SubResource("Resource_rw4j3"), SubResource("Resource_0llbm"), SubResource("Resource_0ryvl"), SubResource("Resource_upxmh"), SubResource("Resource_ur8a8"), SubResource("Resource_f6tpl"), SubResource("Resource_4wiu3"), SubResource("Resource_7n1l2"), SubResource("Resource_y4hef"), SubResource("Resource_r3tnr"), SubResource("Resource_km7du"), SubResource("Resource_r4e4w"), SubResource("Resource_7fohg"), SubResource("Resource_inrui")])
+areas = Array[ExtResource("1_uy382")]([SubResource("Resource_lavwa"), SubResource("Resource_7ttx0")])
+placements = Array[ExtResource("6_xbj02")]([SubResource("Resource_0uis0"), SubResource("Resource_8754i"), SubResource("Resource_v084n"), SubResource("Resource_rq5rw"), SubResource("Resource_mcr4x"), SubResource("Resource_juw1e"), SubResource("Resource_jqvx8"), SubResource("Resource_0gppt"), SubResource("Resource_6ubf1"), SubResource("Resource_j7oqr"), SubResource("Resource_kg3dw"), SubResource("Resource_sq4ol")])
+victory_conditions = Array[ExtResource("13_khuhs")]([SubResource("Resource_73erd"), SubResource("Resource_oxwfd")])
+defeat_conditions = Array[ExtResource("2_imgua")]([SubResource("Resource_k73us"), SubResource("Resource_7876a"), SubResource("Resource_n47of"), SubResource("Resource_r53hq")])
+star_conditions = Array[ExtResource("11_tu06u")]([SubResource("Resource_5u4ky"), SubResource("Resource_g7dr6"), SubResource("Resource_itx5b")])
+scripted_events = Array[ExtResource("8_3kbe3")]([SubResource("Resource_ca1lt"), SubResource("Resource_tkv3j"), SubResource("Resource_uih6d")])
+dialogues = Array[ExtResource("3_d5e4n")]([SubResource("Resource_ae3ki"), SubResource("Resource_f1ob1"), SubResource("Resource_p0yel")])

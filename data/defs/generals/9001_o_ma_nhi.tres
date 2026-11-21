@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="GeneralDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/general_def.gd" id="1_2mkjo"]
+
+[resource]
+script = ExtResource("1_2mkjo")
+general_id = 9001
+code = "o_ma_nhi"
+display_name = "Đô Nguyên Soái Ô Mã Nhi"
+faction_id = 2
+is_commander_in_chief = true
+command_stat = 25
+luck = 65
+m_command = 1.18
+infantry_mult = 1.1
+archer_mult = 1.15
+cavalry_mult = 1.15
+naval_mult = 1.22
+aura_radius_hex = 2
+aura_damage_deepen = 10
+aura_damage_resist = 8
+unique_skill_id = 10001
+unique_skill_name = "Lâu Thuyền Xung Trận"
+source_ref = "Đại Việt Sử Ký Toàn Thư & Nguyên Sử (1288) [S6][S7]"

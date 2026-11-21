@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
+const SANDBOX_SCENE_PATH: String = "res://game/battle/battle.tscn"
 const HUD_CONTROLLER_PATH: String = "res://ui/battle_hud/battle_hud.gd"
 
 const HexMathScript = preload("res://sim/rules/hex_math.gd")
@@ -80,15 +80,14 @@ func test_map_first_layout_keeps_at_least_80_percent_map_across_aspect_ratios() 
 
 	var sandbox: Node2D = _spawn_sandbox()
 	var hud_ctrl: Object = sandbox.call("get_hud_controller") if sandbox.has_method("get_hud_controller") else null
-	assert_not_null(hud_ctrl, "BattleSandboxCP1 must expose get_hud_controller()")
+	assert_not_null(hud_ctrl, "BattleScene must expose get_hud_controller()")
 	if hud_ctrl == null:
 		return
 
 	if hud_ctrl.has_method("dismiss_all_modals"):
 		hud_ctrl.call("dismiss_all_modals")
 
-	var map_view: BattleMapView = sandbox.call("get_map_view")
-	var hud_layer: CanvasLayer = map_view.get_screen_hud_layer()
+	var hud_layer: CanvasLayer = _find_node(sandbox, "ScreenHudCanvasLayer") as CanvasLayer
 
 	for vp: Vector2 in [Vector2(1280, 720), Vector2(1560, 720), Vector2(1600, 720), Vector2(960, 540)]:
 		if hud_ctrl.has_method("apply_viewport_layout"):
@@ -155,7 +154,7 @@ func test_one_tap_attack_executes_without_combat_preview_box() -> void:
 
 	var ctrl: BattleGameController = sandbox.call("get_controller")
 	var map_state: BattleMapState = sandbox.call("get_map_state")
-	var map_view: BattleMapView = sandbox.call("get_map_view")
+	var map_view: BattleMap = sandbox.call("get_map_view")
 	var fsm: BattleInputFSM = sandbox.call("get_input_fsm")
 	var u102: BattleUnit = ctrl.context.get_unit(102)
 	var e202: BattleUnit = ctrl.context.get_unit(202)
@@ -164,11 +163,11 @@ func test_one_tap_attack_executes_without_combat_preview_box() -> void:
 	map_state.move_unit(e202, HexMathScript.odd_r_to_axial(Vector2i(5, 5)))
 	map_view.refresh_units()
 
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(u102.hex_position, map_view.hex_size))
+	sandbox.call("click_world_position", map_view.axial_to_world(u102.hex_position))
 	assert_eq(fsm.get_state(), BattleInputFSM.State.UNIT_SELECTED)
 
 	# 1st tap on hostile in red range attacks immediately without opening CombatPreviewBox
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(e202.hex_position, map_view.hex_size))
+	sandbox.call("click_world_position", map_view.axial_to_world(e202.hex_position))
 	if preview_box != null:
 		assert_false(preview_box.visible, "CombatPreviewBox must remain hidden on 1-tap attack")
 	assert_true(u102.state.has_acted, "1st tap executes attack immediately")
@@ -204,9 +203,9 @@ func test_bottom_command_dock_buttons_and_overhead_hud_layers() -> void:
 	assert_not_null(wait_btn, "WaitButton exists")
 	assert_not_null(end_btn, "EndTurnButton exists")
 
-	var map_view: BattleMapView = sandbox.call("get_map_view")
+	var map_view: BattleMap = sandbox.call("get_map_view")
 	# Select Tran Quoc Tuan (101) at (2,8)
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(HexMathScript.odd_r_to_axial(Vector2i(2, 8)), map_view.hex_size))
+	sandbox.call("click_world_position", map_view.axial_to_world(HexMathScript.odd_r_to_axial(Vector2i(2, 8))))
 	var dock_txt: String = _collect_text(dock)
 	assert_true(dock_txt.contains("Trần Quốc Tuấn"), "Unit card shows general name")
 	assert_true(dock_txt.contains("480/480"), "Unit card shows HP")
@@ -214,7 +213,7 @@ func test_bottom_command_dock_buttons_and_overhead_hud_layers() -> void:
 	assert_true(undo_btn.disabled, "UndoButton disabled before moving")
 
 	# March unit 101 to (3,8) -> POST_MOVE_ACTION -> UndoButton enabled
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(HexMathScript.odd_r_to_axial(Vector2i(3, 8)), map_view.hex_size))
+	sandbox.call("click_world_position", map_view.axial_to_world(HexMathScript.odd_r_to_axial(Vector2i(3, 8))))
 	assert_false(undo_btn.disabled, "UndoButton enabled after safe march")
 	assert_false(wait_btn.disabled, "WaitButton enabled in POST_MOVE_ACTION")
 

@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const BattleSandboxScene = preload("res://scenes/battle/battle_sandbox_cp1.tscn")
+const BattleSandboxScene = preload("res://game/battle/battle.tscn")
 const ScenarioLoader = preload("res://sim/state/scenario_loader.gd")
 const BattleCommands = preload("res://sim/commands/battle_commands.gd")
 const AIDecisionMatrix = preload("res://sim/ai/ai_decision_matrix.gd")
@@ -51,7 +51,7 @@ func test_stress_30x30_44_units_and_campaign_stages_60fps_budget() -> void:
 	add_child_autofree(sandbox)
 
 	var map_state: BattleMapState = sandbox.call("get_map_state") as BattleMapState
-	var map_view: BattleMapView = sandbox.call("get_map_view") as BattleMapView
+	var map_view: BattleMap = sandbox.call("get_map_view") as BattleMap
 	var camera: BattleCameraController = sandbox.call("get_camera") as BattleCameraController
 
 	var t0_12x10: int = Time.get_ticks_usec()
@@ -78,8 +78,12 @@ func test_stress_30x30_44_units_and_campaign_stages_60fps_budget() -> void:
 	for i: int in range(20):
 		camera._process(1.0 / 60.0)
 	assert_true(map_view.is_strategic_lod(), "StrategicTokenLayer LOD active at 0.5x strategic zoom")
-	assert_false((map_view.get_node("UnitModelLayer") as CanvasItem).visible, "UnitModelLayer hidden at 0.5x strategic zoom")
-	assert_true((map_view.get_node("StrategicTokenLayer") as CanvasItem).visible, "StrategicTokenLayer visible at 0.5x strategic zoom")
+	var sample_uv: UnitView = map_view.get_unit_view(map_state.get_all_units()[0].unit_id)
+	assert_not_null(sample_uv)
+	if sample_uv != null:
+		assert_true(sample_uv.is_strategic_lod(), "UnitView strategic LOD enabled at 0.5x zoom")
+		assert_false(sample_uv.sprite.visible, "UnitView sprite hidden at 0.5x strategic zoom")
+		assert_true(sample_uv.strategic_token.visible, "UnitView strategic_token visible at 0.5x strategic zoom")
 
 	# Verify AI turn calculation budget on tactical stage 10101 (< 1500 ms) and economy stage 10105 (< 3000 ms)
 	var ai := AIDecisionMatrix.new()

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CodexEntryDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/codex_entry_def.gd" id="1_cj41e"]
+
+[resource]
+script = ExtResource("1_cj41e")
+entry_id = "oral_legend_what_if"
+title = "Giai Thoại Dân Gian & Giả Định Chiến Thuật (What-If)"
+era = "1285–1288 — Tư liệu truyền khẩu"
+evidence_grade = "D"
+modeling_type = "what_if"
+source_ref = "Truyền thuyết dân gian vùng hạ lưu sông Bạch Đằng [S6]"
+summary = "Các giai thoại dân gian hạng D được phân loại rõ ràng dưới nhãn giả định (what_if / abstraction) và tuyệt đối không gắn nhãn historical_claim."

@@ -2,24 +2,31 @@ class_name ScenarioLoader
 extends RefCounted
 
 
-## Loads a battle controller cleanly from stage_settings.json by stage ID.
+## Loads a battle controller cleanly from DataRegistry (.tres) by stage ID.
 static func load_stage(
 	stage_id: int,
 	battle_seed: int = 12880409,
-	stage_settings_path: String = "res://data/settings/stage_settings.json",
-	troop_settings_path: String = "res://data/settings/troop_settings.json"
+	registry: DataRegistry = null
 ) -> BattleGameController:
-	var stages: Dictionary[int, Dictionary] = StaticDataLoader.load_stage_settings(stage_settings_path)
-	if not stages.has(stage_id):
+	var active_reg: DataRegistry = registry if registry != null else StaticDataLoader.load_registry()
+	if active_reg == null:
 		return null
+	var stage_def: StageDef = active_reg.get_stage(stage_id)
+	return load_stage_def(stage_def, battle_seed, active_reg)
 
-	var stage_def: Dictionary = stages[stage_id]
-	var battle_path: String = str(stage_def.get("battle_file", ""))
-	if battle_path.is_empty():
+
+## Builds and initializes a deterministic BattleGameController directly from a StageDef Resource.
+static func load_stage_def(
+	stage_def: StageDef,
+	battle_seed: int = 12880409,
+	registry: DataRegistry = null
+) -> BattleGameController:
+	if stage_def == null:
 		return null
-
-	var ctrl: BattleGameController = load_battle_file(battle_path, battle_seed, troop_settings_path)
-	if ctrl != null and bool(stage_def.get("enable_economy", false)):
+	var troop_source: Variant = registry if registry != null else StaticDataLoader.DEFAULT_REGISTRY_PATH
+	var troop_defs: Dictionary[int, Dictionary] = StaticDataLoader.load_troop_settings(troop_source)
+	var ctrl: BattleGameController = _build_controller_from_dict(stage_def.to_battle_dict(), troop_defs, battle_seed)
+	if ctrl != null and stage_def.enable_economy:
 		ctrl.enable_economy = true
 		if ctrl.economy == null:
 			var eco := BattleEconomy.new()
@@ -33,13 +40,20 @@ static func load_stage(
 static func load_battle_file(
 	battle_path: String,
 	battle_seed: int = 12880409,
-	troop_settings_path: String = "res://data/settings/troop_settings.json"
+	troop_source: Variant = StaticDataLoader.DEFAULT_REGISTRY_PATH
 ) -> BattleGameController:
 	var data: Dictionary = StaticDataLoader.load_json_dict(battle_path)
 	if data.is_empty():
 		return null
+	var troop_defs: Dictionary[int, Dictionary] = StaticDataLoader.load_troop_settings(troop_source)
+	return _build_controller_from_dict(data, troop_defs, battle_seed)
 
-	var troop_defs: Dictionary[int, Dictionary] = StaticDataLoader.load_troop_settings(troop_settings_path)
+
+static func _build_controller_from_dict(
+	data: Dictionary,
+	troop_defs: Dictionary[int, Dictionary],
+	battle_seed: int
+) -> BattleGameController:
 	var width: int = maxi(1, int(data.get("map_width", 12)))
 	var height: int = maxi(1, int(data.get("map_height", 10)))
 	var default_terrain: BattleMapState.TerrainType = ScenarioEventManager.parse_terrain_enum(
@@ -119,20 +133,16 @@ static func load_battle_file(
 	return ctrl
 
 
-## Loads dialogue lines for a stage ID to surface in the HUD without coupling BattleContext to presentation data.
+## Loads dialogue lines for a stage ID from DataRegistry (.tres) for the HUD.
 static func load_stage_dialogues(
 	stage_id: int,
-	stage_settings_path: String = "res://data/settings/stage_settings.json"
+	registry: DataRegistry = null
 ) -> Dictionary:
-	var stages: Dictionary[int, Dictionary] = StaticDataLoader.load_stage_settings(stage_settings_path)
-	if not stages.has(stage_id):
+	var active_reg: DataRegistry = registry if registry != null else StaticDataLoader.load_registry()
+	if active_reg == null:
 		return {}
-	var battle_path: String = str(stages[stage_id].get("battle_file", ""))
-	if battle_path.is_empty():
-		return {}
-	var data: Dictionary = StaticDataLoader.load_json_dict(battle_path)
-	var dlgs: Variant = data.get("dialogues", {})
-	return dlgs as Dictionary if dlgs is Dictionary else {}
+	var stage_def: StageDef = active_reg.get_stage(stage_id)
+	return stage_def.get_dialogues_dict() if stage_def != null else {}
 
 
 static func _parse_turn_order(data: Dictionary) -> Array[int]:

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="GeneralDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/general_def.gd" id="1_2wtha"]
+
+[resource]
+script = ExtResource("1_2wtha")
+general_id = 1001
+code = "tran_quoc_tuan"
+display_name = "Hưng Đạo Đại Vương Trần Quốc Tuấn"
+is_commander_in_chief = true
+command_stat = 28
+luck = 85
+m_command = 1.25
+infantry_mult = 1.2
+archer_mult = 1.15
+cavalry_mult = 1.15
+naval_mult = 1.25
+aura_radius_hex = 2
+aura_damage_deepen = 12
+aura_damage_resist = 10
+grants_dead_mate_immunity = true
+unique_skill_id = 10001
+unique_skill_name = "Hịch Tướng Sĩ"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1285–1288) [S6]"

@@ -24,7 +24,7 @@ const DEFAULT_SKILL_AOE_RADIUS: int = 1
 @export var auto_complete_execution: bool = true
 
 var _controller: BattleGameController = null
-var _map_view: BattleMapView = null
+var _map_view: BattleMap = null
 var _camera: BattleCameraController = null
 var _current_state: State = State.IDLE
 var _active_unit: BattleUnit = null
@@ -34,14 +34,14 @@ var _skill_range_hexes: Array[Vector2i] = []
 var _pending_exec_outcome_state: State = State.IDLE
 var _input_locked: bool = false
 
-func bind_session(p_session: BattleSession, map_view: BattleMapView, camera: BattleCameraController = null) -> void:
+func bind_session(p_session: BattleSession, map_view: BattleMap, camera: BattleCameraController = null) -> void:
 	session = p_session
 	_controller = p_session.get_controller() if p_session != null else null
 	_map_view = map_view
 	_camera = camera
 	_reset_to_idle(false)
 
-func bind(controller: BattleGameController, map_view: BattleMapView, camera: BattleCameraController = null) -> void:
+func bind(controller: BattleGameController, map_view: BattleMap, camera: BattleCameraController = null) -> void:
 	session = null
 	_controller = controller
 	_map_view = map_view
@@ -76,12 +76,12 @@ func sync_with_controller() -> void:
 		_reset_to_idle(true)
 
 func tap_world_position(world_pos: Vector2) -> void:
-	var h_size: float = _map_view.hex_size if _map_view != null else HexMath.DEFAULT_HEX_SIZE
-	tap_hex(HexMath.world_to_axial(world_pos, h_size))
+	var axial: Vector2i = _map_view.world_to_axial(world_pos) if _map_view != null else HexMath.world_to_axial(world_pos, HexMath.DEFAULT_HEX_SIZE)
+	tap_hex(axial)
 
 func hover_world_position(world_pos: Vector2) -> void:
-	var h_size: float = _map_view.hex_size if _map_view != null else HexMath.DEFAULT_HEX_SIZE
-	hover_hex(HexMath.world_to_axial(world_pos, h_size))
+	var axial: Vector2i = _map_view.world_to_axial(world_pos) if _map_view != null else HexMath.world_to_axial(world_pos, HexMath.DEFAULT_HEX_SIZE)
+	hover_hex(axial)
 
 func inspect_hex(axial: Vector2i) -> void:
 	var ctrl: BattleGameController = _get_controller()

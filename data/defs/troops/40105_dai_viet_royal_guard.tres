@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_yagc8"]
+
+[resource]
+script = ExtResource("1_yagc8")
+troop_id = 40105
+code = "dai_viet_royal_guard"
+display_name = "Thánh Dực Cấm Quân"
+defense_mode = 3
+base_hp = 190
+min_attack = 36
+base_atk = 46
+base_def = 16
+critical_percent = 8
+fond_terrain = 6
+features = Array[StringName]([&"shield_wall"])
+cost_coin = 65
+cost_food = 60

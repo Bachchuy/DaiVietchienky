@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CodexEntryDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/codex_entry_def.gd" id="1_c3xst"]
+
+[resource]
+script = ExtResource("1_c3xst")
+entry_id = "wargame_hex_abstraction"
+title = "Mô Hình Hóa Lưới Lục Giác, ZoC & Thủy Triều Rút Vòng 4"
+era = "Cơ chế Wargame"
+category = "mechanics"
+modeling_type = "abstraction"
+source_ref = "Thiết kế hệ thống chiến thuật theo lượt [S1][S2][S8]"
+summary = "Quy đổi thủy triều bán nhật triều trên sông Bạch Đằng thành sự kiện kịch bản MapPhase_TideFall đầu Vòng 4 và chuẩn hóa tầm kiểm soát ZoC trên lưới Pointy-topped Hex."

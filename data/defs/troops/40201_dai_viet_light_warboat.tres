@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_4acb5"]
+
+[resource]
+script = ExtResource("1_4acb5")
+troop_id = 40201
+code = "dai_viet_light_warboat"
+display_name = "Mông Đồng Khinh Chu"
+domain = 1
+command_branch = 4
+attack_mode = 5
+defense_mode = 1
+base_hp = 170
+min_attack = 32
+base_atk = 42
+base_def = 11
+critical_percent = 10
+counter_percent = 80
+max_range = 2
+mobility = 8
+vision_range = 4
+fond_terrain = 4
+features = Array[StringName]([&"river_skirmish"])
+cost_coin = 55
+meal_food = 15

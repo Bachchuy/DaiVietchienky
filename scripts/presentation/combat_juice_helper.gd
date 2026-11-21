@@ -26,7 +26,7 @@ var reduce_flashing: bool = false:
 		_recent_flash_timestamps_ms.clear()
 var vfx_quality: String = "High"
 
-var _map_view: BattleMapView = null
+var _map_view: BattleMap = null
 var _camera: BattleCameraController = null
 var _shared_hit_flash_material: ShaderMaterial = null
 var _particle_pool: Array[PooledParticleCPU2D] = []
@@ -39,7 +39,7 @@ func _ready() -> void:
 	_init_shared_shader_material()
 
 
-func setup(map_view: BattleMapView, camera: BattleCameraController = null) -> void:
+func setup(map_view: BattleMap, camera: BattleCameraController = null) -> void:
 	_map_view = map_view
 	_camera = camera
 	_init_shared_shader_material()

@@ -1,8 +1,6 @@
 class_name CodexPanel
 extends Panel
 
-const CODEX_DATA_PATH: String = "res://data/settings/codex_entries.json"
-
 var _entries: Array = []
 var _search_edit: LineEdit = null
 var _list_label: Label = null
@@ -72,7 +70,10 @@ func _init() -> void:
 
 
 func _load_entries() -> void:
-	_entries = StaticDataLoader.load_json_array(CODEX_DATA_PATH)
+	_entries.clear()
+	for entry: CodexEntryDef in StaticDataLoader.load_codex_defs():
+		if entry != null:
+			_entries.append(entry.to_dict())
 
 
 func get_all_entries() -> Array:

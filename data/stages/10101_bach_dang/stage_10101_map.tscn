@@ -1,0 +1,178 @@
+[gd_scene format=4 uid="uid://c861qhu8h4b"]
+
+[ext_resource type="Script" uid="uid://85o8cw6mai53" path="res://game/battle/map/stage_map_tool.gd" id="1_ghf01"]
+[ext_resource type="TileSet" path="res://assets_clean/hexcrown/tiles/hexcrown_hex_tileset.tres" id="2_3bnn4"]
+[ext_resource type="Script" uid="uid://b4yy0x7qvslgx" path="res://game/battle/map/unit_placement_marker.gd" id="3_snjfn"]
+
+[node name="Stage10101Map" type="Node2D" unique_id=147807491 node_paths=PackedStringArray("ground_layer", "structure_layer", "markers_layer")]
+texture_filter = 1
+scale = Vector2(2, 2)
+script = ExtResource("1_ghf01")
+ground_layer = NodePath("GroundLayer")
+structure_layer = NodePath("StructureLayer")
+markers_layer = NodePath("MarkersLayer")
+fort_owners = Dictionary[Vector2i, int]({
+Vector2i(9, 4): 2
+})
+
+[node name="GroundLayer" type="TileMapLayer" parent="." unique_id=514356215]
+y_sort_enabled = true
+texture_filter = 1
+tile_map_data = PackedByteArray("AAAAAAAAAAAAAAIAAQABAAAAAAAAAAIAAQACAAAAAAAAAAIAAQADAAAAAAAAAAIAAAAEAAAAAAAAAAUAAAAFAAAAAAAAAAQAAAAGAAAAAAAAAAQAAAAHAAAAAAAAAAQAAAAIAAAAAAAAAAUAAAAJAAAAAAAAAAIAAAAKAAAAAAAAAAIAAAALAAAAAAAAAAIAAAAAAAEAAAAAAAIAAQABAAEAAAAAAAIAAQACAAEAAAAAAAIAAQADAAEAAAAAAAIAAAAEAAEAAAAAAAUAAAAFAAEAAAAAAAQAAAAGAAEAAAAAAAQAAAAHAAEAAAAAAAQAAAAIAAEAAAAAAAUAAAAJAAEAAAAAAAIAAAAKAAEAAAAAAAIAAAALAAEAAAAAAAIAAAAAAAIAAAAAAAIAAQABAAIAAAAAAAIAAQACAAIAAAAAAAIAAQADAAIAAAAAAAIAAAAEAAIAAAAAAAUAAAAFAAIAAAAAAAQAAAAGAAIAAAAAAAQAAAAHAAIAAAAAAAQAAAAIAAIAAAAAAAUAAAAJAAIAAAAAAAMAAAAKAAIAAAAAAAMAAAALAAIAAAAAAAMAAAAAAAMAAAAAAAIAAQABAAMAAAAAAAIAAQACAAMAAAAAAAIAAQADAAMAAAAAAAIAAQAEAAMAAAAAAAUAAAAFAAMAAAAAAAQAAAAGAAMAAAAAAAQAAAAHAAMAAAAAAAQAAAAIAAMAAAAAAAUAAAAJAAMAAAAAAAMAAAAKAAMAAAAAAAMAAAALAAMAAAAAAAMAAAAAAAQAAAAAAAIAAQABAAQAAAAAAAIAAQACAAQAAAAAAAIAAQADAAQAAAAAAAIAAQAEAAQAAAAAAAUAAAAFAAQAAAAAAAQAAAAGAAQAAAAAAAQAAAAHAAQAAAAAAAQAAAAIAAQAAAAAAAUAAAAJAAQAAAAAAAAAAAAKAAQAAAAAAAMAAAALAAQAAAAAAAMAAAAAAAUAAAAAAAIAAAABAAUAAAAAAAIAAAACAAUAAAAAAAIAAgADAAUAAAAAAAIAAAAEAAUAAAAAAAUAAAAFAAUAAAAAAAQAAAAGAAUAAAAAAAQAAAAHAAUAAAAAAAQAAAAIAAUAAAAAAAUAAAAJAAUAAAAAAAMAAAAKAAUAAAAAAAMAAAALAAUAAAAAAAMAAAAAAAYAAAAAAAIAAAABAAYAAAAAAAIAAAACAAYAAAAAAAIAAAADAAYAAAAAAAIAAgAEAAYAAAAAAAUAAAAFAAYAAAAAAAQAAAAGAAYAAAAAAAQAAAAHAAYAAAAAAAQAAAAIAAYAAAAAAAUAAAAJAAYAAAAAAAMAAAAKAAYAAAAAAAMAAAALAAYAAAAAAAMAAAAAAAcAAAAAAAIAAAABAAcAAAAAAAIAAAACAAcAAAAAAAIAAAADAAcAAAAAAAIAAAAEAAcAAAAAAAUAAAAFAAcAAAAAAAQAAAAGAAcAAAAAAAQAAAAHAAcAAAAAAAQAAAAIAAcAAAAAAAUAAAAJAAcAAAAAAAIAAAAKAAcAAAAAAAIAAAALAAcAAAAAAAIAAAAAAAgAAAAAAAIAAAABAAgAAAAAAAIAAAACAAgAAAAAAAcAAAADAAgAAAAAAAcAAAAEAAgAAAAAAAUAAAAFAAgAAAAAAAQAAAAGAAgAAAAAAAQAAAAHAAgAAAAAAAQAAAAIAAgAAAAAAAUAAAAJAAgAAAAAAAIAAAAKAAgAAAAAAAIAAAALAAgAAAAAAAIAAAAAAAkAAAAAAAIAAAABAAkAAAAAAAIAAAACAAkAAAAAAAIAAAADAAkAAAAAAAIAAAAEAAkAAAAAAAUAAAAFAAkAAAAAAAQAAAAGAAkAAAAAAAQAAAAHAAkAAAAAAAQAAAAIAAkAAAAAAAUAAAAJAAkAAAAAAAIAAAAKAAkAAAAAAAIAAAALAAkAAAAAAAIAAAA=")
+tile_set = ExtResource("2_3bnn4")
+
+[node name="StructureLayer" type="TileMapLayer" parent="." unique_id=1488166558]
+z_index = 2
+y_sort_enabled = true
+texture_filter = 1
+tile_map_data = PackedByteArray("AAAAAAAAAQAAAAMAAAABAAAAAQAAAAMAAAACAAAAAQAAAAMAAAAAAAEAAQAAAAMAAAABAAEAAQAAAAMAAAACAAEAAQAAAAMAAAAAAAIAAQAAAAMAAAABAAIAAQAAAAMAAAACAAIAAQAAAAMAAAAAAAMAAQAAAAMAAAABAAMAAQAAAAMAAAACAAMAAQAAAAMAAAADAAMAAQAAAAMAAAAAAAQAAQAAAAMAAAABAAQAAQAAAAMAAAACAAQAAQAAAAMAAAADAAQAAQAAAAMAAAACAAUAAQAAAAQAAAADAAYAAQAAAAQAAAACAAgAAQACAAMAAAADAAgAAQACAAMAAAAJAAIAAQAAAAIAAAAKAAIAAQAAAAIAAAALAAIAAQAAAAIAAAAJAAMAAQAAAAIAAAAKAAMAAQAAAAIAAAALAAMAAQAAAAIAAAAJAAQAAQACAAIAAAAKAAQAAQAAAAIAAAALAAQAAQAAAAIAAAAJAAUAAQAAAAIAAAAKAAUAAQAAAAIAAAALAAUAAQAAAAIAAAAJAAYAAQAAAAIAAAAKAAYAAQAAAAIAAAALAAYAAQAAAAIAAAA=")
+tile_set = ExtResource("2_3bnn4")
+
+[node name="MarkersLayer" type="Node2D" parent="." unique_id=1825748464]
+z_index = 10
+
+[node name="Unit_101_Trần_Quốc_Tuấn" type="Node2D" parent="MarkersLayer" unique_id=689079880]
+position = Vector2(80, 143)
+script = ExtResource("3_snjfn")
+unit_id = 101
+troop_stack = 3
+hex_pos = Vector2i(2, 8)
+initial_morale = "HIGH"
+general_id = 1001
+general_name = "Trần Quốc Tuấn"
+is_commander_in_chief = true
+general_command_stat = 98
+general_luck = 15
+m_command = 1.15
+aura_radius_hex = 2
+aura_damage_deepen = 10
+aura_damage_resist = 10
+grants_dead_mate_immunity = true
+modeling_type = "historical_claim"
+source_ref = "Đại Việt Sử Ký Toàn Thư (1288)"
+
+[node name="Unit_102_Trần_Khánh_Dư" type="Node2D" parent="MarkersLayer" unique_id=1731888654]
+position = Vector2(176, 110)
+script = ExtResource("3_snjfn")
+unit_id = 102
+troop_id = 40201
+troop_stack = 3
+hex_pos = Vector2i(5, 6)
+initial_morale = "HIGH"
+general_id = 1002
+general_name = "Trần Khánh Dư"
+general_command_stat = 90
+general_luck = 12
+m_command = 1.1
+aura_radius_hex = 1
+aura_damage_deepen = 5
+modeling_type = "abstraction"
+source_ref = "Thủy quân tiền tiêu Bạch Đằng"
+
+[node name="Unit_103" type="Node2D" parent="MarkersLayer" unique_id=923602784]
+position = Vector2(128, 93.5)
+script = ExtResource("3_snjfn")
+unit_id = 103
+troop_id = 40102
+troop_stack = 3
+hex_pos = Vector2i(3, 5)
+modeling_type = "abstraction"
+source_ref = "Cung nỏ bờ tây"
+
+[node name="Unit_104" type="Node2D" parent="MarkersLayer" unique_id=1609506960]
+position = Vector2(96, 126.5)
+script = ExtResource("3_snjfn")
+unit_id = 104
+troop_id = 40104
+troop_stack = 2
+hex_pos = Vector2i(2, 7)
+modeling_type = "abstraction"
+source_ref = "Tượng binh hộ giá bến đò"
+
+[node name="Unit_105" type="Node2D" parent="MarkersLayer" unique_id=1064635794]
+position = Vector2(160, 126.5)
+script = ExtResource("3_snjfn")
+unit_id = 105
+troop_id = 40202
+troop_stack = 2
+hex_pos = Vector2i(4, 7)
+modeling_type = "historical_claim"
+source_ref = "Chiến thuật hỏa công Bạch Đằng"
+
+[node name="Unit_201_Ô_Mã_Nhi" type="Node2D" parent="MarkersLayer" unique_id=1893635978]
+position = Vector2(224, 27.5)
+script = ExtResource("3_snjfn")
+unit_id = 201
+faction_id = 2
+troop_id = 40902
+troop_stack = 3
+hex_pos = Vector2i(6, 1)
+general_id = 9001
+general_name = "Ô Mã Nhi"
+is_commander_in_chief = true
+general_command_stat = 92
+general_luck = 10
+m_command = 1.1
+aura_radius_hex = 2
+aura_damage_deepen = 8
+modeling_type = "historical_claim"
+source_ref = "Nguyên Sử & ĐVSKTT (1288)"
+
+[node name="Unit_202" type="Node2D" parent="MarkersLayer" unique_id=1548931248]
+position = Vector2(176, 44)
+script = ExtResource("3_snjfn")
+unit_id = 202
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(5, 2)
+source_ref = "Chiến thuyền tiền phong hữu"
+
+[node name="Unit_203" type="Node2D" parent="MarkersLayer" unique_id=812609193]
+position = Vector2(240, 44)
+script = ExtResource("3_snjfn")
+unit_id = 203
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(7, 2)
+source_ref = "Chiến thuyền tiền phong tả"
+
+[node name="Unit_204" type="Node2D" parent="MarkersLayer" unique_id=1958921117]
+position = Vector2(208, 44)
+script = ExtResource("3_snjfn")
+unit_id = 204
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(6, 2)
+source_ref = "Chiến thuyền trung quân"
+
+[node name="Unit_205" type="Node2D" parent="MarkersLayer" unique_id=237123312]
+position = Vector2(256, 60.5)
+script = ExtResource("3_snjfn")
+unit_id = 205
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(7, 3)
+source_ref = "Thuyền hộ tống"
+
+[node name="Unit_206" type="Node2D" parent="MarkersLayer" unique_id=1461635501]
+position = Vector2(304, 77)
+script = ExtResource("3_snjfn")
+unit_id = 206
+faction_id = 2
+troop_stack = 2
+hex_pos = Vector2i(9, 4)
+source_ref = "Đồn bộ binh bờ đông"
+
+[node name="Unit_207" type="Node2D" parent="MarkersLayer" unique_id=322743351]
+position = Vector2(320, 93.5)
+script = ExtResource("3_snjfn")
+unit_id = 207
+faction_id = 2
+troop_id = 40102
+troop_stack = 2
+hex_pos = Vector2i(9, 5)
+source_ref = "Cung thủ bờ đông"

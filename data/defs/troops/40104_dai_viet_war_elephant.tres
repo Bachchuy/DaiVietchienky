@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_codx2"]
+
+[resource]
+script = ExtResource("1_codx2")
+troop_id = 40104
+code = "dai_viet_war_elephant"
+display_name = "Tượng Binh Xung Kích"
+command_branch = 2
+attack_mode = 2
+defense_mode = 3
+base_hp = 240
+max_stack = 2
+min_attack = 44
+base_atk = 56
+base_def = 18
+critical_percent = 12
+mobility = 8
+fond_terrain = 0
+devoid_zoc = true
+features = Array[StringName]([&"devoid_zoc", &"elephant"])
+cost_coin = 95
+cost_food = 90
+meal_food = 30

@@ -1,7 +1,7 @@
 extends "res://tests/test_case.gd"
 
 const FSM_PATH: String = "res://game/battle/battle_input_fsm.gd"
-const VIEW_PATH: String = "res://scripts/presentation/battle_map_view.gd"
+const VIEW_PATH: String = "res://game/battle/map/battle_map.tscn"
 const CAM_PATH: String = "res://scripts/presentation/battle_camera_controller.gd"
 
 const HexMathScript = preload("res://sim/rules/hex_math.gd")
@@ -50,12 +50,12 @@ func _create_rig(
 	seed_val: int = 128801
 ) -> Dictionary:
 	var fsm_s: GDScript = load(FSM_PATH) as GDScript
-	var view_s: GDScript = load(VIEW_PATH) as GDScript
+	var view_scene: PackedScene = load(VIEW_PATH) as PackedScene
 	var cam_s: GDScript = load(CAM_PATH) as GDScript
 	assert_not_null(fsm_s, "BattleInputFSM script must exist at " + FSM_PATH)
-	assert_not_null(view_s, "BattleMapView script must exist at " + VIEW_PATH)
+	assert_not_null(view_scene, "BattleMap scene must exist at " + VIEW_PATH)
 	assert_not_null(cam_s, "BattleCameraController script must exist at " + CAM_PATH)
-	if fsm_s == null or view_s == null or cam_s == null:
+	if fsm_s == null or view_scene == null or cam_s == null:
 		return {}
 
 	var map_state := MapStateScript.new(width, height, BattleMapState.TerrainType.PLAINS)
@@ -63,8 +63,9 @@ func _create_rig(
 	ctrl.context.enable_fog_of_war = fog_enabled
 	ctrl.player_faction_id = 1
 
-	var view: Node2D = view_s.new() as Node2D
+	var view: Node2D = view_scene.instantiate() as Node2D
 	add_child_autofree(view)
+	view.call("reset_for_procedural_map")
 	view.call("bind_battle_state", map_state, ctrl.context.navigator)
 
 	var cam: Camera2D = cam_s.new() as Camera2D
@@ -528,11 +529,11 @@ func test_skill_targeting_skill_area_layer_and_execute_skill() -> void:
 	# From UNIT_SELECTED: enter_skill_targeting -> highlights SkillAreaLayer -> cancel returns to UNIT_SELECTED
 	assert_true(bool(fsm.call("enter_skill_targeting")))
 	assert_eq(int(fsm.call("get_state")), state_skill_target)
-	var skill_hexes: Array[Vector2i] = view.call("get_skill_area_hexes")
+	var skill_hexes: Array[Vector2i] = view.call("get_skill_range_hexes")
 	assert_gt(float(skill_hexes.size()), 0.0, "SkillAreaLayer must be populated for range 2")
 	assert_true(bool(fsm.call("cancel_or_deselect")))
 	assert_eq(int(fsm.call("get_state")), state_selected)
-	assert_eq((view.call("get_skill_area_hexes") as Array).size(), 0, "SkillAreaLayer must clear on cancel")
+	assert_eq((view.call("get_skill_range_hexes") as Array).size(), 0, "SkillAreaLayer must clear on cancel")
 
 	# Move commander -> POST_MOVE_ACTION -> Branch (b) enter_skill_targeting -> cancel returns to POST_MOVE_ACTION
 	var moved_hex: Vector2i = HexMathScript.odd_r_to_axial(Vector2i(3, 4))
@@ -557,7 +558,7 @@ func test_skill_targeting_skill_area_layer_and_execute_skill() -> void:
 	assert_true(commander.state.has_acted)
 	assert_eq(commander.state.skill_cooldown, 3)
 	assert_eq(ally_chaos.state.morale, UnitStateScript.MoraleLevel.NORMAL, "CastSkill 10001 must clear ally CHAOS within AoE 1")
-	assert_eq((view.call("get_skill_area_hexes") as Array).size(), 0)
+	assert_eq((view.call("get_skill_range_hexes") as Array).size(), 0)
 
 
 func test_march_into_staked_water_death_or_victory_exits_to_idle() -> void:
@@ -727,7 +728,7 @@ func test_right_click_vs_camera_drag_threshold_harmony() -> void:
 
 
 func test_battle_sandbox_cp1_fsm_integration() -> void:
-	var packed: PackedScene = load("res://scenes/battle/battle_sandbox_cp1.tscn") as PackedScene
+	var packed: PackedScene = load("res://game/battle/battle.tscn") as PackedScene
 	assert_not_null(packed)
 	if packed == null:
 		return
@@ -736,7 +737,7 @@ func test_battle_sandbox_cp1_fsm_integration() -> void:
 
 	var fsm: BattleInputFSM = sandbox.call("get_input_fsm") as BattleInputFSM
 	var map_state: BattleMapState = sandbox.call("get_map_state") as BattleMapState
-	var map_view: BattleMapView = sandbox.call("get_map_view") as BattleMapView
+	var map_view: BattleMap = sandbox.call("get_map_view") as BattleMap
 	assert_not_null(fsm)
 	assert_eq(fsm.get_state(), BattleInputFSM.State.IDLE)
 
@@ -747,11 +748,11 @@ func test_battle_sandbox_cp1_fsm_integration() -> void:
 			tqt = u
 			break
 	assert_not_null(tqt)
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(tqt.hex_position, map_view.hex_size))
+	sandbox.call("click_world_position", map_view.axial_to_world(tqt.hex_position))
 	assert_eq(fsm.get_state(), BattleInputFSM.State.UNIT_SELECTED)
 	assert_true(bool(sandbox.call("try_enter_skill_targeting")))
 	assert_eq(fsm.get_state(), BattleInputFSM.State.SKILL_TARGETING)
-	assert_gt(float(map_view.get_skill_area_hexes().size()), 0.0)
+	assert_gt(float(map_view.get_skill_range_hexes().size()), 0.0)
 	assert_true(fsm.cancel_or_deselect())
 	assert_eq(fsm.get_state(), BattleInputFSM.State.UNIT_SELECTED)
 	assert_true(bool(sandbox.call("try_wait_selected")))

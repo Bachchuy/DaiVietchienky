@@ -1,0 +1,73 @@
+[gd_resource type="TileSet" format=3 uid="uid://blrsox54wjss5"]
+
+[ext_resource type="Texture2D" uid="uid://chilafm8r0kk3" path="res://assets_clean/hexcrown/tiles/tileset_atlas.png" id="1_ground"]
+[ext_resource type="Texture2D" uid="uid://cfeij4ra8sa4o" path="res://assets_clean/hexcrown/tiles/map_elements.png" id="2_props"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ground"]
+texture = ExtResource("1_ground")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, -4)
+0:0/0/custom_data_0 = 6
+0:1/0 = 0
+0:1/0/texture_origin = Vector2i(0, -4)
+0:1/0/modulate = Color(0.72, 0.86, 0.96, 1)
+0:1/0/custom_data_0 = 8
+0:2/next_alternative_id = 3
+0:2/0 = 0
+0:2/0/texture_origin = Vector2i(0, -4)
+0:2/1 = 1
+0:2/1/texture_origin = Vector2i(0, -4)
+0:2/1/modulate = Color(0.84, 0.94, 0.8, 1)
+0:2/1/custom_data_0 = 1
+0:2/2 = 2
+0:2/2/texture_origin = Vector2i(0, -4)
+0:2/2/modulate = Color(0.68, 0.78, 0.62, 1)
+0:2/2/custom_data_0 = 3
+0:3/0 = 0
+0:3/0/texture_origin = Vector2i(0, -4)
+0:3/0/custom_data_0 = 2
+0:4/0 = 0
+0:4/0/texture_origin = Vector2i(0, -4)
+0:4/0/modulate = Color(0.76, 0.88, 1, 1)
+0:4/0/custom_data_0 = 5
+0:5/0 = 0
+0:5/0/texture_origin = Vector2i(0, -4)
+0:5/0/custom_data_0 = 4
+0:6/0 = 0
+0:6/0/texture_origin = Vector2i(0, -4)
+0:7/0 = 0
+0:7/0/texture_origin = Vector2i(0, -4)
+0:7/0/custom_data_0 = 7
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_props"]
+texture = ExtResource("2_props")
+texture_region_size = Vector2i(32, 32)
+0:1/0 = 0
+0:1/0/texture_origin = Vector2i(0, 2)
+0:2/0 = 0
+0:2/0/texture_origin = Vector2i(0, 1)
+1:2/0 = 0
+1:2/0/texture_origin = Vector2i(0, 1)
+2:2/0 = 0
+2:2/0/texture_origin = Vector2i(0, 2)
+0:3/0 = 0
+0:3/0/texture_origin = Vector2i(0, -1)
+1:3/0 = 0
+1:3/0/texture_origin = Vector2i(0, 1)
+2:3/0 = 0
+2:3/0/texture_origin = Vector2i(0, 1)
+3:3/0 = 0
+3:3/0/texture_origin = Vector2i(0, 1)
+0:4/0 = 0
+0:4/0/texture_origin = Vector2i(0, -1)
+1:4/0 = 0
+1:4/0/texture_origin = Vector2i(0, 1)
+
+[resource]
+tile_shape = 3
+tile_size = Vector2i(32, 22)
+custom_data_layer_0/name = "terrain_id"
+custom_data_layer_0/type = 2
+sources/0 = SubResource("TileSetAtlasSource_ground")
+sources/1 = SubResource("TileSetAtlasSource_props")

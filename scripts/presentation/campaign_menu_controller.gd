@@ -4,8 +4,6 @@ extends Control
 signal stage_selected(stage_id: int, is_free_replay: bool)
 signal codex_requested()
 
-const STAGE_SETTINGS_PATH: String = "res://data/settings/stage_settings.json"
-
 var _stage_buttons: Dictionary = {}
 var _codex_panel: CodexPanel = null
 
@@ -16,7 +14,11 @@ func _ready() -> void:
 
 
 func _load_stages_array() -> Array:
-	return StaticDataLoader.load_json_array(STAGE_SETTINGS_PATH)
+	var out: Array = []
+	for st: StageDef in StaticDataLoader.load_stage_defs():
+		if st != null:
+			out.append(st.to_stage_meta_dict())
+	return out
 
 
 func is_stage_unlocked(stage_id: int, profile_dict: Dictionary = {}) -> bool:
@@ -105,7 +107,7 @@ func _build_menu_ui() -> void:
 	play_btn.name = "CampaignButton"
 	play_btn.text = "⚔ VÀO CHIẾN DỊCH BẠCH ĐẰNG 1288"
 	play_btn.custom_minimum_size = Vector2(280.0, 40.0)
-	play_btn.pressed.connect(func() -> void: stage_selected.emit(10101, false))
+	play_btn.pressed.connect(func() -> void: _launch_stage(10101, false))
 	top_btns.add_child(play_btn)
 
 	var codex_btn := Button.new()
@@ -142,10 +144,17 @@ func _build_menu_ui() -> void:
 		]
 		btn.disabled = not unlocked
 		btn.custom_minimum_size = Vector2(960.0, 38.0)
-		btn.pressed.connect(func() -> void: stage_selected.emit(sid, st_cnt > 0))
+		btn.pressed.connect(func() -> void: _launch_stage(sid, st_cnt > 0))
 		vbox.add_child(btn)
 		_stage_buttons[sid] = btn
 
 	_codex_panel = CodexPanel.new()
 	_codex_panel.visible = false
 	add_child(_codex_panel)
+
+
+func _launch_stage(p_stage_id: int, is_free_replay: bool) -> void:
+	stage_selected.emit(p_stage_id, is_free_replay)
+	if get_tree() != null and get_tree().current_scene == self:
+		get_tree().set_meta(&"pending_stage_id", p_stage_id)
+		get_tree().change_scene_to_file("res://game/battle/battle.tscn")

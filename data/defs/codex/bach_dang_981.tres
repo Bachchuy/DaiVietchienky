@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CodexEntryDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/codex_entry_def.gd" id="1_ikhhs"]
+
+[resource]
+script = ExtResource("1_ikhhs")
+entry_id = "bach_dang_981"
+title = "Đại Phá Quân Tống Trên Sông Bạch Đằng Năm 981 (Lê Hoàn)"
+era = "981 — Thời Tiền Lê"
+evidence_grade = "A"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển I (981) [S6]"
+summary = "Thập đạo tướng quân Lê Đại Hành (Lê Hoàn) tái lập thế trận cọc ngầm và phục binh trên sông Bạch Đằng, chặn đứng thủy lục quân Bắc Tống của Hầu Nhân Bảo."

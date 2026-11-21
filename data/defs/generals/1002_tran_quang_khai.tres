@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="GeneralDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/general_def.gd" id="1_jy1eo"]
+
+[resource]
+script = ExtResource("1_jy1eo")
+general_id = 1002
+code = "tran_quang_khai"
+display_name = "Chiêu Minh Vương Trần Quang Khải"
+command_stat = 24
+luck = 78
+m_command = 1.18
+infantry_mult = 1.2
+archer_mult = 1.1
+cavalry_mult = 1.1
+naval_mult = 1.2
+aura_radius_hex = 2
+aura_damage_deepen = 10
+aura_damage_resist = 8
+unique_skill_id = 10001
+unique_skill_name = "Đoạt Giáo Chương Dương"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1285) [S6]"

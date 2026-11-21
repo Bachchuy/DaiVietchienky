@@ -1,0 +1,157 @@
+[gd_resource type="Resource" script_class="StageDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/named_area_def.gd" id="1_ucody"]
+[ext_resource type="Script" path="res://data/defs/defeat_condition_def.gd" id="2_gifo5"]
+[ext_resource type="Script" path="res://data/defs/dialogue_line_def.gd" id="3_fumd2"]
+[ext_resource type="Script" path="res://data/defs/stage_facility_def.gd" id="4_a1dqo"]
+[ext_resource type="Script" path="res://data/defs/stage_faction_def.gd" id="5_j08hp"]
+[ext_resource type="Script" path="res://data/defs/unit_placement_def.gd" id="6_rq6gn"]
+[ext_resource type="Script" path="res://data/defs/stage_def.gd" id="7_p4y5m"]
+[ext_resource type="Script" path="res://data/defs/scenario_event_def.gd" id="8_c11ki"]
+[ext_resource type="Script" path="res://data/defs/star_condition_def.gd" id="9_nalje"]
+[ext_resource type="Script" path="res://data/defs/terrain_override_def.gd" id="10_j2abu"]
+[ext_resource type="Script" path="res://data/defs/victory_condition_def.gd" id="11_swuys"]
+
+[sub_resource type="Resource" id="Resource_qdrsx"]
+script = ExtResource("1_ucody")
+area_id = "van_kiep_camp"
+display_name = "Dinh Trại Vạn Kiếp"
+hexes = Array[Vector2i]([Vector2i(2, 5)])
+initial_owner = 1
+is_objective = true
+
+[sub_resource type="Resource" id="Resource_c21eu"]
+script = ExtResource("2_gifo5")
+area_id = "van_kiep_camp"
+
+[sub_resource type="Resource" id="Resource_5om3k"]
+script = ExtResource("2_gifo5")
+condition_type = "GeneralDefeated"
+target_general_id = 1001
+
+[sub_resource type="Resource" id="Resource_se70c"]
+script = ExtResource("3_fumd2")
+dialogue_id = "talk_opening_10102"
+speaker = "Trần Quốc Toản"
+line = "Phá cường địch, báo hoàng ân! Giữ vững phòng tuyến Bình Than – Vạn Kiếp!"
+
+[sub_resource type="Resource" id="Resource_37r86"]
+script = ExtResource("5_j08hp")
+display_name = "Đại Việt"
+is_player = true
+target_generals = Array[int]([9002])
+protected_generals = Array[int]([1001])
+
+[sub_resource type="Resource" id="Resource_dflo1"]
+script = ExtResource("5_j08hp")
+faction_id = 2
+display_name = "Đại Nguyên"
+team_id = 2
+target_generals = Array[int]([1001])
+protected_generals = Array[int]([9002])
+
+[sub_resource type="Resource" id="Resource_w6p4a"]
+script = ExtResource("6_rq6gn")
+unit_id = 101
+troop_id = 40105
+troop_stack = 3
+hex_pos = Vector2i(2, 5)
+initial_morale = "HIGH"
+general_id = 1001
+general_name = "Trần Quốc Tuấn"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_k2y6d"]
+script = ExtResource("6_rq6gn")
+unit_id = 102
+troop_id = 40103
+troop_stack = 2
+hex_pos = Vector2i(3, 5)
+initial_morale = "HIGH"
+general_id = 1007
+general_name = "Trần Quốc Toản"
+
+[sub_resource type="Resource" id="Resource_miqm3"]
+script = ExtResource("6_rq6gn")
+unit_id = 201
+faction_id = 2
+troop_id = 40903
+troop_stack = 3
+hex_pos = Vector2i(7, 2)
+general_id = 9002
+general_name = "Thoát Hoan"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_5x0nl"]
+script = ExtResource("6_rq6gn")
+unit_id = 202
+faction_id = 2
+troop_id = 40904
+troop_stack = 2
+hex_pos = Vector2i(6, 3)
+
+[sub_resource type="Resource" id="Resource_8sg4h"]
+script = ExtResource("9_nalje")
+description = "Giữ vững phòng tuyến Vạn Kiếp"
+
+[sub_resource type="Resource" id="Resource_gglkx"]
+script = ExtResource("9_nalje")
+star = 2
+condition_type = "MaxRounds"
+max_rounds = 6
+description = "Chiến thắng trong <= 6 vòng"
+
+[sub_resource type="Resource" id="Resource_qoawv"]
+script = ExtResource("9_nalje")
+star = 3
+condition_type = "MaxHpLossPercent"
+max_loss_percent = 25.0
+description = "Tổn thất HP <= 25%"
+
+[sub_resource type="Resource" id="Resource_swy4w"]
+script = ExtResource("10_j2abu")
+hex_pos = Vector2i(2, 5)
+terrain = 6
+fort_owner = 1
+
+[sub_resource type="Resource" id="Resource_2ewef"]
+script = ExtResource("10_j2abu")
+hex_pos = Vector2i(3, 4)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_fwyli"]
+script = ExtResource("10_j2abu")
+hex_pos = Vector2i(4, 4)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_tsl08"]
+script = ExtResource("11_swuys")
+condition_type = "DefeatGeneral"
+target_general_id = 9002
+
+[sub_resource type="Resource" id="Resource_a1ip2"]
+script = ExtResource("11_swuys")
+condition_type = "HoldAreaAndAttrition"
+required_area_id = "van_kiep_camp"
+required_owner = 1
+min_enemy_defeated_percent = 50.0
+at_round = 8
+
+[resource]
+script = ExtResource("7_p4y5m")
+stage_id = 10102
+code = "binh_than_1282"
+stage_name = "Hội Thề Bình Than & Phòng Tuyến Vạn Kiếp"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1282–1285) [S6]"
+map_width = 10
+map_height = 8
+max_rounds = 8
+preset_general_ids = Array[int]([1001, 1007])
+factions = Array[ExtResource("5_j08hp")]([SubResource("Resource_37r86"), SubResource("Resource_dflo1")])
+terrain_overrides = Array[ExtResource("10_j2abu")]([SubResource("Resource_swy4w"), SubResource("Resource_2ewef"), SubResource("Resource_fwyli")])
+areas = Array[ExtResource("1_ucody")]([SubResource("Resource_qdrsx")])
+placements = Array[ExtResource("6_rq6gn")]([SubResource("Resource_w6p4a"), SubResource("Resource_k2y6d"), SubResource("Resource_miqm3"), SubResource("Resource_5x0nl")])
+victory_conditions = Array[ExtResource("11_swuys")]([SubResource("Resource_tsl08"), SubResource("Resource_a1ip2")])
+defeat_conditions = Array[ExtResource("2_gifo5")]([SubResource("Resource_c21eu"), SubResource("Resource_5om3k")])
+star_conditions = Array[ExtResource("9_nalje")]([SubResource("Resource_8sg4h"), SubResource("Resource_gglkx"), SubResource("Resource_qoawv")])
+dialogues = Array[ExtResource("3_fumd2")]([SubResource("Resource_se70c")])

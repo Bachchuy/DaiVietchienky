@@ -2,10 +2,10 @@
 
 - **Dự án:** Đại Việt Chiến Kỳ (`VietNamHistoryStrategy`) — Godot 4.7.2, Thuần GDScript 2.0 (`gl_compatibility`).
 - **Tài liệu chuẩn:** **GDD v3.5 (Editor-First 4-Tier Architecture)** (`docs/gdd/`), quy chuẩn [AGENTS.md](AGENTS.md), kỹ năng `.agents/skills/project-architecture/SKILL.md`.
-- **Cổng hiện tại:** **CỔNG `R2` (`1/3`) — ĐANG THỰC HIỆN (`R2-T1` xong, chờ Codex Review trước `R2-T2`)** (Đã commit Cổng `R1` `4/4` tại `8024d89`; đã hoàn tất `R2-T1` với 6 lớp Custom `Resource` có `@export` trong `res://data/defs/`).
-- **Nhiệm vụ kế tiếp:** **`R2-T2`** (Định nghĩa `StageDef` và các Sub-Resource kịch bản/màn chơi trong `res://data/defs/`).
-- **Tiến độ lộ trình Tái kiến trúc (`R1–R5`):** `5 / 15` nhiệm vụ (R1: `4/4`, R2: `1/3`, R3: `0/4`, R4: `0/2` 🛑 Cổng dừng hỏi người dùng, R5: `0/2`).
-- **Trạng thái Giai đoạn 1 (`CP1–CP5` cũ):** **Lõi Sim Đạt / Vỏ UI-Data-Đồ họa & CombatPreview Cũ Bị Bác Bỏ (`DEC-025`)** — Đã chuyển xong lõi sang `res://sim/` (`R1-T1`) và thay xong toàn bộ HUD sang `.tscn` + `theme.tres` (`R1-T2`, `R1-T3`); dữ liệu tĩnh JSON (`data/settings/*.json`) và bản đồ `_draw()` (`battle_map_view.gd`) sẽ tiếp tục thay thế ở `R2–R3`.
+- **Cổng hiện tại:** **CỔNG `R3` (`4/4`) — HOÀN TẤT (chờ Codex Review & F5 kiểm tra trước 🛑 `R4-T1`)** (Đã dựng `res://game/battle/battle.tscn` + `battle.gd` (`396` dòng) + `battle_fx_bridge.gd` (`194` dòng) nối trọn vẹn `BattleSession`, `BattleMap`, `BattleCamera2D`, `BattleInputFSM`, `CombatJuiceHelper`, `BattleAudioManager`, `BattleHud`; cập nhật `main_menu.tscn` làm `run/main_scene` chuyển vào `battle.tscn`; xóa hoàn toàn `battle_map_view.gd`, `battle_sandbox_cp1.gd`, `battle_sandbox_cp1.tscn`, `hud_sandbox_bridge.gd`).
+- **Nhiệm vụ kế tiếp:** **🛑 `R4-T1` (CỔNG DỪNG BẮT BUỘC HỎI NGƯỜI DÙNG — `DEC-022`):** Dừng lại hoàn toàn trước khi tạo/vẽ bất kỳ asset mới nào; báo cáo người dùng chọn phương án & công cụ cho 2 mẫu đối chiếu (`Pixel Art` vs `2D Cách điệu EasyTech`) và asset Chiến thuyền / Bãi cọc Bạch Đằng.
+- **Tiến độ lộ trình Tái kiến trúc (`R1–R5`):** `11 / 15` nhiệm vụ (R1: `4/4`, R2: `3/3`, R3: `4/4`, R4: `0/2` 🛑 Cổng dừng hỏi người dùng, R5: `0/2`).
+- **Trạng thái Giai đoạn 1 (`CP1–CP5` cũ):** **Hoàn Tất Tái Kiến Trúc Editor-First 4 Tầng (`R1–R3`)** — Toàn bộ `Sim`, `Data (.tres)`, `HUD (.tscn)`, `UnitView`, `TileMapLayer (Pointy-Top odd_r)`, và `battle.tscn` hoạt động thông suốt ở 60 FPS và không còn phụ thuộc `BattleMapView`/`BattleSandboxCP1` cũ.
 
 ---
 

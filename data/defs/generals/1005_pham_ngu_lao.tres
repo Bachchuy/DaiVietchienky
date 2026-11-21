@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="GeneralDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/general_def.gd" id="1_wevye"]
+
+[resource]
+script = ExtResource("1_wevye")
+general_id = 1005
+code = "pham_ngu_lao"
+display_name = "Điện Súy Phạm Ngũ Lão"
+command_stat = 24
+luck = 76
+m_command = 1.18
+infantry_mult = 1.25
+archer_mult = 1.1
+cavalry_mult = 1.15
+naval_mult = 1.1
+aura_damage_deepen = 10
+aura_damage_resist = 10
+unique_skill_id = 10001
+unique_skill_name = "Phụ Tử Chi Binh"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1288) [S6]"

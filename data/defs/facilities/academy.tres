@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FacilityDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/facility_def.gd" id="1_651s6"]
+
+[resource]
+script = ExtResource("1_651s6")
+facility_id = "Academy"
+type_code = 21
+display_name = "Giảng Võ Đường"
+tech_yield_per_level = Array[int]([20, 35, 50])
+max_tech_tier_per_level = Array[int]([1, 2, 3])
+upgrade_coin_cost = Array[int]([150, 300])
+upgrade_tech_cost = Array[int]([50, 100])

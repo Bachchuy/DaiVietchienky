@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_dthrt"]
+
+[resource]
+script = ExtResource("1_dthrt")
+troop_id = 40901
+code = "dai_nguyen_heavy_warship"
+display_name = "Chiến Thuyền Đại Nguyên"
+domain = 1
+command_branch = 5
+attack_mode = 5
+defense_mode = 3
+base_hp = 220
+min_attack = 38
+base_atk = 50
+base_def = 16
+critical_percent = 8
+max_range = 2
+mobility = 8
+fond_terrain = 5
+cost_coin = 75
+cost_food = 70
+meal_food = 20

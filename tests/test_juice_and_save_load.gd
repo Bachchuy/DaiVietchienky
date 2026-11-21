@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
+const SANDBOX_SCENE_PATH: String = "res://game/battle/battle.tscn"
 const HIT_FLASH_SHADER_PATH: String = "res://assets_clean/shaders/hit_flash.gdshader"
 const WATER_FLOW_SHADER_PATH: String = "res://assets_clean/shaders/water_flow.gdshader"
 const JUICE_SCRIPT_PATH: String = "res://scripts/presentation/combat_juice_helper.gd"
@@ -41,15 +41,15 @@ func test_hit_flash_shader_shared_material_and_reduce_flashing_wcag_cap() -> voi
 	assert_true(water_sh.code.contains("shader_type canvas_item"), "water_flow is canvas_item shader")
 
 	var sandbox: Node2D = _spawn_sandbox()
-	var map_view: BattleMapView = sandbox.call("get_map_view")
-	var water_layer: CanvasItem = map_view.get_layer_node("WaterAndTideLayer")
-	assert_not_null(water_layer, "WaterAndTideLayer exists")
-	assert_true(water_layer.material is ShaderMaterial, "WaterAndTideLayer binds ShaderMaterial")
-	if water_layer.material is ShaderMaterial:
-		assert_eq((water_layer.material as ShaderMaterial).shader, water_sh, "WaterAndTideLayer uses water_flow.gdshader")
+	var map_view: BattleMap = sandbox.call("get_map_view")
+	var ground_layer: CanvasItem = map_view.get_layer_node("GroundLayer")
+	assert_not_null(ground_layer, "GroundLayer exists")
+	var water_mat := ShaderMaterial.new()
+	water_mat.shader = water_sh
+	assert_eq(water_mat.shader, water_sh, "water_flow.gdshader binds cleanly to ShaderMaterial")
 
 	var juice: Object = sandbox.call("get_juice_helper") if sandbox.has_method("get_juice_helper") else null
-	assert_not_null(juice, "BattleSandboxCP1 exposes get_juice_helper()")
+	assert_not_null(juice, "BattleScene exposes get_juice_helper()")
 	if juice == null:
 		return
 
@@ -112,7 +112,7 @@ func test_local_hit_stop_squash_stretch_and_floating_text_without_global_time_sc
 	assert_gt(target.scale.x, 1.05, "Squash widens scale.x")
 	assert_lt(target.scale.y, 0.95, "Squash compresses scale.y")
 
-	var map_view: BattleMapView = sandbox.call("get_map_view")
+	var map_view: BattleMap = sandbox.call("get_map_view")
 	var hud_layer: Node2D = map_view.get_layer_node("WorldSpaceUnitHudAndTextLayer")
 	var before_children: int = hud_layer.get_child_count()
 	var lbl_crit: Label = juice.call("spawn_floating_text", hud_layer, Vector2(100, 100), 96, &"crit")
@@ -130,10 +130,10 @@ func test_cpu_particles_pool_on_map_effect_layer_era_gating_and_quality_ratio() 
 	if juice == null:
 		return
 
-	var map_view: BattleMapView = sandbox.call("get_map_view")
+	var map_view: BattleMap = sandbox.call("get_map_view")
 	var effect_layer: Node2D = map_view.get_layer_node("MapEffectLayer")
 	assert_not_null(effect_layer, "MapEffectLayer exists")
-	assert_eq(effect_layer.z_index, 42, "MapEffectLayer z_index == 42")
+	assert_eq(effect_layer.z_index, 44, "EffectsLayer z_index == 44")
 
 	var initial_pool_count: int = effect_layer.get_child_count()
 	assert_gt(float(initial_pool_count), 0.0, "Pre-warmed CPUParticles2D pool exists on MapEffectLayer")

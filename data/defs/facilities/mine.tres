@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FacilityDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/facility_def.gd" id="1_7kuye"]
+
+[resource]
+script = ExtResource("1_7kuye")
+facility_id = "Mine"
+type_code = 12
+display_name = "Xưởng Rèn Vũ Khí"
+coin_yield_per_level = Array[int]([30, 45, 60])
+tech_yield_per_level = Array[int]([25, 40, 55])
+upgrade_coin_cost = Array[int]([140, 280])
+upgrade_tech_cost = Array[int]([40, 80])

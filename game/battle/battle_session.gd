@@ -17,6 +17,8 @@ signal scenario_event_triggered(event_id: String, action_type: String, payload: 
 signal battle_ended(outcome_code: int)
 signal state_refreshed()
 
+@export var registry: DataRegistry
+@export var stage_def: StageDef
 @export var stage_id: int = 10101
 @export var default_seed: int = 12880409
 
@@ -26,11 +28,19 @@ var _event_manager: ScenarioEventManager = null
 
 
 func start_stage(p_stage_id: int = 10101, p_seed: int = 20260405) -> bool:
-	var ctrl: BattleGameController = ScenarioLoader.load_stage(p_stage_id, p_seed)
+	var ctrl: BattleGameController = null
+	var dlg: Dictionary = {}
+	var resolved_id: int = p_stage_id
+	if stage_def != null and (p_stage_id <= 0 or stage_def.stage_id == p_stage_id):
+		ctrl = ScenarioLoader.load_stage_def(stage_def, p_seed, registry)
+		dlg = stage_def.get_dialogues_dict()
+		resolved_id = stage_def.stage_id
+	else:
+		ctrl = ScenarioLoader.load_stage(p_stage_id, p_seed, registry)
+		dlg = ScenarioLoader.load_stage_dialogues(p_stage_id, registry)
 	if ctrl == null:
 		return false
-	var dlg: Dictionary = ScenarioLoader.load_stage_dialogues(p_stage_id)
-	attach_controller(ctrl, p_stage_id, dlg)
+	attach_controller(ctrl, resolved_id, dlg)
 	battle_started.emit(stage_id)
 	state_refreshed.emit()
 	return true

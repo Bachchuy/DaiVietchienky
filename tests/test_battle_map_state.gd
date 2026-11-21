@@ -158,7 +158,7 @@ func test_static_troop_json_loading_is_clean_and_typed() -> void:
 	if s["loader"] == null or s["unit"] == null:
 		return
 
-	var troops: Dictionary = s["loader"].load_troop_settings("res://data/settings/troop_settings.json")
+	var troops: Dictionary = s["loader"].load_troop_settings()
 	assert_gte(troops.size(), 5, "Should load canonical troop definitions")
 	assert_has(troops, 40101, "Must include Dai Viet Spear Infantry (40101)")
 

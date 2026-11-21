@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CodexEntryDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/codex_entry_def.gd" id="1_kfk8t"]
+
+[resource]
+script = ExtResource("1_kfk8t")
+entry_id = "ham_tu_chuong_duong_1285"
+title = "Song Chiến Hàm Tử – Chương Dương Năm 1285"
+era = "1285 — Thời Trần"
+evidence_grade = "A"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1285) [S6]"
+summary = "Chiêu Văn Vương Trần Nhật Duật và Chiêu Minh Vương Trần Quang Khải liên tiếp phá tan thủy quân Toa Đô ở bến Hàm Tử và Chương Dương độ, tạo bước ngoặt giải phóng kinh thành Thăng Long."

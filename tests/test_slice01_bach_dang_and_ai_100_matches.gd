@@ -25,10 +25,10 @@ func test_slice01_json_schema_and_zero_maphack_before_round4() -> void:
 		return
 
 	var loader_cls: GDScript = LoaderScript
-	var stages: Dictionary = loader_cls.call("load_stage_settings", "res://data/settings/stage_settings.json")
-	assert_has(stages, 10101, "stage_settings.json must contain stage_id 10101")
-	var tactics: Array = LoaderScript.load_json_array("res://data/settings/tactic_settings.json")
-	assert_gte(float(tactics.size()), 1.0, "tactic_settings.json must contain Hich Tuong Si")
+	var stages: Dictionary = loader_cls.call("load_stage_settings")
+	assert_has(stages, 10101, "registry.tres must contain stage_id 10101")
+	var tactics: Array[TacticDef] = LoaderScript.load_tactic_defs()
+	assert_gte(float(tactics.size()), 1.0, "registry.tres must contain Hich Tuong Si")
 
 	var ctrl: BattleGameController = sl.call("load_stage", 10101, 12880409) as BattleGameController
 	assert_not_null(ctrl)

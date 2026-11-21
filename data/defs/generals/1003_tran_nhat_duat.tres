@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="GeneralDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/general_def.gd" id="1_aktxc"]
+
+[resource]
+script = ExtResource("1_aktxc")
+general_id = 1003
+code = "tran_nhat_duat"
+display_name = "Chiêu Văn Vương Trần Nhật Duật"
+command_stat = 23
+luck = 80
+m_command = 1.16
+infantry_mult = 1.15
+archer_mult = 1.2
+cavalry_mult = 1.15
+naval_mult = 1.18
+aura_radius_hex = 2
+aura_damage_deepen = 8
+aura_damage_resist = 10
+unique_skill_id = 10001
+unique_skill_name = "Phá Trận Hàm Tử"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1285) [S6]"

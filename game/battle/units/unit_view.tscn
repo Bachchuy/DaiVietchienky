@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/battle/units/unit_view.gd" id="1_view"]
+[ext_resource type="Shader" path="res://assets_clean/hexcrown/shaders/faction_tint.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" path="res://assets_clean/hexcrown/units/mini_spear_man.png" id="3_tex"]
+[ext_resource type="Texture2D" path="res://assets_clean/icons/token_infantry.svg" id="4_tok"]
+[ext_resource type="Script" path="res://game/battle/units/unit_animator_component.gd" id="5_anim"]
+[ext_resource type="Script" path="res://game/battle/units/health_bar_component.gd" id="6_hp"]
+[ext_resource type="Script" path="res://game/battle/units/status_badge_component.gd" id="7_badge"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_faction_tint"]
+shader = ExtResource("2_shader")
+shader_parameter/target_color = Color(0.86, 0.18, 0.16, 1)
+shader_parameter/swap_amount = 1.0
+shader_parameter/is_selected = 0.0
+shader_parameter/selection_color = Color(0.98, 0.85, 0.25, 0.85)
+shader_parameter/is_attack_target = 0.0
+shader_parameter/attack_target_color = Color(0.95, 0.2, 0.2, 0.85)
+shader_parameter/is_heal_target = 0.0
+shader_parameter/heal_target_color = Color(0.2, 0.95, 0.35, 0.85)
+
+[node name="UnitView" type="Node2D" node_paths=PackedStringArray("sprite", "strategic_token", "anim_player", "animator", "health_bar", "status_badges")]
+y_sort_enabled = true
+script = ExtResource("1_view")
+sprite = NodePath("Sprite2D")
+strategic_token = NodePath("StrategicToken")
+anim_player = NodePath("AnimationPlayer")
+animator = NodePath("UnitAnimatorComponent")
+health_bar = NodePath("HealthBarComponent")
+status_badges = NodePath("StatusBadgeComponent")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+material = SubResource("ShaderMaterial_faction_tint")
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("3_tex")
+offset = Vector2(0, -9.5)
+hframes = 7
+vframes = 6
+
+[node name="StrategicToken" type="Sprite2D" parent="."]
+visible = false
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("4_tok")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="UnitAnimatorComponent" type="Node" parent="." node_paths=PackedStringArray("sprite", "anim_player")]
+script = ExtResource("5_anim")
+sprite = NodePath("../Sprite2D")
+anim_player = NodePath("../AnimationPlayer")
+
+[node name="HealthBarComponent" type="Node2D" parent="."]
+z_index = 25
+script = ExtResource("6_hp")
+
+[node name="StatusBadgeComponent" type="Node2D" parent="."]
+z_index = 26
+script = ExtResource("7_badge")

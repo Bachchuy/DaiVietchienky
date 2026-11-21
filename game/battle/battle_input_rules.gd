@@ -83,7 +83,7 @@ static func compute_hexes_within_radius(
 
 static func apply_hover_overlay(
 	ctrl: BattleGameController,
-	map_view: BattleMapView,
+	map_view: BattleMap,
 	is_unit_selected: bool,
 	is_skill_targeting: bool,
 	axial: Vector2i,
@@ -105,7 +105,7 @@ static func apply_hover_overlay(
 
 
 static func refresh_post_skill_cancel_view(
-	map_view: BattleMapView,
+	map_view: BattleMap,
 	active_unit: BattleUnit,
 	moved_this_action: bool
 ) -> void:
@@ -119,7 +119,7 @@ static func refresh_post_skill_cancel_view(
 			map_view.select_hex(active_unit.hex_position)
 
 
-static func refresh_after_undo(map_view: BattleMapView, active_unit: BattleUnit) -> void:
+static func refresh_after_undo(map_view: BattleMap, active_unit: BattleUnit) -> void:
 	if map_view == null:
 		return
 	map_view.refresh_all_layers()
@@ -127,7 +127,7 @@ static func refresh_after_undo(map_view: BattleMapView, active_unit: BattleUnit)
 		map_view.select_hex(active_unit.hex_position)
 
 
-static func refresh_after_move_complete(map_view: BattleMapView, active_unit: BattleUnit, keep_unit: bool) -> void:
+static func refresh_after_move_complete(map_view: BattleMap, active_unit: BattleUnit, keep_unit: bool) -> void:
 	if map_view == null:
 		return
 	map_view.refresh_all_layers()

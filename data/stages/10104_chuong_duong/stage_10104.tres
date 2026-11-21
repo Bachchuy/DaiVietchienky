@@ -1,0 +1,134 @@
+[gd_resource type="Resource" script_class="StageDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/named_area_def.gd" id="1_ep3sp"]
+[ext_resource type="Script" path="res://data/defs/defeat_condition_def.gd" id="2_88l51"]
+[ext_resource type="Script" path="res://data/defs/dialogue_line_def.gd" id="3_kyo8i"]
+[ext_resource type="Script" path="res://data/defs/stage_facility_def.gd" id="4_g21md"]
+[ext_resource type="Script" path="res://data/defs/stage_faction_def.gd" id="5_dwlnp"]
+[ext_resource type="Script" path="res://data/defs/unit_placement_def.gd" id="6_3hosc"]
+[ext_resource type="Script" path="res://data/defs/stage_def.gd" id="7_p15sr"]
+[ext_resource type="Script" path="res://data/defs/scenario_event_def.gd" id="8_3nhvm"]
+[ext_resource type="Script" path="res://data/defs/star_condition_def.gd" id="9_jmrrh"]
+[ext_resource type="Script" path="res://data/defs/terrain_override_def.gd" id="10_tyfrk"]
+[ext_resource type="Script" path="res://data/defs/victory_condition_def.gd" id="11_alpe1"]
+
+[sub_resource type="Resource" id="Resource_52c1k"]
+script = ExtResource("1_ep3sp")
+area_id = "chuong_duong_port"
+display_name = "Bến Chương Dương"
+hexes = Array[Vector2i]([Vector2i(2, 6)])
+initial_owner = 1
+is_objective = true
+
+[sub_resource type="Resource" id="Resource_pojjh"]
+script = ExtResource("2_88l51")
+area_id = "chuong_duong_port"
+
+[sub_resource type="Resource" id="Resource_m0bvv"]
+script = ExtResource("2_88l51")
+condition_type = "GeneralDefeated"
+target_general_id = 1002
+
+[sub_resource type="Resource" id="Resource_cks1e"]
+script = ExtResource("5_dwlnp")
+display_name = "Đại Việt"
+is_player = true
+target_generals = Array[int]([9002])
+protected_generals = Array[int]([1002])
+
+[sub_resource type="Resource" id="Resource_revf5"]
+script = ExtResource("5_dwlnp")
+faction_id = 2
+display_name = "Đại Nguyên"
+team_id = 2
+target_generals = Array[int]([1002])
+protected_generals = Array[int]([9002])
+
+[sub_resource type="Resource" id="Resource_fowgv"]
+script = ExtResource("6_3hosc")
+unit_id = 101
+troop_id = 40105
+troop_stack = 3
+hex_pos = Vector2i(2, 6)
+initial_morale = "HIGH"
+general_id = 1002
+general_name = "Trần Quang Khải"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_ros3d"]
+script = ExtResource("6_3hosc")
+unit_id = 102
+troop_stack = 3
+hex_pos = Vector2i(3, 5)
+general_id = 1005
+general_name = "Phạm Ngũ Lão"
+
+[sub_resource type="Resource" id="Resource_ihg6r"]
+script = ExtResource("6_3hosc")
+unit_id = 201
+faction_id = 2
+troop_id = 40903
+troop_stack = 3
+hex_pos = Vector2i(6, 2)
+general_id = 9002
+general_name = "Thoát Hoan"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_j6qwk"]
+script = ExtResource("6_3hosc")
+unit_id = 202
+faction_id = 2
+troop_id = 40904
+troop_stack = 2
+hex_pos = Vector2i(5, 3)
+
+[sub_resource type="Resource" id="Resource_vu1x6"]
+script = ExtResource("9_jmrrh")
+description = "Đoạt bến Chương Dương"
+
+[sub_resource type="Resource" id="Resource_ecde1"]
+script = ExtResource("9_jmrrh")
+star = 2
+condition_type = "MaxRounds"
+max_rounds = 6
+description = "Chiến thắng trong <= 6 vòng"
+
+[sub_resource type="Resource" id="Resource_44f0n"]
+script = ExtResource("9_jmrrh")
+star = 3
+condition_type = "MaxHpLossPercent"
+description = "Tổn thất HP <= 20%"
+
+[sub_resource type="Resource" id="Resource_yrkb6"]
+script = ExtResource("10_tyfrk")
+hex_pos = Vector2i(2, 6)
+terrain = 7
+
+[sub_resource type="Resource" id="Resource_21qnb"]
+script = ExtResource("10_tyfrk")
+hex_pos = Vector2i(6, 2)
+terrain = 6
+fort_owner = 2
+
+[sub_resource type="Resource" id="Resource_bkhdl"]
+script = ExtResource("11_alpe1")
+condition_type = "DefeatGeneral"
+target_general_id = 9002
+
+[resource]
+script = ExtResource("7_p15sr")
+stage_id = 10104
+code = "chuong_duong_1285"
+stage_name = "Đoạt Giáo Chương Dương Độ 1285"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Trận Chương Dương (1285) [S6]"
+map_width = 10
+map_height = 8
+max_rounds = 8
+preset_general_ids = Array[int]([1002, 1005])
+factions = Array[ExtResource("5_dwlnp")]([SubResource("Resource_cks1e"), SubResource("Resource_revf5")])
+terrain_overrides = Array[ExtResource("10_tyfrk")]([SubResource("Resource_yrkb6"), SubResource("Resource_21qnb")])
+areas = Array[ExtResource("1_ep3sp")]([SubResource("Resource_52c1k")])
+placements = Array[ExtResource("6_3hosc")]([SubResource("Resource_fowgv"), SubResource("Resource_ros3d"), SubResource("Resource_ihg6r"), SubResource("Resource_j6qwk")])
+victory_conditions = Array[ExtResource("11_alpe1")]([SubResource("Resource_bkhdl")])
+defeat_conditions = Array[ExtResource("2_88l51")]([SubResource("Resource_pojjh"), SubResource("Resource_m0bvv")])
+star_conditions = Array[ExtResource("9_jmrrh")]([SubResource("Resource_vu1x6"), SubResource("Resource_ecde1"), SubResource("Resource_44f0n")])

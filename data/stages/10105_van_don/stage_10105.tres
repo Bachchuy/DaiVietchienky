@@ -1,0 +1,211 @@
+[gd_resource type="Resource" script_class="StageDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/named_area_def.gd" id="1_6h76d"]
+[ext_resource type="Script" path="res://data/defs/defeat_condition_def.gd" id="2_ehc3t"]
+[ext_resource type="Script" path="res://data/defs/dialogue_line_def.gd" id="3_yq0x8"]
+[ext_resource type="Script" path="res://data/defs/stage_facility_def.gd" id="4_73yrp"]
+[ext_resource type="Script" path="res://data/defs/stage_faction_def.gd" id="5_a8bys"]
+[ext_resource type="Script" path="res://data/defs/unit_placement_def.gd" id="6_2gf0c"]
+[ext_resource type="Script" path="res://data/defs/stage_def.gd" id="7_dna54"]
+[ext_resource type="Script" path="res://data/defs/scenario_event_def.gd" id="8_rsnot"]
+[ext_resource type="Script" path="res://data/defs/star_condition_def.gd" id="9_1nopn"]
+[ext_resource type="Script" path="res://data/defs/terrain_override_def.gd" id="10_73yeu"]
+[ext_resource type="Script" path="res://data/defs/victory_condition_def.gd" id="11_a785c"]
+
+[sub_resource type="Resource" id="Resource_o62ki"]
+script = ExtResource("1_6h76d")
+area_id = "van_don_supply_port"
+display_name = "Bến Lương Vân Đồn"
+hexes = Array[Vector2i]([Vector2i(2, 6)])
+initial_owner = 1
+is_objective = true
+
+[sub_resource type="Resource" id="Resource_3disf"]
+script = ExtResource("2_ehc3t")
+area_id = "van_don_supply_port"
+
+[sub_resource type="Resource" id="Resource_kk6ik"]
+script = ExtResource("2_ehc3t")
+condition_type = "GeneralDefeated"
+target_general_id = 1004
+
+[sub_resource type="Resource" id="Resource_wcj0k"]
+script = ExtResource("4_73yrp")
+facility_instance_id = "van_don_farm_1"
+has_granary = true
+
+[sub_resource type="Resource" id="Resource_vj8t0"]
+script = ExtResource("4_73yrp")
+facility_instance_id = "van_don_market_1"
+facility_type = "Market"
+
+[sub_resource type="Resource" id="Resource_snhxg"]
+script = ExtResource("4_73yrp")
+facility_instance_id = "van_don_granary_1"
+facility_type = "Granary"
+has_granary = true
+
+[sub_resource type="Resource" id="Resource_weq11"]
+script = ExtResource("4_73yrp")
+facility_instance_id = "yuan_supply_convoy"
+owner_faction_id = 2
+level = 2
+turns_unrobbed = 2
+
+[sub_resource type="Resource" id="Resource_qpm5p"]
+script = ExtResource("5_a8bys")
+display_name = "Đại Việt"
+is_player = true
+target_generals = Array[int]([9001])
+protected_generals = Array[int]([1004])
+start_coin = 360
+start_food = 280
+start_tech = 140
+start_mana = 90
+
+[sub_resource type="Resource" id="Resource_fuear"]
+script = ExtResource("5_a8bys")
+faction_id = 2
+display_name = "Đoàn Lương Đại Nguyên"
+team_id = 2
+target_generals = Array[int]([1004])
+protected_generals = Array[int]([9001])
+start_food = 120
+start_tech = 100
+start_mana = 60
+
+[sub_resource type="Resource" id="Resource_x5cm4"]
+script = ExtResource("6_2gf0c")
+unit_id = 101
+troop_id = 40202
+troop_stack = 3
+hex_pos = Vector2i(4, 4)
+initial_morale = "HIGH"
+general_id = 1004
+general_name = "Trần Khánh Dư"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_tb20d"]
+script = ExtResource("6_2gf0c")
+unit_id = 102
+troop_id = 40105
+troop_stack = 2
+hex_pos = Vector2i(2, 6)
+general_id = 1006
+general_name = "Nguyễn Khoái"
+
+[sub_resource type="Resource" id="Resource_o66p7"]
+script = ExtResource("6_2gf0c")
+unit_id = 201
+faction_id = 2
+troop_id = 40901
+troop_stack = 3
+hex_pos = Vector2i(5, 2)
+general_id = 9001
+general_name = "Trương Văn Hổ"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_gvaxg"]
+script = ExtResource("6_2gf0c")
+unit_id = 202
+faction_id = 2
+troop_id = 40901
+troop_stack = 2
+hex_pos = Vector2i(4, 2)
+
+[sub_resource type="Resource" id="Resource_yajad"]
+script = ExtResource("9_1nopn")
+description = "Thiêu hủy đoàn thuyền lương Vân Đồn"
+
+[sub_resource type="Resource" id="Resource_fwvds"]
+script = ExtResource("9_1nopn")
+star = 2
+condition_type = "MaxRounds"
+max_rounds = 7
+description = "Chiến thắng trong <= 7 vòng"
+
+[sub_resource type="Resource" id="Resource_e74e2"]
+script = ExtResource("9_1nopn")
+star = 3
+condition_type = "MaxHpLossPercent"
+description = "Tổn thất HP <= 20%"
+
+[sub_resource type="Resource" id="Resource_tm3f2"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(4, 0)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_6jchb"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(5, 0)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_tacri"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(4, 1)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_o5vys"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(5, 1)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_3xnh0"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(4, 2)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_uepel"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(5, 2)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_3hult"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(4, 3)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_y2gpm"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(5, 3)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_r20be"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(4, 4)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_ojfc8"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(5, 4)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_cfi8b"]
+script = ExtResource("10_73yeu")
+hex_pos = Vector2i(2, 6)
+terrain = 6
+fort_owner = 1
+
+[sub_resource type="Resource" id="Resource_kuqnc"]
+script = ExtResource("11_a785c")
+condition_type = "DefeatGeneral"
+target_general_id = 9001
+
+[resource]
+script = ExtResource("7_dna54")
+stage_id = 10105
+code = "van_don_1288"
+stage_name = "Phục Kích Đoàn Lương Vân Đồn 1288"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Trần Khánh Dư đốt thuyền lương Vân Đồn (1288) [S6]"
+map_width = 10
+map_height = 8
+enable_economy = true
+preset_general_ids = Array[int]([1004, 1006])
+factions = Array[ExtResource("5_a8bys")]([SubResource("Resource_qpm5p"), SubResource("Resource_fuear")])
+terrain_overrides = Array[ExtResource("10_73yeu")]([SubResource("Resource_tm3f2"), SubResource("Resource_6jchb"), SubResource("Resource_tacri"), SubResource("Resource_o5vys"), SubResource("Resource_3xnh0"), SubResource("Resource_uepel"), SubResource("Resource_3hult"), SubResource("Resource_y2gpm"), SubResource("Resource_r20be"), SubResource("Resource_ojfc8"), SubResource("Resource_cfi8b")])
+areas = Array[ExtResource("1_6h76d")]([SubResource("Resource_o62ki")])
+facilities = Array[ExtResource("4_73yrp")]([SubResource("Resource_wcj0k"), SubResource("Resource_vj8t0"), SubResource("Resource_snhxg"), SubResource("Resource_weq11")])
+placements = Array[ExtResource("6_2gf0c")]([SubResource("Resource_x5cm4"), SubResource("Resource_tb20d"), SubResource("Resource_o66p7"), SubResource("Resource_gvaxg")])
+victory_conditions = Array[ExtResource("11_a785c")]([SubResource("Resource_kuqnc")])
+defeat_conditions = Array[ExtResource("2_ehc3t")]([SubResource("Resource_3disf"), SubResource("Resource_kk6ik")])
+star_conditions = Array[ExtResource("9_1nopn")]([SubResource("Resource_yajad"), SubResource("Resource_fwvds"), SubResource("Resource_e74e2")])

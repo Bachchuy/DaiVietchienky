@@ -1,0 +1,145 @@
+[gd_resource type="Resource" script_class="StageDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/named_area_def.gd" id="1_j0046"]
+[ext_resource type="Script" path="res://data/defs/defeat_condition_def.gd" id="2_dta7h"]
+[ext_resource type="Script" path="res://data/defs/dialogue_line_def.gd" id="3_cta2m"]
+[ext_resource type="Script" path="res://data/defs/stage_facility_def.gd" id="4_g0lxn"]
+[ext_resource type="Script" path="res://data/defs/stage_faction_def.gd" id="5_0vvk4"]
+[ext_resource type="Script" path="res://data/defs/unit_placement_def.gd" id="6_ra3gj"]
+[ext_resource type="Script" path="res://data/defs/stage_def.gd" id="7_bhlga"]
+[ext_resource type="Script" path="res://data/defs/scenario_event_def.gd" id="8_plocw"]
+[ext_resource type="Script" path="res://data/defs/star_condition_def.gd" id="9_upyhj"]
+[ext_resource type="Script" path="res://data/defs/terrain_override_def.gd" id="10_2vymw"]
+[ext_resource type="Script" path="res://data/defs/victory_condition_def.gd" id="11_7t4cc"]
+
+[sub_resource type="Resource" id="Resource_v58tv"]
+script = ExtResource("1_j0046")
+area_id = "noi_bang_pass"
+display_name = "Ải Nội Bàng"
+hexes = Array[Vector2i]([Vector2i(2, 6)])
+initial_owner = 1
+is_objective = true
+
+[sub_resource type="Resource" id="Resource_knkft"]
+script = ExtResource("2_dta7h")
+area_id = "noi_bang_pass"
+
+[sub_resource type="Resource" id="Resource_bon8x"]
+script = ExtResource("2_dta7h")
+condition_type = "GeneralDefeated"
+target_general_id = 1001
+
+[sub_resource type="Resource" id="Resource_sw7il"]
+script = ExtResource("5_0vvk4")
+display_name = "Đại Việt"
+is_player = true
+target_generals = Array[int]([9002])
+protected_generals = Array[int]([1001])
+
+[sub_resource type="Resource" id="Resource_gh6sl"]
+script = ExtResource("5_0vvk4")
+faction_id = 2
+display_name = "Đại Nguyên"
+team_id = 2
+target_generals = Array[int]([1001])
+protected_generals = Array[int]([9002])
+
+[sub_resource type="Resource" id="Resource_7iarb"]
+script = ExtResource("6_ra3gj")
+unit_id = 101
+troop_id = 40104
+troop_stack = 2
+hex_pos = Vector2i(2, 6)
+initial_morale = "HIGH"
+general_id = 1001
+general_name = "Trần Quốc Tuấn"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_v16yr"]
+script = ExtResource("6_ra3gj")
+unit_id = 102
+troop_stack = 3
+hex_pos = Vector2i(3, 4)
+initial_morale = "HIGH"
+general_id = 1005
+general_name = "Phạm Ngũ Lão"
+
+[sub_resource type="Resource" id="Resource_3wda0"]
+script = ExtResource("6_ra3gj")
+unit_id = 201
+faction_id = 2
+troop_id = 40903
+troop_stack = 3
+hex_pos = Vector2i(7, 2)
+general_id = 9002
+general_name = "Thoát Hoan"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_sxie7"]
+script = ExtResource("6_ra3gj")
+unit_id = 202
+faction_id = 2
+troop_id = 40904
+troop_stack = 2
+hex_pos = Vector2i(6, 2)
+
+[sub_resource type="Resource" id="Resource_yh4ls"]
+script = ExtResource("9_upyhj")
+description = "Truy kích đại quân Thoát Hoan tại ải Nội Bàng"
+
+[sub_resource type="Resource" id="Resource_b8ibo"]
+script = ExtResource("9_upyhj")
+star = 2
+condition_type = "MaxRounds"
+description = "Chiến thắng trong <= 8 vòng"
+
+[sub_resource type="Resource" id="Resource_bt3cw"]
+script = ExtResource("9_upyhj")
+star = 3
+condition_type = "MaxHpLossPercent"
+description = "Tổn thất HP <= 20%"
+
+[sub_resource type="Resource" id="Resource_0el8u"]
+script = ExtResource("10_2vymw")
+hex_pos = Vector2i(3, 3)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_xw7ly"]
+script = ExtResource("10_2vymw")
+hex_pos = Vector2i(4, 3)
+terrain = 1
+
+[sub_resource type="Resource" id="Resource_x0wb8"]
+script = ExtResource("10_2vymw")
+hex_pos = Vector2i(5, 3)
+terrain = 2
+
+[sub_resource type="Resource" id="Resource_5oi55"]
+script = ExtResource("10_2vymw")
+hex_pos = Vector2i(2, 6)
+terrain = 6
+fort_owner = 1
+
+[sub_resource type="Resource" id="Resource_e07pf"]
+script = ExtResource("11_7t4cc")
+condition_type = "DefeatGeneral"
+target_general_id = 9002
+
+[resource]
+script = ExtResource("7_bhlga")
+stage_id = 10106
+code = "noi_bang_1288"
+stage_name = "Truy Kích Nội Bàng – Vạn Kiếp 1288"
+recommended_difficulty = "hard"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Trận Nội Bàng (1288) [S6]"
+map_width = 10
+map_height = 8
+max_general_seats = 3
+preset_general_ids = Array[int]([1001, 1005, 1006])
+factions = Array[ExtResource("5_0vvk4")]([SubResource("Resource_sw7il"), SubResource("Resource_gh6sl")])
+terrain_overrides = Array[ExtResource("10_2vymw")]([SubResource("Resource_0el8u"), SubResource("Resource_xw7ly"), SubResource("Resource_x0wb8"), SubResource("Resource_5oi55")])
+areas = Array[ExtResource("1_j0046")]([SubResource("Resource_v58tv")])
+placements = Array[ExtResource("6_ra3gj")]([SubResource("Resource_7iarb"), SubResource("Resource_v16yr"), SubResource("Resource_3wda0"), SubResource("Resource_sxie7")])
+victory_conditions = Array[ExtResource("11_7t4cc")]([SubResource("Resource_e07pf")])
+defeat_conditions = Array[ExtResource("2_dta7h")]([SubResource("Resource_knkft"), SubResource("Resource_bon8x")])
+star_conditions = Array[ExtResource("9_upyhj")]([SubResource("Resource_yh4ls"), SubResource("Resource_b8ibo"), SubResource("Resource_bt3cw")])

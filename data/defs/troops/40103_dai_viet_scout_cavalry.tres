@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_auydl"]
+
+[resource]
+script = ExtResource("1_auydl")
+troop_id = 40103
+code = "dai_viet_scout_cavalry"
+display_name = "Khinh Kỵ Trinh Sát"
+command_branch = 2
+attack_mode = 2
+defense_mode = 1
+base_hp = 150
+min_attack = 32
+base_atk = 42
+base_def = 10
+critical_percent = 10
+mobility = 10
+vision_range = 4
+fond_terrain = 0
+ignore_zoc = true
+features = Array[StringName]([&"ignore_zoc"])
+cost_coin = 60
+cost_food = 65
+meal_food = 20

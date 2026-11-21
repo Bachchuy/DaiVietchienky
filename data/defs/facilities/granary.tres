@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FacilityDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/facility_def.gd" id="1_rn1xo"]
+
+[resource]
+script = ExtResource("1_rn1xo")
+facility_id = "Granary"
+type_code = 20
+display_name = "Kho Lương Chiến Trường"
+food_cap_bonus_per_level = Array[int]([500, 1000, 1500])
+rob_protection_multiplier = 0.5
+upgrade_coin_cost = Array[int]([100, 200])
+upgrade_tech_cost = Array[int]([25, 50])

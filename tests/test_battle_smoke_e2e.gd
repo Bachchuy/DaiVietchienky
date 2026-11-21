@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
+const SANDBOX_SCENE_PATH: String = "res://game/battle/battle.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu.tscn"
 
 const HexMathScript = preload("res://sim/rules/hex_math.gd")
@@ -51,8 +51,8 @@ func _push_click_screen(screen_pos: Vector2) -> void:
 		tree.root.push_input(ev)
 
 
-func _click_hex_real_input(sandbox: Node2D, map_view: BattleMapView, axial: Vector2i) -> void:
-	var world_pos: Vector2 = HexMathScript.axial_to_world(axial, map_view.hex_size)
+func _click_hex_real_input(sandbox: Node2D, map_view: BattleMap, axial: Vector2i) -> void:
+	var world_pos: Vector2 = map_view.axial_to_world(axial)
 	var screen_pos: Vector2 = sandbox.get_canvas_transform() * world_pos
 	_push_click_screen(screen_pos)
 
@@ -135,7 +135,7 @@ func test_smoke_one_tap_attack_and_unit_inspector_no_preview() -> void:
 	var hud: BattleHud = sandbox.call("get_hud_controller") as BattleHud
 	var ctrl: BattleGameController = sandbox.call("get_controller") as BattleGameController
 	var fsm: BattleInputFSM = sandbox.call("get_input_fsm") as BattleInputFSM
-	var map_view: BattleMapView = sandbox.call("get_map_view") as BattleMapView
+	var map_view: BattleMap = sandbox.call("get_map_view") as BattleMap
 	var cam: BattleCameraController = sandbox.call("get_camera") as BattleCameraController
 	await tree.process_frame
 
@@ -151,7 +151,7 @@ func test_smoke_one_tap_attack_and_unit_inspector_no_preview() -> void:
 	if ctrl.context.map_state.get_unit_at(target_hex) != null:
 		ctrl.context.map_state.remove_unit(ctrl.context.map_state.get_unit_at(target_hex).unit_id)
 	ctrl.context.map_state.move_unit(e202, target_hex)
-	cam.pan_to_world_pos(HexMathScript.axial_to_world(u101.hex_position, map_view.hex_size), true)
+	cam.pan_to_world_pos(map_view.axial_to_world(u101.hex_position), true)
 	await tree.process_frame
 
 	_click_hex_real_input(sandbox, map_view, u101.hex_position)
@@ -254,6 +254,15 @@ func test_smoke_bach_dang_tide_fall_and_victory_journey() -> void:
 
 
 func test_smoke_main_menu_and_save_resume_roundtrip() -> void:
+	assert_eq(str(ProjectSettings.get_setting("application/run/main_scene", "")), MAIN_MENU_SCENE_PATH, "Project main_scene must launch main_menu.tscn")
+	for legacy_path: String in [
+		"res://scripts/presentation/battle_map_view.gd",
+		"res://scripts/presentation/battle_sandbox_cp1.gd",
+		"res://scenes/battle/battle_sandbox_cp1.tscn",
+		"res://ui/battle_hud/hud_sandbox_bridge.gd",
+	]:
+		assert_false(ResourceLoader.exists(legacy_path) or FileAccess.file_exists(legacy_path), "Legacy file removed in R3-T4: " + legacy_path)
+
 	var menu_packed: PackedScene = load(MAIN_MENU_SCENE_PATH) as PackedScene
 	assert_not_null(menu_packed, "main_menu.tscn loads")
 	if menu_packed != null:

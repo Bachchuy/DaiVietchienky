@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_fj623"]
+
+[resource]
+script = ExtResource("1_fj623")
+troop_id = 40102
+code = "dai_viet_crossbow"
+display_name = "Cung Nỏ Thủy Lục"
+command_branch = 1
+attack_mode = 3
+defense_mode = 1
+base_hp = 130
+min_attack = 28
+base_atk = 38
+base_def = 8
+critical_percent = 10
+counter_percent = 50
+max_range = 2
+vision_range = 4
+fond_terrain = 2
+features = Array[StringName]([&"volley_fire"])
+cost_coin = 45
+cost_food = 45

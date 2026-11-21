@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_hyy80"]
+
+[resource]
+script = ExtResource("1_hyy80")
+troop_id = 40106
+code = "dai_viet_militia_pikemen"
+display_name = "Hương Binh Câu Liêm"
+defense_mode = 1
+base_hp = 145
+min_attack = 26
+base_atk = 35
+base_def = 10
+critical_percent = 6
+counter_percent = 90
+fond_terrain = 1
+features = Array[StringName]([&"forest_ambush"])
+cost_coin = 35
+cost_food = 40

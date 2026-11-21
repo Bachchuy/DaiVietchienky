@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/battle/map/battle_map.gd" id="1_battle_map"]
+[ext_resource type="PackedScene" path="res://data/stages/10101_bach_dang/stage_10101_map.tscn" id="2_stage_map"]
+[ext_resource type="Script" path="res://game/battle/map/hex_overlay_layer.gd" id="3_overlay"]
+[ext_resource type="PackedScene" path="res://game/battle/units/unit_view.tscn" id="4_unit_view"]
+
+[node name="BattleMap" type="Node2D" node_paths=PackedStringArray("stage_map_slot", "stage_map", "overlay_layer", "buildings_layer", "units_layer", "effects_layer")]
+script = ExtResource("1_battle_map")
+stage_map_slot = NodePath("StageMapSlot")
+stage_map = NodePath("StageMapSlot/Stage10101Map")
+overlay_layer = NodePath("HexOverlayLayer")
+buildings_layer = NodePath("BuildingsLayer")
+units_layer = NodePath("UnitsLayer")
+effects_layer = NodePath("EffectsLayer")
+unit_view_scene = ExtResource("4_unit_view")
+
+[node name="StageMapSlot" type="Node2D" parent="."]
+
+[node name="Stage10101Map" parent="StageMapSlot" instance=ExtResource("2_stage_map")]
+
+[node name="HexOverlayLayer" type="Node2D" parent="."]
+z_index = 12
+script = ExtResource("3_overlay")
+
+[node name="BuildingsLayer" type="Node2D" parent="."]
+z_index = 24
+y_sort_enabled = true
+
+[node name="UnitsLayer" type="Node2D" parent="."]
+z_index = 36
+y_sort_enabled = true
+
+[node name="EffectsLayer" type="Node2D" parent="."]
+z_index = 44

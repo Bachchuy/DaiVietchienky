@@ -1,0 +1,169 @@
+[gd_resource type="Resource" script_class="StageDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/named_area_def.gd" id="1_1abkw"]
+[ext_resource type="Script" path="res://data/defs/defeat_condition_def.gd" id="2_chxeg"]
+[ext_resource type="Script" path="res://data/defs/dialogue_line_def.gd" id="3_iojdf"]
+[ext_resource type="Script" path="res://data/defs/stage_facility_def.gd" id="4_a3n8q"]
+[ext_resource type="Script" path="res://data/defs/stage_faction_def.gd" id="5_oyisi"]
+[ext_resource type="Script" path="res://data/defs/unit_placement_def.gd" id="6_yoffw"]
+[ext_resource type="Script" path="res://data/defs/stage_def.gd" id="7_gpqpp"]
+[ext_resource type="Script" path="res://data/defs/scenario_event_def.gd" id="8_vuj2e"]
+[ext_resource type="Script" path="res://data/defs/star_condition_def.gd" id="9_mq571"]
+[ext_resource type="Script" path="res://data/defs/terrain_override_def.gd" id="10_s38xy"]
+[ext_resource type="Script" path="res://data/defs/victory_condition_def.gd" id="11_ucc63"]
+
+[sub_resource type="Resource" id="Resource_ess52"]
+script = ExtResource("1_1abkw")
+area_id = "ham_tu_dock"
+display_name = "Bến Hàm Tử"
+hexes = Array[Vector2i]([Vector2i(3, 6)])
+initial_owner = 1
+is_objective = true
+
+[sub_resource type="Resource" id="Resource_gahen"]
+script = ExtResource("2_chxeg")
+area_id = "ham_tu_dock"
+
+[sub_resource type="Resource" id="Resource_05c0a"]
+script = ExtResource("2_chxeg")
+condition_type = "GeneralDefeated"
+target_general_id = 1003
+
+[sub_resource type="Resource" id="Resource_5ojyw"]
+script = ExtResource("5_oyisi")
+display_name = "Đại Việt"
+is_player = true
+target_generals = Array[int]([9001])
+protected_generals = Array[int]([1003])
+
+[sub_resource type="Resource" id="Resource_6qiaq"]
+script = ExtResource("5_oyisi")
+faction_id = 2
+display_name = "Đại Nguyên"
+team_id = 2
+target_generals = Array[int]([1003])
+protected_generals = Array[int]([9001])
+
+[sub_resource type="Resource" id="Resource_kaqi4"]
+script = ExtResource("6_yoffw")
+unit_id = 101
+troop_stack = 3
+hex_pos = Vector2i(3, 6)
+initial_morale = "HIGH"
+general_id = 1003
+general_name = "Trần Nhật Duật"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_lpudc"]
+script = ExtResource("6_yoffw")
+unit_id = 102
+troop_id = 40102
+troop_stack = 2
+hex_pos = Vector2i(2, 5)
+general_id = 1005
+general_name = "Phạm Ngũ Lão"
+
+[sub_resource type="Resource" id="Resource_cuq6v"]
+script = ExtResource("6_yoffw")
+unit_id = 201
+faction_id = 2
+troop_id = 40901
+troop_stack = 3
+hex_pos = Vector2i(5, 2)
+general_id = 9001
+general_name = "Ô Mã Nhi"
+is_commander_in_chief = true
+
+[sub_resource type="Resource" id="Resource_qn13a"]
+script = ExtResource("6_yoffw")
+unit_id = 202
+faction_id = 2
+troop_id = 40903
+troop_stack = 2
+hex_pos = Vector2i(6, 3)
+
+[sub_resource type="Resource" id="Resource_ixthw"]
+script = ExtResource("9_mq571")
+description = "Đánh tan chiến thuyền địch ở bến Hàm Tử"
+
+[sub_resource type="Resource" id="Resource_dk8d5"]
+script = ExtResource("9_mq571")
+star = 2
+condition_type = "MaxRounds"
+max_rounds = 6
+description = "Chiến thắng trong <= 6 vòng"
+
+[sub_resource type="Resource" id="Resource_ay1xs"]
+script = ExtResource("9_mq571")
+star = 3
+condition_type = "MaxHpLossPercent"
+max_loss_percent = 25.0
+description = "Tổn thất HP <= 25%"
+
+[sub_resource type="Resource" id="Resource_oxnvp"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(4, 0)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_kyem4"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(5, 0)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_iv2nb"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(4, 1)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_mf7rf"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(5, 1)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_m04k2"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(4, 2)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_htxic"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(5, 2)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_uwsu0"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(4, 3)
+terrain = 4
+
+[sub_resource type="Resource" id="Resource_mv34e"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(5, 3)
+terrain = 5
+
+[sub_resource type="Resource" id="Resource_7018i"]
+script = ExtResource("10_s38xy")
+hex_pos = Vector2i(3, 6)
+terrain = 7
+
+[sub_resource type="Resource" id="Resource_w1xrx"]
+script = ExtResource("11_ucc63")
+condition_type = "DefeatGeneral"
+target_general_id = 9001
+
+[resource]
+script = ExtResource("7_gpqpp")
+stage_id = 10103
+code = "ham_tu_1285"
+stage_name = "Phá Trận Bến Hàm Tử 1285"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Trận Hàm Tử (1285) [S6]"
+map_width = 10
+map_height = 8
+max_rounds = 8
+preset_general_ids = Array[int]([1003, 1005])
+factions = Array[ExtResource("5_oyisi")]([SubResource("Resource_5ojyw"), SubResource("Resource_6qiaq")])
+terrain_overrides = Array[ExtResource("10_s38xy")]([SubResource("Resource_oxnvp"), SubResource("Resource_kyem4"), SubResource("Resource_iv2nb"), SubResource("Resource_mf7rf"), SubResource("Resource_m04k2"), SubResource("Resource_htxic"), SubResource("Resource_uwsu0"), SubResource("Resource_mv34e"), SubResource("Resource_7018i")])
+areas = Array[ExtResource("1_1abkw")]([SubResource("Resource_ess52")])
+placements = Array[ExtResource("6_yoffw")]([SubResource("Resource_kaqi4"), SubResource("Resource_lpudc"), SubResource("Resource_cuq6v"), SubResource("Resource_qn13a")])
+victory_conditions = Array[ExtResource("11_ucc63")]([SubResource("Resource_w1xrx")])
+defeat_conditions = Array[ExtResource("2_chxeg")]([SubResource("Resource_gahen"), SubResource("Resource_05c0a")])
+star_conditions = Array[ExtResource("9_mq571")]([SubResource("Resource_ixthw"), SubResource("Resource_dk8d5"), SubResource("Resource_ay1xs")])

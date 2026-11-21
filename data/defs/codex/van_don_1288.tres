@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CodexEntryDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/codex_entry_def.gd" id="1_a70wq"]
+
+[resource]
+script = ExtResource("1_a70wq")
+entry_id = "van_don_1288"
+title = "Trận Vân Đồn – Cửa Lục Năm 1288 (Trần Khánh Dư)"
+era = "1288 — Thời Trần"
+evidence_grade = "A"
+source_ref = "Đại Việt Sử Ký Toàn Thư — Bản Kỷ Quyển V (1288) [S6]"
+summary = "Nhân Huệ Vương Trần Khánh Dư phục kích đoàn thuyền lương của Trương Văn Hổ tại Vân Đồn, cắt đứt hoàn toàn mạch hậu cần lương thảo của đại quân Thoát Hoan và buộc thủy quân Ô Mã Nhi phải rút theo đường sông Bạch Đằng."

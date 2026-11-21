@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_s04oh"]
+
+[resource]
+script = ExtResource("1_s04oh")
+troop_id = 40101
+code = "dai_viet_spear_infantry"
+display_name = "Bộ Binh Trường Giáo"
+fond_terrain = 1
+features = Array[StringName]([&"anti_cavalry_brace", &"forest_ambush"])

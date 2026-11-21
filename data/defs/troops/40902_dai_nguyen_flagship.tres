@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_pmyng"]
+
+[resource]
+script = ExtResource("1_pmyng")
+troop_id = 40902
+code = "dai_nguyen_flagship"
+display_name = "Soái Hạm Lâu Thuyền Đại Nguyên"
+domain = 1
+command_branch = 5
+attack_mode = 5
+defense_mode = 3
+base_hp = 240
+min_attack = 42
+base_atk = 54
+base_def = 18
+critical_percent = 10
+max_range = 2
+mobility = 8
+vision_range = 4
+fond_terrain = 5
+features = Array[StringName]([&"flagship_command"])
+cost_coin = 95
+cost_food = 85
+meal_food = 20

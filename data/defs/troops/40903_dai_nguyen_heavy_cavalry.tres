@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TroopDef" format=3]
+
+[ext_resource type="Script" path="res://data/defs/troop_def.gd" id="1_qqr7r"]
+
+[resource]
+script = ExtResource("1_qqr7r")
+troop_id = 40903
+code = "dai_nguyen_heavy_cavalry"
+display_name = "Thiết Kỵ Đại Nguyên"
+command_branch = 2
+attack_mode = 2
+defense_mode = 3
+base_hp = 195
+min_attack = 40
+base_atk = 52
+base_def = 15
+critical_percent = 10
+mobility = 10
+fond_terrain = 0
+features = Array[StringName]([&"steppe_charge"])
+cost_coin = 80
+cost_food = 75
+meal_food = 20
