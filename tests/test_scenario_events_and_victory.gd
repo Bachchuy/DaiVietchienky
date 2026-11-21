@@ -1,16 +1,16 @@
 extends "res://tests/test_case.gd"
 
-const EVT_MGR_PATH: String = "res://scripts/core/scenario_event_manager.gd"
-const VIC_EVAL_PATH: String = "res://scripts/core/scenario_victory_evaluator.gd"
+const EVT_MGR_PATH: String = "res://sim/rules/scenario_event_manager.gd"
+const VIC_EVAL_PATH: String = "res://sim/rules/scenario_victory_evaluator.gd"
 
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const DirectorScript = preload("res://scripts/core/scenario_director.gd")
-const ControllerScript = preload("res://scripts/core/battle_game_controller.gd")
-const CmdsScript = preload("res://scripts/core/battle_commands.gd")
-const LoaderScript = preload("res://scripts/core/static_data_loader.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const DirectorScript = preload("res://sim/state/scenario_director.gd")
+const ControllerScript = preload("res://sim/state/battle_game_controller.gd")
+const CmdsScript = preload("res://sim/commands/battle_commands.gd")
+const LoaderScript = preload("res://sim/state/static_data_loader.gd")
 
 
 func _load_scenario_scripts() -> Dictionary:

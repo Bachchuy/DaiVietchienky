@@ -1,9 +1,9 @@
 extends "res://tests/test_case.gd"
 
 const BattleSandboxScene = preload("res://scenes/battle/battle_sandbox_cp1.tscn")
-const ScenarioLoader = preload("res://scripts/core/scenario_loader.gd")
-const BattleCommands = preload("res://scripts/core/battle_commands.gd")
-const AIDecisionMatrix = preload("res://scripts/ai/ai_decision_matrix.gd")
+const ScenarioLoader = preload("res://sim/state/scenario_loader.gd")
+const BattleCommands = preload("res://sim/commands/battle_commands.gd")
+const AIDecisionMatrix = preload("res://sim/ai/ai_decision_matrix.gd")
 
 
 func test_export_presets_web_and_android_contracts() -> void:
@@ -99,7 +99,9 @@ func test_stress_30x30_44_units_and_campaign_stages_60fps_budget() -> void:
 
 
 func test_user_fs_write_only_discipline_and_export_state_documentation() -> void:
-	var scripts: Array[String] = _collect_gd_files("res://scripts")
+	var scripts: Array[String] = []
+	for root_dir: String in ["res://sim", "res://game", "res://ui", "res://scripts"]:
+		scripts.append_array(_collect_gd_files(root_dir))
 	assert_true(scripts.size() >= 25, "At least 25 project scripts audited")
 	var write_regex := RegEx.new()
 	write_regex.compile("FileAccess\\.open\\s*\\(\\s*\"res://[^\"]+\"\\s*,\\s*FileAccess\\.(WRITE|READ_WRITE|WRITE_READ)")

@@ -1,10 +1,10 @@
 extends "res://tests/test_case.gd"
 
-const NAV_PATH: String = "res://scripts/core/hex_grid_navigator.gd"
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
+const NAV_PATH: String = "res://sim/rules/hex_grid_navigator.gd"
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
 
 
 func _load_nav() -> Variant:

@@ -1,11 +1,11 @@
 extends "res://tests/test_case.gd"
 
-const CONTROLLER_PATH: String = "res://scripts/core/battle_game_controller.gd"
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const CmdsScript = preload("res://scripts/core/battle_commands.gd")
+const CONTROLLER_PATH: String = "res://sim/state/battle_game_controller.gd"
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const CmdsScript = preload("res://sim/commands/battle_commands.gd")
 
 
 func _load_controller_script() -> GDScript:
@@ -227,18 +227,21 @@ func test_50_turns_deterministic_replay_zero_hp_or_state_drift() -> void:
 
 
 func test_all_core_scripts_are_100_percent_scenetree_independent() -> void:
-	var dir: DirAccess = DirAccess.open("res://scripts/core")
-	assert_not_null(dir)
-	dir.list_dir_begin()
-	var entry: String = dir.get_next()
-	while not entry.is_empty():
-		if entry.ends_with(".gd"):
-			var path: String = "res://scripts/core/".path_join(entry)
-			var f: FileAccess = FileAccess.open(path, FileAccess.READ)
-			var src: String = f.get_as_text()
-			f.close()
-			assert_false(src.contains("extends Node"), path + " must NOT extend Node")
-			assert_false(src.contains("get_tree()"), path + " must NOT touch SceneTree")
-			assert_false(src.contains("RenderingServer"), path + " must NOT touch RenderingServer")
-		entry = dir.get_next()
-	dir.list_dir_end()
+	for sim_dir: String in ["res://sim/state", "res://sim/commands", "res://sim/rules"]:
+		var dir: DirAccess = DirAccess.open(sim_dir)
+		assert_not_null(dir, sim_dir + " must exist")
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var entry: String = dir.get_next()
+		while not entry.is_empty():
+			if entry.ends_with(".gd"):
+				var path: String = sim_dir.path_join(entry)
+				var f: FileAccess = FileAccess.open(path, FileAccess.READ)
+				var src: String = f.get_as_text()
+				f.close()
+				assert_false(src.contains("extends Node"), path + " must NOT extend Node")
+				assert_false(src.contains("get_tree()"), path + " must NOT touch SceneTree")
+				assert_false(src.contains("RenderingServer"), path + " must NOT touch RenderingServer")
+			entry = dir.get_next()
+		dir.list_dir_end()

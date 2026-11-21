@@ -1,18 +1,18 @@
 extends "res://tests/test_case.gd"
 
-const DIRECTOR_PATH: String = "res://scripts/core/scenario_director.gd"
-const VIEW_PATH: String = "res://scripts/core/ai_visible_map_view.gd"
-const PROFILE_PATH: String = "res://scripts/ai/ai_difficulty_profile.gd"
-const CANDIDATE_PATH: String = "res://scripts/ai/ai_action_candidate.gd"
-const MATRIX_PATH: String = "res://scripts/ai/ai_decision_matrix.gd"
+const DIRECTOR_PATH: String = "res://sim/state/scenario_director.gd"
+const VIEW_PATH: String = "res://sim/state/ai_visible_map_view.gd"
+const PROFILE_PATH: String = "res://sim/ai/ai_difficulty_profile.gd"
+const CANDIDATE_PATH: String = "res://sim/ai/ai_action_candidate.gd"
+const MATRIX_PATH: String = "res://sim/ai/ai_decision_matrix.gd"
 
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const ContextScript = preload("res://scripts/core/battle_context.gd")
-const ControllerScript = preload("res://scripts/core/battle_game_controller.gd")
-const RngScript = preload("res://scripts/core/seeded_rng.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const ContextScript = preload("res://sim/state/battle_context.gd")
+const ControllerScript = preload("res://sim/state/battle_game_controller.gd")
+const RngScript = preload("res://sim/rules/seeded_rng.gd")
 
 
 func _load_ai_scripts() -> Dictionary:
@@ -253,15 +253,15 @@ func test_ai_full_turn_determinism_and_under_1_5s_budget() -> void:
 
 
 func test_ai_scripts_are_scenetree_independent() -> void:
-	var dir: DirAccess = DirAccess.open("res://scripts/ai")
-	assert_not_null(dir, "res://scripts/ai must exist")
+	var dir: DirAccess = DirAccess.open("res://sim/ai")
+	assert_not_null(dir, "res://sim/ai must exist")
 	if dir == null:
 		return
 	dir.list_dir_begin()
 	var entry: String = dir.get_next()
 	while not entry.is_empty():
 		if entry.ends_with(".gd"):
-			var path: String = "res://scripts/ai/".path_join(entry)
+			var path: String = "res://sim/ai/".path_join(entry)
 			var f: FileAccess = FileAccess.open(path, FileAccess.READ)
 			var src: String = f.get_as_text()
 			f.close()

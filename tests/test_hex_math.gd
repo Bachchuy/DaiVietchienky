@@ -1,6 +1,6 @@
 extends "res://tests/test_case.gd"
 
-const HEX_MATH_PATH: String = "res://scripts/core/hex_math.gd"
+const HEX_MATH_PATH: String = "res://sim/rules/hex_math.gd"
 
 
 func _load_hex_math() -> GDScript:

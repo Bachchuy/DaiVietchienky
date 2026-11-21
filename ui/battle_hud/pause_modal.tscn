@@ -1,0 +1,107 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://ui/common/modal_frame.tscn" id="1_frame"]
+[ext_resource type="Script" path="res://ui/battle_hud/pause_modal.gd" id="2_script"]
+
+[node name="PauseSettingsModal" type="Control"]
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_script")
+
+[node name="ModalFrame" parent="." instance=ExtResource("1_frame")]
+layout_mode = 1
+preferred_width = 580.0
+min_body_height = 240.0
+
+[node name="ShakeRow" type="HBoxContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+
+[node name="ShakeLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/ShakeRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Cường độ Rung màn hình (0-100%):"
+
+[node name="ShakeScaleSlider" type="HSlider" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/ShakeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 100.0
+
+[node name="ReduceFlashingCheck" type="CheckBox" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+text = "Giảm chớp sáng (Reduce Flashing — WCAG 2.3.1)"
+
+[node name="VfxRow" type="HBoxContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+
+[node name="VfxLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/VfxRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Chất lượng Hiệu ứng (VFX Quality):"
+
+[node name="VfxQualityOption" type="OptionButton" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/VfxRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MasterRow" type="HBoxContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+
+[node name="MasterLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/MasterRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Âm lượng Tổng (Master):"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 85.0
+
+[node name="BgmRow" type="HBoxContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+
+[node name="BgmLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/BgmRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Âm lượng Nhạc nền (BGM):"
+
+[node name="BgmVolumeSlider" type="HSlider" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/BgmRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 80.0
+
+[node name="SfxRow" type="HBoxContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+
+[node name="SfxLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/SfxRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "Âm lượng Hiệu ứng (SFX):"
+
+[node name="SfxVolumeSlider" type="HSlider" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/SfxRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 85.0
+
+[node name="SaveAndExitButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(128, 36)
+layout_mode = 2
+text = "LƯU & THOÁT"
+
+[node name="RestartButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(116, 36)
+layout_mode = 2
+text = "CHƠI LẠI"
+
+[node name="ResumeButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "TIẾP TỤC"
+
+[editable path="ModalFrame"]

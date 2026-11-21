@@ -1,7 +1,7 @@
 extends "res://tests/test_case.gd"
 
 const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
 
 
 func _load_sandbox() -> Node2D:

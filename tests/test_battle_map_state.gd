@@ -1,10 +1,10 @@
 extends "res://tests/test_case.gd"
 
-const MAP_STATE_PATH: String = "res://scripts/core/battle_map_state.gd"
-const UNIT_PATH: String = "res://scripts/core/battle_unit.gd"
-const UNIT_STATE_PATH: String = "res://scripts/core/unit_combat_state.gd"
-const LOADER_PATH: String = "res://scripts/core/static_data_loader.gd"
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
+const MAP_STATE_PATH: String = "res://sim/state/battle_map_state.gd"
+const UNIT_PATH: String = "res://sim/state/battle_unit.gd"
+const UNIT_STATE_PATH: String = "res://sim/state/unit_combat_state.gd"
+const LOADER_PATH: String = "res://sim/state/static_data_loader.gd"
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
 
 
 func _load_scripts() -> Dictionary:

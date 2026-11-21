@@ -1,15 +1,15 @@
 extends "res://tests/test_case.gd"
 
-const FSM_PATH: String = "res://scripts/presentation/battle_input_fsm.gd"
+const FSM_PATH: String = "res://game/battle/battle_input_fsm.gd"
 const VIEW_PATH: String = "res://scripts/presentation/battle_map_view.gd"
 const CAM_PATH: String = "res://scripts/presentation/battle_camera_controller.gd"
 
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const ControllerScript = preload("res://scripts/core/battle_game_controller.gd")
-const DirectorScript = preload("res://scripts/core/scenario_director.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const ControllerScript = preload("res://sim/state/battle_game_controller.gd")
+const DirectorScript = preload("res://sim/state/scenario_director.gd")
 
 
 func _make_unit(
@@ -97,8 +97,7 @@ func _bind_signal_recorders(fsm: Node) -> Dictionary:
 	var rec := {
 		"states": [],
 		"focused": [],
-		"previews": [],
-		"cleared": 0,
+		"inspected": [],
 		"rejected": [],
 	}
 	fsm.connect("state_changed", func(old_s: int, new_s: int) -> void:
@@ -107,11 +106,8 @@ func _bind_signal_recorders(fsm: Node) -> Dictionary:
 	fsm.connect("unit_focused", func(u: BattleUnit) -> void:
 		(rec["focused"] as Array).append(u)
 	)
-	fsm.connect("target_preview_requested", func(att: BattleUnit, def_u: BattleUnit, prev: Dictionary) -> void:
-		(rec["previews"] as Array).append({"attacker": att, "defender": def_u, "preview": prev})
-	)
-	fsm.connect("target_preview_cleared", func() -> void:
-		rec["cleared"] = int(rec["cleared"]) + 1
+	fsm.connect("hex_inspected", func(ax: Vector2i, u: BattleUnit) -> void:
+		(rec["inspected"] as Array).append({"axial": ax, "unit": u})
 	)
 	fsm.connect("action_rejected", func(reason: String) -> void:
 		(rec["rejected"] as Array).append(reason)
@@ -413,84 +409,56 @@ func test_post_move_action_five_condition_undo_branch_c() -> void:
 	assert_false(bool(fsm_trap.call("request_undo")))
 
 
-func test_two_step_combat_confirmation_in_place_and_post_move() -> void:
-	# Part A: In-place 2-step attack (UNIT_SELECTED -> AIMING_TARGET -> ATTACKING -> IDLE), retarget, cancel, out-of-range
+func test_one_tap_direct_attack_in_place_and_post_move() -> void:
+	# Part A: 7-state contract + In-place 1-tap attack (UNIT_SELECTED -> ATTACKING -> IDLE), out-of-range focus
 	var rig: Dictionary = _create_rig(10, 10, false)
 	if rig.is_empty():
 		return
 	var map_state: BattleMapState = rig["map_state"]
-	var ctrl: BattleGameController = rig["controller"]
-	var view: Node2D = rig["view"]
 	var fsm: Node = rig["fsm"]
 	var fsm_s: GDScript = rig["fsm_script"]
 	var rec: Dictionary = _bind_signal_recorders(fsm)
 
-	var state_selected: int = int(fsm_s.get("State")["UNIT_SELECTED"])
-	var state_post_move: int = int(fsm_s.get("State")["POST_MOVE_ACTION"])
-	var state_aiming: int = int(fsm_s.get("State")["AIMING_TARGET"])
-	var state_attacking: int = int(fsm_s.get("State")["ATTACKING"])
-	var state_idle: int = int(fsm_s.get("State")["IDLE"])
+	var states_dict: Dictionary = fsm_s.get("State") as Dictionary
+	assert_eq(states_dict.size(), 7, "FSM must have exactly 7 states (DEC-026)")
+	assert_false(states_dict.has("AIMING_TARGET"), "AIMING_TARGET must be removed")
+
+	var state_selected: int = int(states_dict["UNIT_SELECTED"])
+	var state_post_move: int = int(states_dict["POST_MOVE_ACTION"])
+	var state_attacking: int = int(states_dict["ATTACKING"])
+	var state_idle: int = int(states_dict["IDLE"])
 
 	var archer: BattleUnit = _make_unit(101, 1, Vector2i(2, 2), 0, 120, 6, 1, 2)
 	var foe_a: BattleUnit = _make_unit(201, 3, Vector2i(3, 2), 0, 120, 6)
-	var foe_b: BattleUnit = _make_unit(202, 3, Vector2i(2, 3), 0, 120, 6)
 	var foe_far: BattleUnit = _make_unit(203, 3, Vector2i(7, 7), 0, 120, 6)
 	map_state.place_unit(archer)
 	map_state.place_unit(foe_a)
-	map_state.place_unit(foe_b)
 	map_state.place_unit(foe_far)
 	_start_rig(rig)
 
 	fsm.call("tap_hex", archer.hex_position)
 	assert_eq(int(fsm.call("get_state")), state_selected)
 
-	# Out-of-range hostile rejected in UNIT_SELECTED
+	# Out-of-range hostile focuses UnitInspector, stays UNIT_SELECTED, deals 0 damage
 	(rec["rejected"] as Array).clear()
+	(rec["focused"] as Array).clear()
 	fsm.call("tap_hex", foe_far.hex_position)
 	assert_eq(int(fsm.call("get_state")), state_selected)
+	assert_eq((rec["focused"] as Array).back(), foe_far, "Out-of-range enemy emits unit_focused for UnitInspector")
 	assert_has(rec["rejected"], "target_out_of_range")
-
-	# 1st tap on foe_a -> AIMING_TARGET (no damage dealt yet, RNG untouched!)
-	var rng_state_before: int = ctrl.context.rng.get_state()
-	fsm.call("tap_hex", foe_a.hex_position)
-	assert_eq(int(fsm.call("get_state")), state_aiming)
-	assert_eq(fsm.call("get_aim_target"), foe_a)
-	assert_eq(view.call("get_aim_target_hex"), foe_a.hex_position)
-	assert_eq(foe_a.state.current_hp, 120)
+	assert_eq(foe_far.state.current_hp, 120)
 	assert_false(archer.state.has_acted)
-	assert_eq(ctrl.context.rng.get_state(), rng_state_before)
-	assert_eq((rec["previews"] as Array).size(), 1)
-	var prev_dict: Dictionary = (rec["previews"] as Array)[0]["preview"]
-	assert_has(prev_dict, "min_damage")
-	assert_has(prev_dict, "max_damage")
-	assert_has(prev_dict, "crit_rate")
-	assert_has(prev_dict, "counter_min_damage")
-	assert_has(prev_dict, "counter_max_damage")
 
-	# Tap distinct hostile foe_b -> switches target, stays AIMING_TARGET
-	fsm.call("tap_hex", foe_b.hex_position)
-	assert_eq(int(fsm.call("get_state")), state_aiming)
-	assert_eq(fsm.call("get_aim_target"), foe_b)
-	assert_eq(view.call("get_aim_target_hex"), foe_b.hex_position)
-	assert_eq((rec["previews"] as Array).size(), 2)
-
-	# Cancel aiming -> UNIT_SELECTED (since not moved) + target_preview_cleared
-	assert_true(bool(fsm.call("cancel_or_deselect")))
-	assert_eq(int(fsm.call("get_state")), state_selected)
-	assert_eq(int(rec["cleared"]), 1)
-
-	# 1st tap foe_a -> 2nd tap foe_a -> ATTACKING -> IDLE
+	# 1st tap on foe_a in range -> immediately ATTACKING -> IDLE
 	(rec["states"] as Array).clear()
-	fsm.call("tap_hex", foe_a.hex_position)
-	assert_eq(int(fsm.call("get_state")), state_aiming)
 	fsm.call("tap_hex", foe_a.hex_position)
 	assert_eq(int(fsm.call("get_state")), state_idle)
 	assert_true(archer.state.has_acted)
 	assert_lt(float(foe_a.state.current_hp), 120.0)
-	assert_has(rec["states"], [state_aiming, state_attacking])
+	assert_has(rec["states"], [state_selected, state_attacking])
 	assert_has(rec["states"], [state_attacking, state_idle])
 
-	# Part B: PostMoveAction Branch (a) 2-step attack & confirm_attack()
+	# Part B: PostMoveAction 1-tap immediate attack (POST_MOVE_ACTION -> ATTACKING -> IDLE)
 	var rig_pm: Dictionary = _create_rig(10, 10, false)
 	var ms_pm: BattleMapState = rig_pm["map_state"]
 	var fsm_pm: Node = rig_pm["fsm"]
@@ -506,21 +474,12 @@ func test_two_step_combat_confirmation_in_place_and_post_move() -> void:
 	fsm_pm.call("tap_hex", HexMathScript.odd_r_to_axial(Vector2i(2, 3)))
 	assert_eq(int(fsm_pm.call("get_state")), state_post_move)
 
-	# 1st tap target_pm -> AIMING_TARGET; cancel returns to POST_MOVE_ACTION!
-	fsm_pm.call("tap_hex", target_pm.hex_position)
-	assert_eq(int(fsm_pm.call("get_state")), state_aiming)
-	assert_true(bool(fsm_pm.call("cancel_or_deselect")))
-	assert_eq(int(fsm_pm.call("get_state")), state_post_move)
-	assert_eq(int(rec_pm["cleared"]), 1)
-
-	# Re-aim and confirm_attack() -> ATTACKING -> IDLE
 	(rec_pm["states"] as Array).clear()
 	fsm_pm.call("tap_hex", target_pm.hex_position)
-	assert_true(bool(fsm_pm.call("confirm_attack")))
 	assert_eq(int(fsm_pm.call("get_state")), state_idle)
 	assert_true(mover.state.has_acted)
 	assert_lt(float(target_pm.state.current_hp), 120.0)
-	assert_has(rec_pm["states"], [state_aiming, state_attacking])
+	assert_has(rec_pm["states"], [state_post_move, state_attacking])
 	assert_has(rec_pm["states"], [state_attacking, state_idle])
 
 
@@ -675,17 +634,17 @@ func test_right_click_vs_camera_drag_threshold_harmony() -> void:
 	var cam: Camera2D = rig["camera"]
 	var fsm: Node = rig["fsm"]
 	var fsm_s: GDScript = rig["fsm_script"]
+	var rec: Dictionary = _bind_signal_recorders(fsm)
 
 	var state_idle: int = int(fsm_s.get("State")["IDLE"])
 	var state_selected: int = int(fsm_s.get("State")["UNIT_SELECTED"])
-	var state_aiming: int = int(fsm_s.get("State")["AIMING_TARGET"])
+	var state_skill: int = int(fsm_s.get("State")["SKILL_TARGETING"])
 
-	# Wire camera clean_right_clicked -> fsm.cancel_or_deselect (mirrors BattleSandboxCP1)
 	cam.connect("clean_right_clicked", func(_screen_pos: Vector2) -> void:
 		fsm.call("cancel_or_deselect")
 	)
 
-	var u1: BattleUnit = _make_unit(101, 1, Vector2i(2, 2), 0, 120, 6, 1, 2)
+	var u1: BattleUnit = _make_unit(101, 1, Vector2i(2, 2), 1001, 120, 6, 1, 2)
 	var enemy: BattleUnit = _make_unit(201, 3, Vector2i(3, 2), 0, 120, 6)
 	map_state.place_unit(u1)
 	map_state.place_unit(enemy)
@@ -719,9 +678,9 @@ func test_right_click_vs_camera_drag_threshold_harmony() -> void:
 	assert_gt(cam.global_position.distance_to(cam_pos_before), 5.0, "Right-drag > 6px must pan camera")
 	assert_eq(int(fsm.call("get_state")), state_selected, "Right-drag > 6px must NOT deselect UNIT_SELECTED")
 
-	# 2. Enter AIMING_TARGET, then clean right-click (<= 6px, e.g. 2px): does NOT pan, cancels to UNIT_SELECTED
-	fsm.call("tap_hex", enemy.hex_position)
-	assert_eq(int(fsm.call("get_state")), state_aiming)
+	# 2. Enter SKILL_TARGETING, then clean right-click (<= 6px, e.g. 2px): does NOT pan, cancels to UNIT_SELECTED
+	assert_true(bool(fsm.call("enter_skill_targeting")))
+	assert_eq(int(fsm.call("get_state")), state_skill)
 	var cam_pos_mid: Vector2 = cam.global_position
 
 	var p2 := InputEventMouseButton.new()
@@ -745,7 +704,7 @@ func test_right_click_vs_camera_drag_threshold_harmony() -> void:
 		cam.call("_process", 1.0 / 60.0)
 
 	assert_almost_eq(cam.global_position.distance_to(cam_pos_mid), 0.0, 0.01, "Clean right-click <= 6px must NOT pan camera")
-	assert_eq(int(fsm.call("get_state")), state_selected, "Clean right-click <= 6px must cancel AIMING_TARGET -> UNIT_SELECTED")
+	assert_eq(int(fsm.call("get_state")), state_selected, "Clean right-click <= 6px must cancel SKILL_TARGETING -> UNIT_SELECTED")
 
 	# 3. Clean right-click again in UNIT_SELECTED -> IDLE
 	var p3 := InputEventMouseButton.new()
@@ -759,6 +718,12 @@ func test_right_click_vs_camera_drag_threshold_harmony() -> void:
 	r3.position = Vector2(400.0, 400.0)
 	cam.call("_unhandled_input", r3)
 	assert_eq(int(fsm.call("get_state")), state_idle, "Clean right-click in UNIT_SELECTED must deselect -> IDLE")
+
+	# 4. Inspecting an enemy hex in IDLE focuses UnitInspector without leaving IDLE
+	(rec["focused"] as Array).clear()
+	fsm.call("inspect_hex", enemy.hex_position)
+	assert_eq(int(fsm.call("get_state")), state_idle, "inspect_hex keeps FSM in IDLE")
+	assert_eq((rec["focused"] as Array).back(), enemy, "inspect_hex focuses enemy unit")
 
 
 func test_battle_sandbox_cp1_fsm_integration() -> void:

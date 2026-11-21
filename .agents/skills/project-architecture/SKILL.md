@@ -67,10 +67,9 @@ Tên thư mục/tệp `snake_case` chữ thường 100% (an toàn `.pck` Web/And
 2. Sim: luật trong `sim/` + unit test headless (`tests/run_tests.gd`), giữ tất định.
 3. Session: thêm signal có kiểu / Command mới.
 4. View: scene `.tscn` (mở được trong editor, view 2D có nội dung), nối signal, dùng theme.
-5. E2E: test hành vi + `assert_button_reachable()` cho mọi nút mới (xem templates).
-6. Screenshot windowed, **mở xem**: nút đi tiếp có thấy không, chữ có cắt/tràn không.
-7. Mở editor: view 2D + Inspector hiển thị đúng; F5 từ `main_menu.tscn`.
-8. Commit riêng; cập nhật `.ai/HANDOFF.md`.
+5. Test: thêm/chạy test lọc (`--suite=...`) gồm `assert_button_reachable()` + `push_click_control()` cho nút UI mới, rồi chạy full fast suite `tests/run_tests.gd` (không mặc định chụp ảnh PNG).
+6. Cung cấp checklist `F5` ngắn (2–3 bước) để người dùng tự kiểm tra View 2D/Inspector và luồng chơi trong Editor.
+7. Khi chốt Task/Cổng: cập nhật gọn `STATE.md`/`TASKS.md` và `.ai/HANDOFF.md` (`<= 25` dòng).
 
 ## 5. Lấy gì / tránh gì từ HexCrown
 

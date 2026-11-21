@@ -2,10 +2,10 @@
 
 - **Dự án:** Đại Việt Chiến Kỳ (`VietNamHistoryStrategy`) — Godot 4.7.2, Thuần GDScript 2.0 (`gl_compatibility`).
 - **Tài liệu chuẩn:** **GDD v3.5 (Editor-First 4-Tier Architecture)** (`docs/gdd/`), quy chuẩn [AGENTS.md](AGENTS.md), kỹ năng `.agents/skills/project-architecture/SKILL.md`.
-- **Cổng hiện tại:** **CHUYỂN SANG GIAI ĐOẠN TÁI KIẾN TRÚC `R1–R5` (`CP6–CP10`)** — Đã hoàn tất cập nhật đồng bộ tài liệu thiết kế & kế hoạch theo `DEC-021..DEC-026`, dừng chờ người dùng kiểm duyệt tài liệu trước khi bắt đầu code `R1-T1`.
-- **Nhiệm vụ kế tiếp:** **`R1-T1`** (Di chuyển tầng Lõi sang `res://sim/`, dựng `BattleSession`, rút gọn `BattleInputFSM` sang 7 trạng thái bỏ `AIMING_TARGET` — đánh ngay 1 chạm như `HexCrown`).
-- **Tiến độ lộ trình Tái kiến trúc (`R1–R5`):** `0 / 15` nhiệm vụ (R1: `0/4`, R2: `0/3`, R3: `0/4`, R4: `0/2` 🛑 Cổng dừng hỏi người dùng, R5: `0/2`).
-- **Trạng thái Giai đoạn 1 (`CP1–CP5` cũ):** **Lõi Sim Đạt / Vỏ UI-Data-Đồ họa & CombatPreview Cũ Bị Bác Bỏ (`DEC-025`)** — Giữ lại toàn bộ code lõi tính toán & `82/82` unit tests (`6585 assertions`, exit `0`); bộ vỏ UI code-gen, dữ liệu JSON tĩnh, scene 1-node và `CombatPreviewBox` được thay thế hoàn toàn ở `R1–R3`.
+- **Cổng hiện tại:** **HOÀN TẤT CỔNG `R1` (`CP6`: `4/4`) — CHỜ NGƯỜI DÙNG `F5` & CODEX REVIEW** (Hoàn tất `R1-T1..R1-T4` + `DEC-027`: cấu trúc 4 tầng, HUD `.tscn` + `theme.tres` + `ModalFrame`, bỏ `CombatPreviewBox` & `AIMING_TARGET`, thêm `test_battle_smoke_e2e.gd`, tinh gọn bộ test xuống ~8.5s với `--suite`/`--stress` và bỏ quy trình chụp ảnh mặc định).
+- **Nhiệm vụ kế tiếp:** **`R2-T1`** (Định nghĩa các lớp Custom `Resource` có `@export` trong `res://data/defs/` sau khi chốt Cổng `R1`).
+- **Tiến độ lộ trình Tái kiến trúc (`R1–R5`):** `4 / 15` nhiệm vụ (R1: `4/4`, R2: `0/3`, R3: `0/4`, R4: `0/2` 🛑 Cổng dừng hỏi người dùng, R5: `0/2`).
+- **Trạng thái Giai đoạn 1 (`CP1–CP5` cũ):** **Lõi Sim Đạt / Vỏ UI-Data-Đồ họa & CombatPreview Cũ Bị Bác Bỏ (`DEC-025`)** — Đã chuyển xong lõi sang `res://sim/` (`R1-T1`) và thay xong toàn bộ HUD sang `.tscn` + `theme.tres` (`R1-T2`, `R1-T3`); dữ liệu tĩnh JSON (`data/settings/*.json`) và bản đồ `_draw()` (`battle_map_view.gd`) sẽ tiếp tục thay thế ở `R2–R3`.
 
 ---
 
@@ -15,6 +15,7 @@
 - **`DEC-023` (Dữ liệu `.tres` + `@tool` Scene):** Chuyển toàn bộ dữ liệu tĩnh sang Custom `Resource` (`.tres`) chỉnh trong Inspector; bản đồ địa hình/đặt quân dựng bằng `TileMapLayer` + `@tool` trong `stage_<id>_map.tscn`; JSON chỉ dùng cho `user://saves/` và Replay.
 - **`DEC-024` (Kiến trúc 4 Tầng `<= 400 dòng/script`):** `data/` -> `sim/` (`RefCounted`) -> `BattleSession` (`Node` giữ state, phát `signal`) -> `game/battle/` & `ui/` (`.tscn` + `theme.tres`); xóa bỏ `battle_hud_controller.gd` (1.556 dòng), `battle_map_view.gd` (880 dòng), `battle_sandbox_cp1.gd` (806 dòng).
 - **`DEC-026` (Bỏ Triết lý Biết Trước):** Xóa hoàn toàn `CombatPreviewBox` và `AimingTarget`; thay bằng `UnitInspector` chỉ hiển thị thông số thô của từng đạo quân và cơ chế **đánh ngay 1 chạm** như `HexCrown` (người chơi tự tính, hệ thống tung `Seeded RNG` khi va chạm).
+- **`DEC-027` (Tinh gọn Kiểm thử & Quy trình):** Xóa `tests/e2e/` (6.267 dòng), các script/ảnh chụp cũ và skill 3D thừa; thay bằng `test_battle_smoke_e2e.gd` + `--suite`/`--stress` trong `run_tests.gd` (chạy fast suite < 10s) và bỏ quy trình AI chụp/đọc ảnh mặc định.
 
 ---
 

@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://ui/common/theme.tres" id="1_theme"]
+[ext_resource type="Script" path="res://ui/battle_hud/top_bar.gd" id="2_script"]
+
+[node name="TopStatusBar" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 40.0
+grow_horizontal = 2
+mouse_filter = 0
+theme = ExtResource("1_theme")
+theme_type_variation = &"HudPanel"
+script = ExtResource("2_script")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PauseButton" type="Button" parent="Row"]
+custom_minimum_size = Vector2(104, 30)
+layout_mode = 2
+focus_mode = 0
+text = "⏸ TẠM DỪNG"
+
+[node name="ModeLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.86, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "ĐẠI VIỆT CHIẾN KỲ | VÒNG 01/10 | LƯỢT: ĐẠI VIỆT"
+vertical_alignment = 1
+
+[node name="ManaLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Mưu: 0"
+vertical_alignment = 1
+
+[node name="EconomyContainer" type="HBoxContainer" parent="Row"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinLabel" type="Label" parent="Row/EconomyContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.42, 1)
+theme_override_font_sizes/font_size = 13
+text = "Tiền: 0"
+
+[node name="FoodLabel" type="Label" parent="Row/EconomyContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.96, 0.64, 1)
+theme_override_font_sizes/font_size = 13
+text = "Lương: 0"
+
+[node name="TechLabel" type="Label" parent="Row/EconomyContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Kỹ nghệ: 0"
+
+[node name="ObjectiveLabel" type="Label" parent="Row"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.92, 0.94, 0.96, 1)
+theme_override_font_sizes/font_size = 12
+text = "Mục tiêu: Giữ Bến Tín Hiệu (2,8) & Hạ Ô Mã Nhi"
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="PerfLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.74, 1)
+theme_override_font_sizes/font_size = 12
+text = "FPS: 60 | 1.00x | Quân: 0"
+vertical_alignment = 1

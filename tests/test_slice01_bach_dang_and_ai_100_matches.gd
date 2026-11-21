@@ -1,16 +1,16 @@
 extends "res://tests/test_case.gd"
 
-const SCENARIO_LOADER_PATH: String = "res://scripts/core/scenario_loader.gd"
+const SCENARIO_LOADER_PATH: String = "res://sim/state/scenario_loader.gd"
 
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const CmdsScript = preload("res://scripts/core/battle_commands.gd")
-const ControllerScript = preload("res://scripts/core/battle_game_controller.gd")
-const AIProfileScript = preload("res://scripts/ai/ai_difficulty_profile.gd")
-const AIMatrixScript = preload("res://scripts/ai/ai_decision_matrix.gd")
-const LoaderScript = preload("res://scripts/core/static_data_loader.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const CmdsScript = preload("res://sim/commands/battle_commands.gd")
+const ControllerScript = preload("res://sim/state/battle_game_controller.gd")
+const AIProfileScript = preload("res://sim/ai/ai_difficulty_profile.gd")
+const AIMatrixScript = preload("res://sim/ai/ai_decision_matrix.gd")
+const LoaderScript = preload("res://sim/state/static_data_loader.gd")
 
 
 func _load_scenario_loader() -> GDScript:
@@ -169,10 +169,12 @@ func test_slice01_100_consecutive_ai_vs_ai_matches_no_softlock_and_fast_turns() 
 	var first_rng_state: int = 0
 	var first_unit_hps: Dictionary = {}
 
-	for match_idx: int in range(100):
+	var match_count: int = 100 if stress_mode else 4
+	var fog_limit: int = 20 if stress_mode else 2
+	for match_idx: int in range(match_count):
 		var seed_val: int = 1001 + match_idx
 		var ctrl: BattleGameController = sl.call("load_stage", 10101, seed_val) as BattleGameController
-		if match_idx < 20:
+		if match_idx < fog_limit:
 			ctrl.context.enable_fog_of_war = true
 
 		var safety_turns: int = 0
@@ -205,7 +207,7 @@ func test_slice01_100_consecutive_ai_vs_ai_matches_no_softlock_and_fast_turns() 
 			for u: BattleUnit in ctrl.context.map_state.get_all_units():
 				first_unit_hps[u.unit_id] = [u.hex_position, u.state.current_hp]
 
-	assert_eq(victories + defeats, 100, "All 100 AI-vs-AI matches must complete cleanly")
+	assert_eq(victories + defeats, match_count, "All %d AI-vs-AI matches must complete cleanly" % match_count)
 	assert_lt(max_turn_ms, 1500.0, "Max AI turn time across 100 matches must stay < 1500ms")
 	assert_gt(float(tide_events_verified), 0.0, "Round 4 TideFall event must fire in multi-round AI matches")
 

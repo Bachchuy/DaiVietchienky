@@ -6,11 +6,11 @@ const CODEX_SCENE_PATH: String = "res://scenes/ui/codex_panel.tscn"
 const CAMPAIGN_CTRL_PATH: String = "res://scripts/presentation/campaign_menu_controller.gd"
 const TUTORIAL_SCRIPT_PATH: String = "res://scripts/presentation/tutorial_overlay.gd"
 const CODEX_SCRIPT_PATH: String = "res://scripts/presentation/codex_panel.gd"
-const IP_AUDITOR_PATH: String = "res://scripts/core/asset_ip_auditor.gd"
-const SAVE_MANAGER_PATH: String = "res://scripts/core/battle_save_manager.gd"
+const IP_AUDITOR_PATH: String = "res://sim/rules/asset_ip_auditor.gd"
+const SAVE_MANAGER_PATH: String = "res://sim/state/battle_save_manager.gd"
 
-const ScenarioLoaderScript = preload("res://scripts/core/scenario_loader.gd")
-const StaticLoaderScript = preload("res://scripts/core/static_data_loader.gd")
+const ScenarioLoaderScript = preload("res://sim/state/scenario_loader.gd")
+const StaticLoaderScript = preload("res://sim/state/static_data_loader.gd")
 
 
 func _clear_saves() -> void:

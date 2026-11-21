@@ -1,12 +1,12 @@
 extends "res://tests/test_case.gd"
 
-const CTX_PATH: String = "res://scripts/core/battle_context.gd"
-const CMDS_PATH: String = "res://scripts/core/battle_commands.gd"
-const HIST_PATH: String = "res://scripts/core/command_history.gd"
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
+const CTX_PATH: String = "res://sim/state/battle_context.gd"
+const CMDS_PATH: String = "res://sim/commands/battle_commands.gd"
+const HIST_PATH: String = "res://sim/commands/command_history.gd"
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
 
 
 func _load_cmd_scripts() -> Dictionary:

@@ -1,27 +1,34 @@
-# Handoff Report — GDD v3.5 & Editor-First Reconstruction Roadmap (`R1–R5`, `DEC-021..DEC-026`)
+# Handoff Report — Gate R1 Complete (`R1-T4` & `DEC-027` Full Slimming Package)
 
-- **Status:** `READY_FOR_CODEX_REVIEW` (Documentation & Roadmap Synchronization — awaiting user review before starting `R1-T1` coding)
-- **Scope Completed:**
-  - Updated project governance, skill, decision log, task roadmap, current state, and all relevant GDD modules (`docs/gdd/` + `docs/assets/ASSET_CATALOG.md` + `docs/build_master_gdd.py`), and rebuilt `docs/TONG_HOP_KE_HOACH_THIET_KE_GDD_3_4.md`.
+- **Status:** `READY_FOR_CODEX_REVIEW` (Gate `R1` `4/4` complete; ready for user `F5` check & Codex review before `R2-T1`)
 
-## 1. Key Decisions & Changes Recorded (`DEC-021..DEC-026`)
-- **`DEC-021` (Vertical Slice First):** Complete Vertical Slice `10101` (Bạch Đằng 1288) to match/exceed `D:\code\HexCrown` across `R1–R4` before expanding to the remaining 5 Trần stages (`10102–10106`) in `R5`.
-- **`DEC-022` (Graphics Roadmap & Mandatory Stop Gate `R4`):** Inherit clean assets from `D:\code\HexCrown\assets` (`res://assets_clean/hexcrown/`) in `R3` to replace flat `_draw()` polygons; **STOP and ask the user** before creating any new art assets at `R4` (where 2 Bạch Đằng samples — `Pixel Art` vs `2D Stylized EasyTech` — will be built for visual comparison using user-chosen tools).
-- **`DEC-023` (`.tres` Custom Resources + Bidirectional `@tool` Stage Maps):** Replace static JSON data (`troop_settings`, `stage_settings`, `tactic_settings`, `facility_settings`, `codex_entries`, `battle_*.json`) with Inspector-editable `Resource` classes (`.tres` + `DataRegistry`) and `TileMapLayer`-based `stage_<id>_map.tscn` scenes. Keep `.json` strictly for runtime saves (`user://saves/`) and replays.
-- **`DEC-024` (4-Tier Architecture `<= 400 lines/script`):** Reorganize to `res://data/` → `res://sim/` (pure `RefCounted`) → `BattleSession` (`Node` holding `BattleState` & emitting typed signals) → `res://game/battle/` & `res://ui/` (`.tscn` scenes + `theme.tres`, typed `@export` DI); mark the 3 monolithic procedural presentation files (`battle_hud_controller.gd`, `battle_map_view.gd`, `battle_sandbox_cp1.gd`) for deletion in `R1–R3`.
-- **`DEC-025` (`CP1–CP5` Audit & `R1–R5` Gates):** Record in `TASKS.md` and `STATE.md` that `CP1–CP5` only passed the `Sim` core (`82/82` unit tests), while the old procedural UI/JSON/polygon shell is **REJECTED**; establish `R1–R5` (`CP6–CP10`) with mandatory `assert_button_reachable()` (`Viewport.push_input`) and Godot Editor 2D/Inspector verification.
-- **`DEC-026` (Remove Combat Preview & 2-Step `AimingTarget`):** Eliminate `CombatPreviewBox` and `AimingTarget`; replace with `UnitInspector` (`res://ui/battle_hud/unit_inspector.tscn`) showing raw unit/terrain stats only and **1-tap direct attack** (`BattleInputFSM` simplified to 7 states) like `HexCrown`.
+## 1. Summary of Changes
+- **Fast & Filterable Test Runner (`DEC-027`):**
+  - `res://tests/test_case.gd`: added `stress_mode`, `assert_button_reachable()` (visibility, disabled state, size, viewport bounds, `clip_contents` ancestors), `push_click_control()`, and `_stop_audio_in_subtree()` in `after_each()`.
+  - `res://tests/run_tests.gd`: added `--suite=<csv>`, `--stress`, `--fail-fast`, elapsed timer in `SUMMARY`, and `stress_mode` propagation.
+  - `res://tests/test_slice01_bach_dang_and_ai_100_matches.gd`: runs `4` AI-vs-AI matches by default (`100` when `--stress` is passed).
+- **Lean UI & Gameplay Smoke Suite (`R1-T4`):**
+  - Added `res://tests/test_battle_smoke_e2e.gd` (`273` lines, `5` tests covering `BriefingModal`/`DialogueModal`/`PauseSettingsModal`/`ResultSummaryModal` reachability + `Viewport.push_input()` clicks at `1280x720` and `1560x720`, `UnitInspector` + 1-tap attack without `CombatPreviewBox`/`AIMING_TARGET`, move/undo/wait/skill, Round 4 TideFall + 3-star victory, and `main_menu.tscn` + save/resume roundtrip).
+- **Deleted Bloat & Obsolete Files:**
+  - Deleted `tests/e2e/` (`6,267` lines / `6` scripts + `.uid` files, including nested `OS.execute` runners).
+  - Deleted `tests/capture_*.gd*` (`6` scripts) and `tests/artifacts/` (`21` PNGs + `.import` + `.gdignore`).
+  - Deleted `.agents/skills/godot-3d-essentials/` (unused 3D skill in 2D project).
+- **Streamlined Procedures & Stale Text Cleanup:**
+  - Updated `scripts/presentation/tutorial_overlay.gd` (`tip_two_step_attack` updated to reference `UnitInspector` + 1-tap attack).
+  - Streamlined `AGENTS.md` (no default screenshot capture/reading, no reading/rebuilding 443 KB `TONG_HOP_KE_HOACH_THIET_KE_GDD_3_4.md`, targeted `--suite=` iteration, `--stress` only on major Sim/AI changes or Gate sign-off).
+  - Updated `DECISIONS.md` (`DEC-027`), `TASKS.md` (`R1-T4` `[x]`), and `STATE.md` (`4/15`, Gate `R1` complete, `C5-T3` export toolchain note preserved).
 
-## 2. Changed Files
-- Governance & Plans: `AGENTS.md` (Rule 9), `.agents/skills/project-architecture/SKILL.md`, `DECISIONS.md` (`DEC-021..DEC-026` + superseded markers on `DEC-002/004/010/012/015`), `TASKS.md`, `STATE.md`, `.ai/HANDOFF.md`.
-- Primary & Secondary GDD Modules: `docs/gdd/README.md`, `docs/gdd/00_overview/document_control.md`, `docs/gdd/00_overview/conventions_glossary.md`, `docs/gdd/01_vision_player/vision_pillars.md`, `docs/gdd/01_vision_player/player_experience.md`, `docs/gdd/02_gameplay_systems/core_loop.md`, `docs/gdd/02_gameplay_systems/factions_economy.md`, `docs/gdd/02_gameplay_systems/meta_progression.md`, `docs/gdd/03_content_presentation/ui_ux.md`, `docs/gdd/03_content_presentation/audio_visual_narrative.md`, `docs/gdd/03_content_presentation/historical_framework.md`, `docs/gdd/04_production_roadmap/production_scope_mvp.md`, `docs/gdd/04_production_roadmap/implementation_plan.md`, `docs/gdd/04_production_roadmap/risks_open_decisions.md`, `docs/gdd/architecture/data_and_save_system.md`, `docs/gdd/ui_ux/battle_ui_and_rendering.md`, `docs/gdd/mechanics/combat_formulas.md`, `docs/gdd/mechanics/battlefield_economy.md`, `docs/gdd/mechanics/hex_grid_pathfinding.md`, `docs/gdd/mechanics/morale_and_status.md`, `docs/gdd/level_design/scenario_scripting_and_events.md`, `docs/gdd/ai/ai_decision_matrix.md`, `docs/gdd/appendices/appendix_a_benchmark_matrix.md`, `docs/gdd/appendices/appendix_c_extended_glossary.md`, `docs/assets/ASSET_CATALOG.md`, `docs/build_master_gdd.py`, and compiled `docs/TONG_HOP_KE_HOACH_THIET_KE_GDD_3_4.md`.
+## 2. Tests Run & Actual Verification Results
+- `.\godot.cmd --headless --script res://tests/run_tests.gd -- --suite=smoke`: `5/5` passed | `0` failed | `170` assertions.
+- `.\godot.cmd --headless --script res://tests/run_tests.gd` (full fast suite): `94/94` passed | `0` failed | `7048` assertions (down from `43.5s` + 2–3m nested E2E).
+- `tests/` reduced from `34` `.gd` files (`11,735` lines) + `21` PNGs down to `23` `.gd` files (`5,357` lines) + `0` PNGs.
 
-## 3. Verification
-- Compiled Master GDD via `python docs/build_master_gdd.py` (exit code `0`).
-- Cross-checked all modified docs for stale `CombatPreview` / `AimingTarget` / static JSON / `scripts/core` normative requirements (preserving historical `CHANGELOG_3.3_to_3.4.md` untouched).
-- **Important Note:** No `R1` GDScript/scene refactoring was started yet, per `DEC-025` ("stop for user inspection of revised GDD & roadmap before coding `R1`"). Existing runtime code/tests remain at the `d9e30ca` codebase state until `R1` begins.
+## 3. Known Limitations
+- Legacy presentation files (`battle_map_view.gd` `880` lines, `battle_sandbox_cp1.gd` `756` lines) remain until `R3-T4` (`battle.tscn` + `TileMapLayer`).
+- Static data remains JSON until Gate `R2` (`R2-T1..R2-T3`).
+- Local Godot Export Templates (`.tpz`) / `ANDROID_HOME` not installed yet (`C5-T3`).
 
-## 4. How to Verify
-1. Inspect `TASKS.md`, `DECISIONS.md`, `STATE.md`, `AGENTS.md`, and `docs/TONG_HOP_KE_HOACH_THIET_KE_GDD_3_4.md`.
-2. Re-run Master GDD compiler: `python docs/build_master_gdd.py`.
-3. Approve transition to `R1-T1` when ready.
+## 4. How to Verify (`F5` Checklist)
+1. Press `F5` (`res://scenes/battle/battle_sandbox_cp1.tscn`) or open `res://scenes/main_menu.tscn`: check `BỎ QUA (ESC)` / `BẮT ĐẦU TRẬN ĐÁNH` buttons at the bottom of `BriefingModal`.
+2. Dismiss opening modals (`Esc` or `BỎ QUA`), click a friendly unit (`(2,8)`) to verify `UnitInspector` shows raw stats (no damage preview), move/undo (`Z`), or tap an enemy in red range once for immediate 1-tap attack.
+3. Press `Esc` or `⏸ TẠM DỪNG` to check `PauseSettingsModal` sliders and unclipped footer buttons.

@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://ui/common/modal_frame.tscn" id="1_frame"]
+[ext_resource type="Script" path="res://ui/battle_hud/dialogue_modal.gd" id="2_script"]
+
+[node name="DialogueModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_script")
+
+[node name="ModalFrame" parent="." instance=ExtResource("1_frame")]
+layout_mode = 1
+preferred_width = 600.0
+min_body_height = 110.0
+
+[node name="DialogueBodyLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+text = "\"...\""
+autowrap_mode = 3
+
+[node name="SkipDialogueButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(110, 36)
+layout_mode = 2
+text = "BỎ QUA"
+
+[node name="ContinueButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(140, 36)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "TIẾP TỤC"
+
+[editable path="ModalFrame"]

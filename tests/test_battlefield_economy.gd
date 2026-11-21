@@ -1,15 +1,15 @@
 extends "res://tests/test_case.gd"
 
-const ECONOMY_SCRIPT_PATH: String = "res://scripts/core/battle_economy.gd"
-const SAVE_SCRIPT_PATH: String = "res://scripts/core/battle_save_manager.gd"
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const ControllerScript = preload("res://scripts/core/battle_game_controller.gd")
-const CmdsScript = preload("res://scripts/core/battle_commands.gd")
-const ScenarioLoaderScript = preload("res://scripts/core/scenario_loader.gd")
-const AIMatrixScript = preload("res://scripts/ai/ai_decision_matrix.gd")
-const AIProfileScript = preload("res://scripts/ai/ai_difficulty_profile.gd")
+const ECONOMY_SCRIPT_PATH: String = "res://sim/rules/battle_economy.gd"
+const SAVE_SCRIPT_PATH: String = "res://sim/state/battle_save_manager.gd"
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const ControllerScript = preload("res://sim/state/battle_game_controller.gd")
+const CmdsScript = preload("res://sim/commands/battle_commands.gd")
+const ScenarioLoaderScript = preload("res://sim/state/scenario_loader.gd")
+const AIMatrixScript = preload("res://sim/ai/ai_decision_matrix.gd")
+const AIProfileScript = preload("res://sim/ai/ai_difficulty_profile.gd")
 
 
 func _load_economy_script() -> GDScript:

@@ -1,13 +1,13 @@
 extends "res://tests/test_case.gd"
 
 const SANDBOX_SCENE_PATH: String = "res://scenes/battle/battle_sandbox_cp1.tscn"
-const HUD_CONTROLLER_PATH: String = "res://scripts/presentation/battle_hud_controller.gd"
+const HUD_CONTROLLER_PATH: String = "res://ui/battle_hud/battle_hud.gd"
 
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const CmdsScript = preload("res://scripts/core/battle_commands.gd")
-const UnitStateScript = preload("res://scripts/core/unit_combat_state.gd")
-const ControllerScript = preload("res://scripts/core/battle_game_controller.gd")
-const EvaluatorScript = preload("res://scripts/core/scenario_victory_evaluator.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const CmdsScript = preload("res://sim/commands/battle_commands.gd")
+const UnitStateScript = preload("res://sim/state/unit_combat_state.gd")
+const ControllerScript = preload("res://sim/state/battle_game_controller.gd")
+const EvaluatorScript = preload("res://sim/rules/scenario_victory_evaluator.gd")
 
 
 func _spawn_sandbox() -> Node2D:
@@ -47,16 +47,28 @@ func _collect_text(root_node: Node) -> String:
 	return "\n".join(parts)
 
 
+func _collect_visible_hud_area(node: Node, vp_size: Vector2) -> float:
+	if node == null:
+		return 0.0
+	var area: float = 0.0
+	for child: Node in node.get_children():
+		if child is Control:
+			var ctrl: Control = child as Control
+			if not ctrl.visible or not ctrl.is_visible_in_tree():
+				continue
+			var r: Rect2 = ctrl.get_global_rect()
+			if r.size.x >= vp_size.x * 0.95 and r.size.y >= vp_size.y * 0.95:
+				area += _collect_visible_hud_area(child, vp_size)
+			else:
+				area += maxf(0.0, r.size.x) * maxf(0.0, r.size.y)
+		else:
+			area += _collect_visible_hud_area(child, vp_size)
+	return area
+
+
 func _compute_map_ratio(hud_layer: CanvasLayer, vp_size: Vector2) -> float:
 	var vp_area: float = maxf(1.0, vp_size.x * vp_size.y)
-	var hud_area: float = 0.0
-	if hud_layer != null:
-		for child: Node in hud_layer.get_children():
-			if child is Control and (child as Control).visible:
-				var r: Rect2 = (child as Control).get_global_rect()
-				if r.size.x >= vp_size.x * 0.95 and r.size.y >= vp_size.y * 0.95:
-					continue
-				hud_area += maxf(0.0, r.size.x) * maxf(0.0, r.size.y)
+	var hud_area: float = _collect_visible_hud_area(hud_layer, vp_size)
 	return clampf(1.0 - (hud_area / vp_area), 0.0, 1.0)
 
 
@@ -128,7 +140,7 @@ func test_top_status_bar_hides_economy_when_disabled_and_shows_when_enabled() ->
 		assert_false(eco_box.visible, "EconomyContainer hides again when enable_economy == false")
 
 
-func test_combat_preview_box_opens_on_first_tap_clamps_to_viewport_and_closes_on_confirm_or_cancel() -> void:
+func test_one_tap_attack_executes_without_combat_preview_box() -> void:
 	var sandbox: Node2D = _spawn_sandbox()
 	var hud_ctrl: Object = sandbox.call("get_hud_controller") if sandbox.has_method("get_hud_controller") else null
 	assert_not_null(hud_ctrl, "get_hud_controller() required")
@@ -138,46 +150,30 @@ func test_combat_preview_box_opens_on_first_tap_clamps_to_viewport_and_closes_on
 		hud_ctrl.call("dismiss_all_modals")
 
 	var preview_box: Control = _find_node(sandbox, "CombatPreviewBox") as Control
-	assert_not_null(preview_box, "CombatPreviewBox node must exist")
-	if preview_box == null:
-		return
-	assert_false(preview_box.visible, "CombatPreviewBox starts hidden")
+	if preview_box != null:
+		assert_false(preview_box.visible, "CombatPreviewBox starts hidden")
 
 	var ctrl: BattleGameController = sandbox.call("get_controller")
 	var map_state: BattleMapState = sandbox.call("get_map_state")
 	var map_view: BattleMapView = sandbox.call("get_map_view")
+	var fsm: BattleInputFSM = sandbox.call("get_input_fsm")
 	var u102: BattleUnit = ctrl.context.get_unit(102)
 	var e202: BattleUnit = ctrl.context.get_unit(202)
-	var u105: BattleUnit = ctrl.context.get_unit(105)
+	var hp_before: int = e202.state.current_hp
 
-	# Position E202 between U102 (5,6) and U105 (5,4) for Flank +15%
 	map_state.move_unit(e202, HexMathScript.odd_r_to_axial(Vector2i(5, 5)))
-	map_state.move_unit(u105, HexMathScript.odd_r_to_axial(Vector2i(5, 4)))
 	map_view.refresh_units()
 
-	var expected: Dictionary = ctrl.context.combat_resolver.preview_combat(
-		map_state,
-		ctrl.context.navigator,
-		u102,
-		e202
-	)
-
 	sandbox.call("click_world_position", HexMathScript.axial_to_world(u102.hex_position, map_view.hex_size))
+	assert_eq(fsm.get_state(), BattleInputFSM.State.UNIT_SELECTED)
+
+	# 1st tap on hostile in red range attacks immediately without opening CombatPreviewBox
 	sandbox.call("click_world_position", HexMathScript.axial_to_world(e202.hex_position, map_view.hex_size))
-
-	assert_true(preview_box.visible, "CombatPreviewBox opens on 1st tap (AIMING_TARGET)")
-	var p_txt: String = _collect_text(preview_box)
-	assert_true(p_txt.contains(str(int(expected["min_damage"]))), "Shows expected min_damage")
-	assert_true(p_txt.contains(str(int(expected["max_damage"]))), "Shows expected max_damage")
-	assert_true(p_txt.contains(str(int(expected["crit_rate"]))), "Shows expected crit_rate")
-	assert_true(p_txt.to_lower().contains("bọc sườn") or p_txt.to_lower().contains("flank"), "Shows Flank modifier")
-
-	var vp_rect := Rect2(Vector2.ZERO, Vector2(1280.0, 720.0))
-	assert_true(vp_rect.encloses(preview_box.get_global_rect()), "CombatPreviewBox clamped inside viewport")
-
-	# 2nd tap confirms attack and closes CombatPreviewBox
-	sandbox.call("click_world_position", HexMathScript.axial_to_world(e202.hex_position, map_view.hex_size))
-	assert_false(preview_box.visible, "CombatPreviewBox closes after attack confirmation")
+	if preview_box != null:
+		assert_false(preview_box.visible, "CombatPreviewBox must remain hidden on 1-tap attack")
+	assert_true(u102.state.has_acted, "1st tap executes attack immediately")
+	assert_lt(float(e202.state.current_hp), float(hp_before), "Enemy takes damage on 1st tap")
+	assert_eq(fsm.get_state(), BattleInputFSM.State.IDLE)
 
 
 func test_bottom_command_dock_buttons_and_overhead_hud_layers() -> void:
@@ -358,3 +354,196 @@ func test_pause_settings_modal_shake_scale_reduce_flashing_and_vfx_quality() -> 
 	assert_almost_eq(cam.shake_user_scale, 0.0, 0.01, "ShakeScaleSlider 0 sets camera.shake_user_scale = 0.0")
 	shake_slider.value = 100.0
 	assert_almost_eq(cam.shake_user_scale, 1.0, 0.01, "ShakeScaleSlider 100 sets camera.shake_user_scale = 1.0")
+
+
+func _find_node_named(root: Node, node_name: String) -> Node:
+	if root == null:
+		return null
+	if root.name == node_name:
+		return root
+	for c: Node in root.get_children():
+		var hit: Node = _find_node_named(c, node_name)
+		if hit != null:
+			return hit
+	return null
+
+
+func _find_button_named(root: Node, node_name: String) -> BaseButton:
+	var n: Node = _find_node_named(root, node_name)
+	return n as BaseButton if n is BaseButton else null
+
+
+func _is_descendant_of_scroll(node: Node) -> bool:
+	var cur: Node = node.get_parent() if node != null else null
+	while cur != null:
+		if cur is ScrollContainer:
+			return true
+		cur = cur.get_parent()
+	return false
+
+
+func _assert_button_reachable(btn: BaseButton, vp_size: Vector2, label_ctx: String) -> void:
+	assert_not_null(btn, "%s: button exists" % label_ctx)
+	if btn == null:
+		return
+	assert_true(btn.is_visible_in_tree(), "%s: button is visible_in_tree" % label_ctx)
+	assert_false(btn.disabled, "%s: button is enabled" % label_ctx)
+	assert_false(_is_descendant_of_scroll(btn), "%s: footer button must live outside ScrollContainer" % label_ctx)
+	var rect: Rect2 = btn.get_global_rect()
+	assert_true(rect.size.x >= 40.0 and rect.size.y >= 24.0, "%s: valid hit target size %s" % [label_ctx, str(rect.size)])
+	var vp_rect: Rect2 = Rect2(Vector2.ZERO, vp_size)
+	assert_true(vp_rect.encloses(rect), "%s: rect %s inside viewport %s" % [label_ctx, str(rect), str(vp_size)])
+	var anc: Node = btn.get_parent()
+	while anc is Control:
+		var anc_ctrl: Control = anc as Control
+		if anc_ctrl.clip_contents:
+			assert_true(
+				anc_ctrl.get_global_rect().encloses(rect),
+				"%s: rect %s clipped by ancestor %s %s" % [label_ctx, str(rect), anc_ctrl.name, str(anc_ctrl.get_global_rect())]
+			)
+		anc = anc_ctrl.get_parent()
+
+
+func test_unit_inspector_raw_stats_on_focus_and_no_combat_preview_box() -> void:
+	var sandbox: Node2D = _spawn_sandbox()
+	var hud: BattleHud = sandbox.call("get_hud_controller") as BattleHud
+	assert_not_null(hud, "BattleHud attached")
+	assert_null(_find_node_named(sandbox, "CombatPreviewBox"), "DEC-026: CombatPreviewBox must not exist")
+
+	hud.dismiss_all_modals()
+	var inspector: UnitInspector = hud.get_unit_inspector()
+	assert_not_null(inspector, "UnitInspector exists in BattleHud")
+	assert_false(inspector.visible, "UnitInspector hidden before selection")
+
+	var ctrl: BattleGameController = sandbox.call("get_controller") as BattleGameController
+	var fsm: BattleInputFSM = sandbox.call("get_input_fsm") as BattleInputFSM
+	var u101: BattleUnit = ctrl.context.get_unit(101)
+	assert_not_null(u101, "Unit 101 exists")
+	fsm.inspect_hex(u101.hex_position)
+	assert_true(inspector.visible, "UnitInspector becomes visible when inspecting unit")
+	var top_bar: PanelContainer = hud.get_top_bar()
+	assert_true(
+		inspector.get_global_rect().position.y >= top_bar.get_global_rect().end.y,
+		"UnitInspector (y=%s) must sit below TopStatusBar (end.y=%s)" % [
+			str(inspector.get_global_rect().position.y),
+			str(top_bar.get_global_rect().end.y),
+		]
+	)
+	var name_lbl: Label = _find_node_named(inspector, "UnitNameLabel") as Label
+	var atk_lbl: Label = _find_node_named(inspector, "AtkLabel") as Label
+	var def_lbl: Label = _find_node_named(inspector, "DefLabel") as Label
+	assert_not_null(name_lbl, "UnitNameLabel exists")
+	assert_true(name_lbl.text.contains(u101.general_name) or name_lbl.text.contains(u101.display_name), "UnitInspector displays unit/general name")
+	assert_true(atk_lbl != null and atk_lbl.text.contains(str(u101.base_atk)), "UnitInspector displays raw base_atk")
+	assert_true(def_lbl != null and def_lbl.text.contains(str(u101.base_def)), "UnitInspector displays raw base_def")
+
+
+func test_all_ui_scripts_under_400_lines_and_no_manual_button_hit_test() -> void:
+	var dirs: Array[String] = ["res://ui"]
+	var checked: int = 0
+	while not dirs.is_empty():
+		var d_path: String = dirs.pop_back()
+		var d: DirAccess = DirAccess.open(d_path)
+		if d == null:
+			continue
+		d.list_dir_begin()
+		var entry: String = d.get_next()
+		while not entry.is_empty():
+			if entry != "." and entry != "..":
+				var full: String = d_path.path_join(entry)
+				if d.current_is_dir():
+					dirs.append(full)
+				elif entry.ends_with(".gd"):
+					checked += 1
+					var f: FileAccess = FileAccess.open(full, FileAccess.READ)
+					assert_not_null(f, "Readable UI script: " + full)
+					if f != null:
+						var src: String = f.get_as_text()
+						var lines: PackedStringArray = src.split("\n")
+						assert_true(lines.size() <= 400, "%s line count %d <= 400" % [full, lines.size()])
+						assert_false(src.contains("_find_hit_button"), "%s must not contain manual _find_hit_button" % full)
+			entry = d.get_next()
+		d.list_dir_end()
+	assert_true(checked >= 9, "Verified all modular UI scripts (%d files)" % checked)
+
+
+func test_modals_footer_buttons_reachable_and_unclipped_across_viewports() -> void:
+	var sandbox: Node2D = _spawn_sandbox()
+	var hud: BattleHud = sandbox.call("get_hud_controller") as BattleHud
+	var tree: SceneTree = get_scene_tree()
+	assert_not_null(tree, "SceneTree available")
+
+	var test_sizes: Array[Vector2] = [Vector2(1280.0, 720.0), Vector2(1560.0, 720.0), Vector2(960.0, 540.0)]
+	for vp_size: Vector2 in test_sizes:
+		tree.root.size = Vector2i(int(vp_size.x), int(vp_size.y))
+		hud.apply_viewport_layout(vp_size)
+		await tree.process_frame
+		await tree.process_frame
+
+		var brief_modal: Control = _find_node_named(hud, "BriefingModal") as Control
+		assert_not_null(brief_modal, "BriefingModal exists")
+		brief_modal.visible = true
+		await tree.process_frame
+		_assert_button_reachable(_find_button_named(brief_modal, "SkipButton"), vp_size, "Briefing Skip @%s" % str(vp_size))
+		_assert_button_reachable(_find_button_named(brief_modal, "StartButton"), vp_size, "Briefing Start @%s" % str(vp_size))
+
+		hud.dismiss_all_modals()
+		hud.show_dialogue_entries([{"speaker": "Trần Quốc Tuấn", "line": "Thử kiểm tra nút Hội thoại."}])
+		await tree.process_frame
+		_assert_button_reachable(_find_button_named(hud, "SkipDialogueButton"), vp_size, "Dialogue Skip @%s" % str(vp_size))
+		_assert_button_reachable(_find_button_named(hud, "ContinueButton"), vp_size, "Dialogue Continue @%s" % str(vp_size))
+
+		hud.dismiss_all_modals()
+		hud.open_pause_modal()
+		await tree.process_frame
+		_assert_button_reachable(_find_button_named(hud, "SaveAndExitButton"), vp_size, "Pause Save @%s" % str(vp_size))
+		_assert_button_reachable(_find_button_named(hud, "RestartButton"), vp_size, "Pause Restart @%s" % str(vp_size))
+		_assert_button_reachable(_find_button_named(hud, "ResumeButton"), vp_size, "Pause Resume @%s" % str(vp_size))
+
+		hud.dismiss_all_modals()
+		for i: int in range(6):
+			hud.append_combat_log("Dòng nhật ký chiến đấu #%d: Giao tranh ác liệt trên sông Bạch Đằng." % (i + 1))
+		hud.show_result_summary(int(BattleGameController.BattleOutcome.VICTORY))
+		await tree.process_frame
+		_assert_button_reachable(_find_button_named(hud, "ReplayButton"), vp_size, "Result Replay @%s" % str(vp_size))
+		_assert_button_reachable(_find_button_named(hud, "RetryButton"), vp_size, "Result Retry @%s" % str(vp_size))
+		_assert_button_reachable(_find_button_named(hud, "CloseResultButton"), vp_size, "Result Close @%s" % str(vp_size))
+		hud.dismiss_all_modals()
+
+	tree.root.size = Vector2i(1280, 720)
+
+
+func test_real_mouse_click_on_briefing_skip_button_skips_intro() -> void:
+	var tree: SceneTree = get_scene_tree()
+	tree.root.size = Vector2i(1280, 720)
+	var sandbox: Node2D = _spawn_sandbox()
+	var hud: BattleHud = sandbox.call("get_hud_controller") as BattleHud
+	await tree.process_frame
+	await tree.process_frame
+
+	var brief_modal: Control = _find_node_named(hud, "BriefingModal") as Control
+	var dlg_modal: Control = _find_node_named(hud, "DialogueModal") as Control
+	assert_true(brief_modal != null and brief_modal.visible, "BriefingModal opens at battle start")
+
+	var skip_btn: BaseButton = _find_button_named(brief_modal, "SkipButton")
+	_assert_button_reachable(skip_btn, Vector2(1280.0, 720.0), "Real click Briefing SkipButton")
+	var click_pos: Vector2 = skip_btn.get_global_rect().get_center()
+
+	var press_ev := InputEventMouseButton.new()
+	press_ev.button_index = MOUSE_BUTTON_LEFT
+	press_ev.pressed = true
+	press_ev.position = click_pos
+	press_ev.global_position = click_pos
+	tree.root.push_input(press_ev)
+
+	var release_ev := InputEventMouseButton.new()
+	release_ev.button_index = MOUSE_BUTTON_LEFT
+	release_ev.pressed = false
+	release_ev.position = click_pos
+	release_ev.global_position = click_pos
+	tree.root.push_input(release_ev)
+
+	await tree.process_frame
+	assert_false(brief_modal.visible, "Real click on SkipButton dismisses BriefingModal")
+	assert_false(dlg_modal != null and dlg_modal.visible, "Real click on SkipButton also skips opening dialogue")
+

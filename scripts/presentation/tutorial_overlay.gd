@@ -4,7 +4,7 @@ extends Panel
 const TIP_TEXTS: Dictionary[String, String] = {
 	"tip_select_unit": "💡 Hướng dẫn: Chạm đạo quân Đại Việt để xem vùng hành quân xanh dương (Reachable) và tầm công kích đỏ (Attackable).",
 	"tip_post_move_undo": "💡 Hướng dẫn: Sau khi di chuyển, bạn có thể nhấn [HOÀN TÁC] (hoặc phím Z / chuột phải) tối đa 1 lần/lượt nếu chưa lộ sương mù hay vào ZoC địch.",
-	"tip_two_step_attack": "💡 Hướng dẫn: Chạm mục tiêu lần 1 để mở Hộp Dự Báo Giao Chiến (CombatPreviewBox), chạm lần 2 hoặc nhấn [ĐÁNH] để xác nhận công kích.",
+	"tip_two_step_attack": "💡 Hướng dẫn: Xem thông số đạo quân ở bảng UnitInspector bên trái, sau đó chạm 1 lần vào địch trong tầm đỏ để công kích ngay.",
 	"tip_tide_fall_stakes": "💡 Hướng dẫn: Đầu Vòng 4 thủy triều rút sẽ lộ diện Bãi Cọc Ngầm Bạch Đằng, gây sát thương lớn và khóa di chuyển thuyền địch.",
 	"tip_economy_starvation": "💡 Hướng dẫn Hậu cần: Đầu mỗi vòng quân đội tiêu hao Lương (MealFood). Nếu Lương < 0 (Starvation), quân bị giảm 1 bậc Sĩ khí (tối đa xuống LOW) và chỉ còn 75% sát thương.",
 }

@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://ui/common/modal_frame.tscn" id="1_frame"]
+[ext_resource type="Script" path="res://ui/battle_hud/result_summary_modal.gd" id="2_script"]
+
+[node name="ResultSummaryModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_script")
+
+[node name="ModalFrame" parent="." instance=ExtResource("1_frame")]
+layout_mode = 1
+preferred_width = 660.0
+min_body_height = 220.0
+
+[node name="SummaryStatsLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+text = "Tổng kết..."
+autowrap_mode = 3
+
+[node name="CombatLogPanel" type="PanelContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent"]
+layout_mode = 2
+
+[node name="LogMargin" type="MarginContainer" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/CombatLogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="CombatLogLabel" type="Label" parent="ModalFrame/Center/Panel/Margin/VBox/BodyScroll/BodyContent/CombatLogPanel/LogMargin"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Nhật ký chiến đấu..."
+autowrap_mode = 3
+
+[node name="ReplayButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(126, 36)
+layout_mode = 2
+text = "XEM REPLAY"
+
+[node name="RetryButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(118, 36)
+layout_mode = 2
+text = "CHƠI LẠI"
+
+[node name="CloseResultButton" type="Button" parent="ModalFrame/Center/Panel/Margin/VBox/ButtonRow"]
+custom_minimum_size = Vector2(112, 36)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "ĐÓNG"
+
+[editable path="ModalFrame"]

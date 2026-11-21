@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://ui/common/theme.tres" id="1_theme"]
+[ext_resource type="Script" path="res://ui/battle_hud/battle_hud.gd" id="2_script"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/top_bar.tscn" id="3_top"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/unit_inspector.tscn" id="4_insp"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/command_dock.tscn" id="5_dock"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/briefing_modal.tscn" id="6_brief"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/dialogue_modal.tscn" id="7_dlg"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/pause_modal.tscn" id="8_pause"]
+[ext_resource type="PackedScene" path="res://ui/battle_hud/result_summary_modal.tscn" id="9_sum"]
+
+[node name="BattleHud" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="TopStatusBar" parent="." instance=ExtResource("3_top")]
+layout_mode = 1
+
+[node name="UnitInspector" parent="." instance=ExtResource("4_insp")]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 12.0
+offset_top = 54.0
+offset_right = 284.0
+offset_bottom = 250.0
+
+[node name="BottomCommandDock" parent="." instance=ExtResource("5_dock")]
+layout_mode = 1
+
+[node name="BriefingModal" parent="." instance=ExtResource("6_brief")]
+layout_mode = 1
+
+[node name="DialogueModal" parent="." instance=ExtResource("7_dlg")]
+visible = false
+layout_mode = 1
+
+[node name="PauseSettingsModal" parent="." instance=ExtResource("8_pause")]
+visible = false
+layout_mode = 1
+
+[node name="ResultSummaryModal" parent="." instance=ExtResource("9_sum")]
+visible = false
+layout_mode = 1

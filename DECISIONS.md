@@ -180,3 +180,13 @@ Ghi lại toàn bộ các lựa chọn tự chủ khi gặp điểm mơ hồ ho�
   3. **Rút gọn `BattleInputFSM` từ 8 xuống 7 trạng thái** (`IDLE`, `UNIT_SELECTED`, `MOVING`, `POST_MOVE_ACTION`, `ATTACKING`, `SKILL_TARGETING`, `EXECUTE_SKILL` — **bỏ `AIMING_TARGET`**): khi chưa chọn quân ta (hoặc click chuột phải / chạm vào địch ngoài tầm) thì `UnitInspector` hiện thông số đạo quân đó; khi đã chọn quân ta (`UNIT_SELECTED` hoặc `POST_MOVE_ACTION`) và ô địch sáng Đỏ trong tầm đánh, **click/chạm 1 lần vào địch là chuyển thẳng sang `ATTACKING` ra đòn ngay lập tức như `HexCrown`**.
 - **Lý do:** Trả lại trải nghiệm wargame chiến thuật thuần túy (người chơi tự cân não với thông số và bất định `Seeded RNG`) cùng thao tác điều quân nhanh gọn, tự nhiên như `HexCrown`.
 - **Cách đổi:** Điều chỉnh luồng chuyển trạng thái trong `BattleInputFSM` và scene `ui/battle_hud/unit_inspector.tscn`.
+
+## DEC-027 — Tinh Gọn Bộ Kiểm Thử (`--suite`/`--stress`), Smoke Test Gọn & Bỏ Chụp Ảnh Mặc Định
+- **Vấn đề:** Bộ E2E cũ (`tests/e2e/`, 6.267 dòng / 256 test) trùng lặp nặng với unit test, gọi `OS.execute` chạy lồng `run_tests.gd` và `--import`, cộng với bài test 100 trận AI chạy mặc định khiến mỗi lần kiểm thử mất 43,5 giây–3 phút; đồng thời việc chụp và mở đọc nhiều ảnh PNG đốt vision quota và số lượt gọi tool.
+- **Lựa chọn:**
+  1. Xóa toàn bộ `tests/e2e/` (6.267 dòng), 6 script `tests/capture_*.gd`, 21 ảnh PNG trong `tests/artifacts/` và skill 3D không dùng (`.agents/skills/godot-3d-essentials`).
+  2. Nâng cấp `tests/run_tests.gd` với cờ `--suite=<tên>` (chạy lọc suite nhanh khi lặp) và `--stress` (mặc định chạy 4 trận AI-vs-AI mẫu thay vì 100 trận, giảm thời gian full fast suite từ 43,5s xuống dưới 10s).
+  3. Bổ sung `assert_button_reachable()` và `push_click_control()` vào `GdTestCase`, thay E2E cồng kềnh bằng bộ smoke gọn `tests/test_battle_smoke_e2e.gd` (<= 280 dòng).
+  4. Bỏ quy trình bắt buộc AI chụp và đọc ảnh PNG ở mọi task trong `AGENTS.md`; người dùng tự bấm `F5` kiểm tra trực quan khi cần.
+- **Lý do:** Giữ trọn giá trị phát hiện lỗi (unit test lõi `sim/` + kiểm tra hình học & `Viewport.push_input` thật cho UI + luồng Bạch Đằng) với tốc độ phản hồi nhanh và chi phí token/quota tối thiểu.
+- **Cách đổi:** Chạy `.\godot.cmd --headless --script res://tests/run_tests.gd -- --stress` khi cần stress-test 100 trận AI-vs-AI; hoặc yêu cầu trực tiếp nếu muốn AI chụp ảnh kiểm chứng cục bộ.

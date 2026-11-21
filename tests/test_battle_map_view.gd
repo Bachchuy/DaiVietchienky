@@ -1,10 +1,10 @@
 extends "res://tests/test_case.gd"
 
 const VIEW_PATH: String = "res://scripts/presentation/battle_map_view.gd"
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
-const MapStateScript = preload("res://scripts/core/battle_map_state.gd")
-const UnitScript = preload("res://scripts/core/battle_unit.gd")
-const NavScript = preload("res://scripts/core/hex_grid_navigator.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
+const MapStateScript = preload("res://sim/state/battle_map_state.gd")
+const UnitScript = preload("res://sim/state/battle_unit.gd")
+const NavScript = preload("res://sim/rules/hex_grid_navigator.gd")
 
 
 func _make_view() -> Node2D:

@@ -2,6 +2,7 @@ class_name BattleSandboxCP1
 extends Node2D
 
 const DEFAULT_BATTLE_SEED: int = 12880409
+const BATTLE_HUD_SCENE: PackedScene = preload("res://ui/battle_hud/battle_hud.tscn")
 
 const TERRAIN_NAMES: Dictionary[int, String] = {
 	0: "Đồng bằng (2 MP)",
@@ -28,10 +29,11 @@ var _controller: BattleGameController = null
 var _map_view: BattleMapView = null
 var _camera: BattleCameraController = null
 var _input_fsm: BattleInputFSM = null
-var _hud_controller: BattleHudController = null
+var _hud_controller: BattleHud = null
 var _juice_helper: CombatJuiceHelper = null
 var _audio_manager: BattleAudioManager = null
 var _save_manager: BattleSaveManager = null
+var _battle_session: BattleSession = null
 
 var _ai_brain: AIDecisionMatrix = null
 var _auto_enemy_ai: bool = true
@@ -68,10 +70,6 @@ func _setup_scene_nodes() -> void:
 	_input_fsm.name = "BattleInputFSM"
 	add_child(_input_fsm)
 
-	_hud_controller = BattleHudController.new()
-	_hud_controller.name = "BattleHudController"
-	add_child(_hud_controller)
-
 	_juice_helper = CombatJuiceHelper.new()
 	_juice_helper.name = "CombatJuiceHelper"
 	add_child(_juice_helper)
@@ -84,24 +82,33 @@ func _setup_scene_nodes() -> void:
 
 	_save_manager = BattleSaveManager.new()
 
+	_battle_session = BattleSession.new()
+	_battle_session.name = "BattleSession"
+	add_child(_battle_session)
+
 	_camera.strategic_lod_changed.connect(_on_camera_strategic_lod_changed)
 	_camera.clean_right_clicked.connect(_on_camera_clean_right_clicked)
 	_map_view.hex_selected.connect(_on_hex_selected)
 
 	_input_fsm.state_changed.connect(_on_fsm_state_changed)
 	_input_fsm.unit_focused.connect(_on_fsm_unit_focused)
-	_input_fsm.target_preview_requested.connect(_on_fsm_target_preview_requested)
-	_input_fsm.target_preview_cleared.connect(_on_fsm_target_preview_cleared)
 	_input_fsm.action_rejected.connect(_on_fsm_action_rejected)
 
 
 func _build_hud() -> void:
 	var hud_layer: CanvasLayer = _map_view.get_screen_hud_layer()
-	if _hud_controller != null:
-		_hud_controller.setup(self, hud_layer, _map_view, _camera, _input_fsm)
-		_mode_label = _hud_controller.get_mode_label()
-		_selection_label = _hud_controller.get_selection_label()
-		_perf_label = _hud_controller.get_perf_label()
+	if hud_layer == null:
+		return
+	if _hud_controller == null:
+		_hud_controller = BATTLE_HUD_SCENE.instantiate() as BattleHud
+		if _hud_controller == null:
+			return
+		_hud_controller.name = "BattleHud"
+		hud_layer.add_child(_hud_controller)
+	_hud_controller.setup(self, _battle_session, _map_view, _camera, _input_fsm)
+	_mode_label = _hud_controller.get_mode_label()
+	_selection_label = _hud_controller.get_selection_label()
+	_perf_label = _hud_controller.get_perf_label()
 
 
 func _process(_delta: float) -> void:
@@ -140,12 +147,19 @@ func _is_screen_point_on_hud(screen_pos: Vector2) -> bool:
 	var hud_layer: CanvasLayer = _map_view.get_screen_hud_layer()
 	if hud_layer == null:
 		return false
-	for child: Node in hud_layer.get_children():
+	return _has_blocking_control_at(hud_layer, screen_pos)
+
+
+func _has_blocking_control_at(node: Node, screen_pos: Vector2) -> bool:
+	for child: Node in node.get_children():
 		if child is Control:
 			var ctrl: Control = child as Control
-			if ctrl.visible and ctrl.mouse_filter == Control.MOUSE_FILTER_STOP:
-				if ctrl.get_global_rect().has_point(screen_pos):
-					return true
+			if not ctrl.visible or not ctrl.is_visible_in_tree():
+				continue
+			if ctrl.mouse_filter == Control.MOUSE_FILTER_STOP and ctrl.get_global_rect().has_point(screen_pos):
+				return true
+		if _has_blocking_control_at(child, screen_pos):
+			return true
 	return false
 
 
@@ -193,10 +207,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					elif _hud_controller != null:
 						_hud_controller.toggle_pause_modal()
 				KEY_ENTER:
-					if _input_fsm != null and _input_fsm.get_state() == BattleInputFSM.State.AIMING_TARGET:
-						_input_fsm.confirm_attack()
-					else:
-						end_active_faction_turn()
+					end_active_faction_turn()
 				KEY_SPACE:
 					end_active_faction_turn()
 				KEY_A:
@@ -224,6 +235,8 @@ func load_bach_dang_preview_12x10() -> void:
 		_controller.battle_finished.connect(_on_battle_finished)
 	if not _controller.command_executed.is_connected(_on_controller_command_executed):
 		_controller.command_executed.connect(_on_controller_command_executed)
+	if _battle_session != null:
+		_battle_session.attach_controller(_controller, 10101, _dialogues)
 	_apply_loaded_map()
 	_sync_objective_markers()
 	_map_view.set_fog_of_war_context(_controller.context, _controller.player_faction_id)
@@ -304,6 +317,8 @@ func load_stress_benchmark_30x30(unit_count: int = 44) -> void:
 	_populate_stress_30x30(_map_state, unit_count)
 	_controller = BattleGameController.new(_map_state, DEFAULT_BATTLE_SEED, [1, 3], 30)
 	_controller.start_battle()
+	if _battle_session != null:
+		_battle_session.attach_controller(_controller, 99999, {})
 	_apply_loaded_map()
 	if _hud_controller != null:
 		_hud_controller.set_mode_title(_current_mode_title)
@@ -332,7 +347,10 @@ func _spawn_unit_into(
 func _apply_loaded_map() -> void:
 	_map_view.bind_battle_state(_map_state, _controller.context.navigator)
 	if _input_fsm != null:
-		_input_fsm.bind(_controller, _map_view, _camera)
+		if _battle_session != null:
+			_input_fsm.bind_session(_battle_session, _map_view, _camera)
+		else:
+			_input_fsm.bind(_controller, _map_view, _camera)
 	var bounds: Rect2 = HexMath.compute_map_world_bounds(_map_state.width, _map_state.height, _map_view.hex_size, 48.0)
 	_camera.map_world_bounds = bounds
 	_camera.set_zoom_level(BattleCameraController.ZOOM_DEFAULT, true)
@@ -348,40 +366,6 @@ func hover_world_position(world_pos: Vector2) -> void:
 	if _input_fsm == null or _controller == null or _map_state == null:
 		return
 	_input_fsm.hover_world_position(world_pos)
-
-	var st: BattleInputFSM.State = _input_fsm.get_state()
-	if st != BattleInputFSM.State.UNIT_SELECTED and st != BattleInputFSM.State.POST_MOVE_ACTION:
-		return
-	var axial: Vector2i = HexMath.world_to_axial(world_pos, _map_view.hex_size)
-	var selected: BattleUnit = _input_fsm.get_active_unit()
-	if selected == null or not _map_state.is_valid_hex(axial):
-		return
-	var target: BattleUnit = _map_state.get_unit_at(axial)
-	if target != null and _map_state.is_hostile(selected.faction_id, target.faction_id):
-		var atk_hexes: Array[Vector2i] = _controller.context.navigator.get_attackable_hexes(
-			_map_state,
-			selected,
-			selected.hex_position
-		)
-		if atk_hexes.has(axial):
-			var prev: Dictionary = _controller.context.combat_resolver.preview_combat(
-				_map_state,
-				_controller.context.navigator,
-				selected,
-				target
-			)
-			_set_bottom_banner("DỰ BÁO ĐÁNH [%s -> %s]: ST %d~%d | Crit %d%% (~%d) | Phản kích %d~%d | Khắc chế %d%%%s (Click để ngắm)" % [
-				selected.display_name,
-				target.display_name,
-				int(prev["min_damage"]),
-				int(prev["max_damage"]),
-				int(prev["crit_rate"]),
-				int(prev["crit_max_damage"]),
-				int(prev["counter_min_damage"]),
-				int(prev["counter_max_damage"]),
-				int(prev["damage_percent"]),
-				" [FLANK +15%]" if bool(prev["is_flanked"]) else "",
-			])
 
 
 func try_undo_march() -> bool:
@@ -556,9 +540,15 @@ func _on_camera_strategic_lod_changed(use_tokens: bool) -> void:
 	_map_view.set_strategic_lod(use_tokens)
 
 
-func _on_camera_clean_right_clicked(_screen_pos: Vector2) -> void:
-	if _input_fsm != null:
-		_input_fsm.cancel_or_deselect()
+func _on_camera_clean_right_clicked(screen_pos: Vector2) -> void:
+	if _input_fsm == null:
+		return
+	if _input_fsm.get_state() == BattleInputFSM.State.IDLE and _map_view != null:
+		var canvas_inv: Transform2D = get_canvas_transform().affine_inverse()
+		var axial: Vector2i = HexMath.world_to_axial(canvas_inv * screen_pos, _map_view.hex_size)
+		_input_fsm.inspect_hex(axial)
+		return
+	_input_fsm.cancel_or_deselect()
 
 
 func _on_controller_command_executed(command_type: String, faction_id: int) -> void:
@@ -633,8 +623,6 @@ func _on_controller_command_executed(command_type: String, faction_id: int) -> v
 func _on_fsm_state_changed(_old_state: BattleInputFSM.State, new_state: BattleInputFSM.State) -> void:
 	if _hud_controller != null:
 		_hud_controller.update_dock_buttons()
-		if new_state != BattleInputFSM.State.AIMING_TARGET:
-			_hud_controller.hide_combat_preview()
 	if _controller == null or _input_fsm == null:
 		return
 	if new_state == BattleInputFSM.State.POST_MOVE_ACTION:
@@ -643,7 +631,7 @@ func _on_fsm_state_changed(_old_state: BattleInputFSM.State, new_state: BattleIn
 			var off: Vector2i = HexMath.axial_to_odd_r(u.hex_position)
 			var undo_hint: String = "[Z] Hoàn tác được" if _input_fsm.can_undo_post_move() else "Khóa Undo"
 			var skill_hint: String = " | [K] Mưu Lược" if _input_fsm.can_active_unit_use_skill() else ""
-			_set_bottom_banner("Sau hành quân (%d,%d) | %s%s | Click địch để Ngắm | [W] hoặc click lại ô để Đợi" % [
+			_set_bottom_banner("Sau hành quân (%d,%d) | %s%s | Click địch đỏ để Đánh ngay | [W] hoặc click lại ô để Đợi" % [
 				off.x, off.y, undo_hint, skill_hint
 			])
 	elif new_state == BattleInputFSM.State.SKILL_TARGETING:
@@ -655,35 +643,6 @@ func _on_fsm_unit_focused(unit: BattleUnit) -> void:
 		_update_selection_hud(Vector2i.ZERO, null)
 	else:
 		_update_selection_hud(unit.hex_position, unit)
-
-
-func _on_fsm_target_preview_requested(
-	attacker: BattleUnit,
-	defender: BattleUnit,
-	prev: Dictionary
-) -> void:
-	if attacker == null or defender == null:
-		return
-	if _hud_controller != null:
-		_hud_controller.show_combat_preview(attacker, defender, prev)
-	_set_bottom_banner("XÁC NHẬN ĐÁNH [%s -> %s]: ST %d~%d | Crit %d%% (~%d) | Phản kích %d~%d | Click lần 2 / [Enter] để Đánh | Chuột phải Hủy" % [
-		attacker.display_name,
-		defender.display_name,
-		int(prev.get("min_damage", 0)),
-		int(prev.get("max_damage", 0)),
-		int(prev.get("crit_rate", 0)),
-		int(prev.get("crit_max_damage", 0)),
-		int(prev.get("counter_min_damage", 0)),
-		int(prev.get("counter_max_damage", 0)),
-	])
-
-
-func _on_fsm_target_preview_cleared() -> void:
-	if _hud_controller != null:
-		_hud_controller.hide_combat_preview()
-	if _input_fsm != null and _input_fsm.get_active_unit() != null:
-		var u: BattleUnit = _input_fsm.get_active_unit()
-		_update_selection_hud(u.hex_position, u)
 
 
 func _on_fsm_action_rejected(reason: String) -> void:
@@ -702,7 +661,7 @@ func _update_selection_hud(axial: Vector2i, unit: BattleUnit) -> void:
 		_hud_controller.update_unit_card(axial, unit)
 	if _selection_label == null or _map_state == null:
 		return
-	if not _map_view.has_selected_hex():
+	if unit == null and not _map_view.has_selected_hex():
 		_selection_label.text = "Click trái: Chọn quân / Đi ô xanh / Đánh địch đỏ | [Z] Undo Đi | [W] Đợi | [Space] Kết thúc lượt | [R] Kiểm chứng Replay"
 		return
 
@@ -733,29 +692,20 @@ func _update_selection_hud(axial: Vector2i, unit: BattleUnit) -> void:
 
 
 func save_session_and_profile() -> bool:
-	if ResourceLoader.exists("res://scripts/core/battle_save_manager.gd"):
-		var scr: GDScript = load("res://scripts/core/battle_save_manager.gd") as GDScript
-		if scr != null and scr.can_instantiate():
-			var mgr: Object = scr.new()
-			var ok_s: bool = bool(mgr.call("save_battle_session", _controller)) if mgr.has_method("save_battle_session") else false
-			var prof: Dictionary = mgr.call("load_player_profile") if mgr.has_method("load_player_profile") else {}
-			if _hud_controller != null:
-				prof["reduce_flashing"] = _hud_controller.reduce_flashing
-				prof["vfx_quality"] = _hud_controller.vfx_quality_index
-			if _camera != null:
-				prof["shake_scale"] = _camera.shake_user_scale
-			var ok_p: bool = bool(mgr.call("save_player_profile", prof)) if mgr.has_method("save_player_profile") else false
-			return ok_s and ok_p
-	DirAccess.make_dir_recursive_absolute("user://saves")
-	var fa1: FileAccess = FileAccess.open("user://saves/battle_session.json", FileAccess.WRITE)
-	if fa1 != null:
-		fa1.store_string(JSON.stringify({"version": 1, "stage_id": 10101}))
-		fa1.close()
-	var fa2: FileAccess = FileAccess.open("user://saves/player_profile.json", FileAccess.WRITE)
-	if fa2 != null:
-		fa2.store_string(JSON.stringify({"version": 1, "reduce_flashing": _hud_controller.reduce_flashing if _hud_controller != null else false}))
-		fa2.close()
-	return true
+	var mgr := BattleSaveManager.new()
+	var ok_s: bool = mgr.save_battle_session(_controller)
+	var prof: Dictionary = mgr.load_player_profile()
+	if _hud_controller != null:
+		prof["reduce_flashing"] = _hud_controller.reduce_flashing
+		prof["vfx_quality"] = _hud_controller.vfx_quality_index
+	if _camera != null:
+		prof["shake_scale"] = _camera.shake_user_scale
+	var ok_p: bool = mgr.save_player_profile(prof)
+	return ok_s and ok_p
+
+
+func get_battle_session() -> BattleSession:
+	return _battle_session
 
 
 func get_map_state() -> BattleMapState:
@@ -782,7 +732,7 @@ func get_input_fsm() -> BattleInputFSM:
 	return _input_fsm
 
 
-func get_hud_controller() -> BattleHudController:
+func get_hud_controller() -> BattleHud:
 	return _hud_controller
 
 

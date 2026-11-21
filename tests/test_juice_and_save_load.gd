@@ -5,11 +5,11 @@ const HIT_FLASH_SHADER_PATH: String = "res://assets_clean/shaders/hit_flash.gdsh
 const WATER_FLOW_SHADER_PATH: String = "res://assets_clean/shaders/water_flow.gdshader"
 const JUICE_SCRIPT_PATH: String = "res://scripts/presentation/combat_juice_helper.gd"
 const AUDIO_SCRIPT_PATH: String = "res://scripts/presentation/battle_audio_manager.gd"
-const SAVE_SCRIPT_PATH: String = "res://scripts/core/battle_save_manager.gd"
+const SAVE_SCRIPT_PATH: String = "res://sim/state/battle_save_manager.gd"
 
-const ScenarioLoaderScript = preload("res://scripts/core/scenario_loader.gd")
-const CmdsScript = preload("res://scripts/core/battle_commands.gd")
-const HexMathScript = preload("res://scripts/core/hex_math.gd")
+const ScenarioLoaderScript = preload("res://sim/state/scenario_loader.gd")
+const CmdsScript = preload("res://sim/commands/battle_commands.gd")
+const HexMathScript = preload("res://sim/rules/hex_math.gd")
 
 
 func _spawn_sandbox() -> Node2D:
